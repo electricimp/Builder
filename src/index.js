@@ -1,5 +1,5 @@
 /**
- * Bundler
+ * Builder
  * @author Mikhail Yurasov <mikhail@electricimp.com>
  */
 
@@ -15,19 +15,19 @@ const SOURCE_TYPE_URL = 'url';
 const SOURCE_TYPE_GIT = 'git';
 const SOURCE_TYPE_LOCAL_FILE = 'local_file';
 
-class ImpBundler {
+class ImpBuilder {
 
   constructor() {
     DebugMixin.call(this);
   }
 
   /**
-   * Bunlde a source reference
+   * Build a source reference
    *
    * @param {string} source Importable source reference
    * @return {Promise}
    */
-  bundle(source) {
+  build(source) {
     return this._readSource(source);
   }
 
@@ -86,5 +86,5 @@ class ImpBundler {
   // </editor-fold>
 }
 
-module.exports = ImpBundler;
+module.exports = ImpBuilder;
 module.exports.Errors = Errors;

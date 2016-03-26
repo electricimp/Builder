@@ -1,5 +1,5 @@
 {
-  "name": "imp-bundler",
+  "name": "imp-builder",
   "version": "0.0.1-dev",
   "description": "Bundling tool for EI/Squirrel",
   "main": "src/index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electricimp/imp-bundler.git"
+    "url": "git+https://github.com/electricimp/imp-builder.git"
   },
   "author": "Mikhail Yurasov <mikhail@electricimp.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/electricimp/imp-bundler/issues"
+    "url": "https://github.com/electricimp/imp-builder/issues"
   },
-  "homepage": "https://github.com/electricimp/imp-bundler#readme",
+  "homepage": "https://github.com/electricimp/imp-builder#readme",
   "dependencies": {
     "colors": "^1.1.2"
   },

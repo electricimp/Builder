@@ -1,26 +1,26 @@
 /**
- * Spec for ImpBundler
+ * Spec for ImpBuilder
  * @author Mikhail Yurasov <mikhail@electricimp.com>
  */
 
 'use strict';
 
-const ImpBundler = require('../src');
+const ImpBuilder = require('../src');
 
-let bundler;
+let builder;
 
-describe('ImpBundler', () => {
+describe('ImpBuilder', () => {
 
   beforeEach(() => {
-    bundler = new ImpBundler();
-    bundler.debug = true;
-    bundler.localFileSearchDirs = [
+    builder = new ImpBuilder();
+    builder.debug = true;
+    builder.localFileSearchDirs = [
       __dirname + '/fixtures/sample-1'
     ];
   });
 
   it('should process sample alright', (done) => {
-    bundler.bundle('input.nut')
+    builder.build('input.nut')
       .then((res) => {
         console.log(res);
       })

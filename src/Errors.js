@@ -1,21 +1,21 @@
 /**
- * ImpBundler errors
+ * ImpBuilder errors
  * @author Mikhail Yurasov <me@yurasov.me>
  */
 
 'use strict';
 
-class ImpBundlerError extends Error {
+class ImpBuilderError extends Error {
   constructor(message, id) {
-    super(message || 'ImpBundler error occured');
+    super(message || 'ImpBuilder error occured');
   }
 }
 
-class NotFountError extends ImpBundlerError {
+class NotFountError extends ImpBuilderError {
   constructor(message, id) {
     super(message || 'File not found');
   }
 }
 
-module.exports.ImpBundlerError = ImpBundlerError;
+module.exports.ImpBuilderError = ImpBuilderError;
 module.exports.NotFountError = NotFountError;
