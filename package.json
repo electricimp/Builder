@@ -1,0 +1,19 @@
+{
+  "name": "imp-bundler",
+  "version": "0.0.1-dev",
+  "description": "Bundling tool for EI/Squirrel",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electricimp/imp-bundler.git"
+  },
+  "author": "Mikhail Yurasov <mikhail@electricimp.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/electricimp/imp-bundler/issues"
+  },
+  "homepage": "https://github.com/electricimp/imp-bundler#readme"
+}
