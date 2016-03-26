@@ -29,16 +29,17 @@ class ImpBuilder {
    */
   build(source) {
     return this._readSource(source);
+
+
   }
 
   /**
    * Read source reference
    * @param source
-   * @return {Promise}
+   * @return {string}
    * @private
    */
   _readSource(source) {
-    return new Promise((resolve, reject) => {
       let reader;
       const sourceType = this._getSourceType(source);
 
@@ -47,14 +48,11 @@ class ImpBuilder {
           reader = new LocalFileReader();
           reader.debug = this.debug;
           reader.searchDirs = reader.searchDirs.concat(this.localFileSearchDirs);
-          resolve(reader.read(source));
-          break;
+          return reader.read(source);
 
         default:
-          reject(new Error('Unknown source type'));
-          break;
+          throw new Error('Unknown source type');
       }
-    });
   }
 
   /**

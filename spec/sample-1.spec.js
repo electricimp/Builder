@@ -19,12 +19,9 @@ describe('ImpBuilder', () => {
     ];
   });
 
-  it('should process sample alright', (done) => {
-    builder.build('input.nut')
-      .then((res) => {
-        console.log(res);
-      })
-      .then(done, done.fail);
+  it('should process sample alright', () => {
+    const res = builder.build('input.nut');
+    console.log(res);
   });
 
 });
