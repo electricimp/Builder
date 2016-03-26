@@ -7,12 +7,25 @@
     "binaryLiterals": true,
     "blockBindings": true,
     "classes": true,
+    "defaultParams": true,
+    "destructuring": true,
     "forOf": true,
     "generators": true,
+    "modules": false,
+    "objectLiteralComputedProperties": true,
+    "objectLiteralDuplicateProperties": false,
     "objectLiteralShorthandMethods": true,
     "objectLiteralShorthandProperties": true,
     "octalLiterals": true,
-    "templateStrings": true
+    "regexUFlag": true,
+    "regexYFlag": true,
+    "restParams": true,
+    "spread": true,
+    "superInFunctions": true,
+    "templateStrings": true,
+    "unicodeCodePointEscapes": true,
+    "globalReturn": false,
+    "jsx": false
   },
   "rules": {
     "no-debugger": 2,
@@ -20,7 +33,14 @@
     "no-dupe-keys": 2,
     "no-duplicate-case": 2,
     "no-ex-assign": 2,
-    "quote-props": [2, "as-needed", { "keywords": true, "unnecessary": false }],
+    "quote-props": [
+      2,
+      "as-needed",
+      {
+        "keywords": true,
+        "unnecessary": false
+      }
+    ],
     "no-unreachable": 2,
     "valid-typeof": 2,
     "no-fallthrough": 2,
@@ -35,7 +55,10 @@
     "space-return-throw-case": 2,
     "space-before-function-paren": [
       2,
-      {"anonymous": "always", "named": "never"}
+      {
+        "anonymous": "always",
+        "named": "never"
+      }
     ],
     "space-before-blocks": [
       2,
