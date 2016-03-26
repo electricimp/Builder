@@ -7,7 +7,6 @@
 
 const fs = require('fs');
 const c = require('colors');
-const Errors = require('./Errors');
 const DebugMixin = require('../lib/DebugMixin');
 const LocalFileReader = require('./LocalFileReader');
 
@@ -28,9 +27,11 @@ class ImpBuilder {
    * @return {Promise}
    */
   build(source) {
-    return this._readSource(source);
+    let lines = this._readSource(source).split('\n');
 
+    for (const line of lines) {
 
+    }
   }
 
   /**
@@ -85,4 +86,3 @@ class ImpBuilder {
 }
 
 module.exports = ImpBuilder;
-module.exports.Errors = Errors;
