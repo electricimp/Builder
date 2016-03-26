@@ -5,7 +5,7 @@
 
 'use strict';
 
-const ImpBuilder = require('../src');
+const ImpBuilder = require('../../src');
 
 let builder;
 
