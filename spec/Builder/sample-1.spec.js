@@ -5,11 +5,12 @@
 
 'use strict';
 
+const fs = require('fs');
 const Builder = require('../../src');
 
-let builder;
-
 describe('Builder', () => {
+
+  let builder;
 
   beforeEach(() => {
     builder = new Builder();
@@ -20,7 +21,9 @@ describe('Builder', () => {
   });
 
   it('should process sample alright', (done) => {
-    builder.build('input.nut')
+    const content = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut');
+    builder.sourceName = 'inout.nut';
+    builder.build(content)
       .then(done, done.fail);
   });
 
