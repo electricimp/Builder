@@ -24,11 +24,13 @@ class SourceParser {
    * @param {string} content
    * @return {Array}
    */
-  static parse(content) {
+  parse(content) {
     const res = [];
+    const lines = content.toString().split(/\n|\r\n/);
 
-    for (const line of content.toString().split(/\n|\r\n/)) {
-      res.push(this.parseLine(line));
+    for (const l in lines) {
+      const line = lines[l];
+      res.push(this.parseLine(line, l + 1));
     }
 
     return res;
@@ -37,9 +39,10 @@ class SourceParser {
   /**
    * Tokenize a single line
    * @param {string} line
+   * @param {number} lineNumber
    * @return {{value, token}}
    */
-  static parseLine(line) {
+  parseLine(line, lineNumber) {
     let m;
 
     if (m = line.trim().match(/^@(include|set|if|else|elseif|endif|error)\b(.*)$/)) {
@@ -59,7 +62,7 @@ class SourceParser {
           if (m = value.match(/^([_A-Za-z][_A-Za-z0-9]*)\s+(.*)$/)) {
             return {token: tokens.SET, variable: m[1], value: m[2]};
           } else {
-            throw new Error('Syntax error in @set');
+            throw new Error('Syntax error in @set (' + this.sourceName + ':' + lineNumber + ')');
           }
 
           break;
@@ -75,7 +78,7 @@ class SourceParser {
         // @else
         case 'else':
           if (value.length > 0) {
-            throw new Error('Syntax error in @else');
+            throw new Error('Syntax error in @else (' + this.sourceName + ':' + lineNumber + ')');
           }
 
           return {token: tokens.ELSE};
@@ -83,7 +86,7 @@ class SourceParser {
         // @endif
         case 'endif':
           if (value.length > 0) {
-            throw new Error('Syntax error in @endif');
+            throw new Error('Syntax error in @endif (' + this.sourceName + ':' + lineNumber + ')');
           }
 
           return {token: tokens.ENDIF};
@@ -101,6 +104,18 @@ class SourceParser {
       };
     }
   }
+
+  // <editor-fold desc="Accessors" defaultstate="collapsed">
+
+  get sourceName() {
+    return this._sourceName || 'main';
+  }
+
+  set sourceName(value) {
+    this._sourceName = value;
+  }
+
+  // </editor-fold>
 }
 
 module.exports = SourceParser;
