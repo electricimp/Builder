@@ -91,7 +91,7 @@ class SourceParser {
         // @error <message:expression>
         case 'error':
           return {token: tokens.ERROR, message: value};
-        
+
       }
 
     } else {
