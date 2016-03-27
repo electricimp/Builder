@@ -13,6 +13,7 @@ const tokens = {
   ELSE: 'else',
   ELSEIF: 'elseif',
   ENDIF: 'endif',
+  ERROR: 'error',
   SOURCE_LINE: 'source_line'
 };
 
@@ -41,7 +42,7 @@ class SourceParser {
   static parseLine(line) {
     let m;
 
-    if (m = line.trim().match(/^@(include|set|if|else|elseif|endif)\b(.*)$/)) {
+    if (m = line.trim().match(/^@(include|set|if|else|elseif|endif|error)\b(.*)$/)) {
 
       const keyword = m[1];
       const value = m[2].trim();
@@ -63,6 +64,34 @@ class SourceParser {
 
           break;
 
+        // @if <condition:expression>
+        case 'if':
+          return {token: tokens.IF, condition: value};
+
+        // @elseif <condition:expression>
+        case 'elseif':
+          return {token: tokens.ELSEIF, condition: value};
+
+        // @else
+        case 'else':
+          if (value.length > 0) {
+            throw new Error('Syntax error in @else');
+          }
+
+          return {token: tokens.ELSE};
+
+        // @endif
+        case 'endif':
+          if (value.length > 0) {
+            throw new Error('Syntax error in @endif');
+          }
+
+          return {token: tokens.ENDIF};
+
+        // @error <message:expression>
+        case 'error':
+          return {token: tokens.ERROR, message: value};
+        
       }
 
     } else {
