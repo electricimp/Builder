@@ -28,9 +28,9 @@ class SourceParser {
     const res = [];
     const lines = content.toString().split(/\n|\r\n/);
 
-    for (const l in lines) {
+    for (let l = 0; l < lines.length; l++) {
       const line = lines[l];
-      res.push(this.parseLine(line, l + 1));
+      res.push(this._parseLine(line, l + 1));
     }
 
     return res;
@@ -41,9 +41,15 @@ class SourceParser {
    * @param {string} line
    * @param {number} lineNumber
    * @return {{value, token}}
+   * @private
    */
-  parseLine(line, lineNumber) {
+  _parseLine(line, lineNumber) {
     let m;
+
+    const r = {
+      _line: lineNumber, // line #
+      _source: this.sourceName // source name
+    };
 
     if (m = line.trim().match(/^@(include|set|if|else|elseif|endif|error)\b(.*)$/)) {
 
@@ -54,13 +60,19 @@ class SourceParser {
 
         // @include <source:expression>
         case 'include':
-          return {token: tokens.INCLUDE, source: value};
+
+          r.token = tokens.INCLUDE;
+          r.source = value;
+
+          break;
 
         // @set <variable:varname> <value:expression>
         case 'set':
 
           if (m = value.match(/^([_A-Za-z][_A-Za-z0-9]*)\s+(.*)$/)) {
-            return {token: tokens.SET, variable: m[1], value: m[2]};
+            r.token = tokens.SET;
+            r.variable = m[1];
+            r.value = m[2];
           } else {
             throw new Error('Syntax error in @set (' + this.sourceName + ':' + lineNumber + ')');
           }
@@ -69,40 +81,58 @@ class SourceParser {
 
         // @if <condition:expression>
         case 'if':
-          return {token: tokens.IF, condition: value};
+
+          r.token = tokens.IF;
+          r.condition = value;
+
+          break;
 
         // @elseif <condition:expression>
         case 'elseif':
-          return {token: tokens.ELSEIF, condition: value};
+
+          r.token = tokens.ELSEIF;
+          r.condition = value;
+
+          break;
 
         // @else
         case 'else':
+
           if (value.length > 0) {
             throw new Error('Syntax error in @else (' + this.sourceName + ':' + lineNumber + ')');
           }
 
-          return {token: tokens.ELSE};
+          r.token = tokens.ELSE;
+
+          break;
 
         // @endif
         case 'endif':
+
           if (value.length > 0) {
             throw new Error('Syntax error in @endif (' + this.sourceName + ':' + lineNumber + ')');
           }
 
-          return {token: tokens.ENDIF};
+          r.token = tokens.ENDIF;
+
+          break;
 
         // @error <message:expression>
         case 'error':
-          return {token: tokens.ERROR, message: value};
+
+          r.token = tokens.ERROR;
+          r.message = value;
+
+          break;
 
       }
 
     } else {
-      return {
-        token: tokens.SOURCE_LINE,
-        line
-      };
+      r.token = tokens.SOURCE_LINE;
+      r.line = line;
     }
+
+    return r;
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
