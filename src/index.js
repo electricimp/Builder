@@ -5,32 +5,45 @@
 
 'use strict';
 
-const fs = require('fs');
-const c = require('colors');
 const DebugMixin = require('../lib/DebugMixin');
 const LocalFileReader = require('./LocalFileReader');
+const SourceParser = require('./SourceParser');
 
-const SOURCE_TYPE_URL = 'url';
-const SOURCE_TYPE_GIT = 'git';
-const SOURCE_TYPE_LOCAL_FILE = 'local_file';
+// source reference types
+const sourceTypes = {
+  URL: 'url',
+  GIT: 'git',
+  LOCAL_FILE: 'local_file'
+};
 
 class Builder {
 
   constructor() {
     DebugMixin.call(this);
+
+    // tokenized source
+    this._source = [];
   }
 
   /**
-   * Build a source reference
-   *
-   * @param {string} source Importable source reference
+   * Build
+   * @param {string} content
    * @return {Promise}
    */
-  build(source) {
+  build(content) {
     return new Promise((resolve, reject) => {
-      this._readSource(source)
-        .then(resolve, reject);
+
+      // parse contents
+      const parser = new SourceParser();
+      parser.sourceName = 'main';
+      this._source = parser.parse(content);
+
+      resolve();
     });
+  }
+
+  _execute() {
+    //
   }
 
   /**
@@ -40,34 +53,33 @@ class Builder {
    * @private
    */
   _readSource(source) {
-    let reader;
     const sourceType = this._getSourceType(source);
 
     switch (sourceType) {
-      case SOURCE_TYPE_LOCAL_FILE:
-        reader = new LocalFileReader();
+      case sourceTypes.LOCAL_FILE:
+        const reader = new LocalFileReader();
         reader.debug = this.debug;
         reader.searchDirs = reader.searchDirs.concat(this.localFileSearchDirs);
         return reader.read(source);
 
       default:
-        throw new Error('Unknown source type');
+        throw new Error('Unsupported source reference type');
     }
   }
 
   /**
    * Determine type of source reference
-   * @param {string} ref
+   * @param {string} source
    * @return {string}
    * @private
    */
-  _getSourceType(ref) {
-    if (/^https?:/i.test(ref)) {
-      return SOURCE_TYPE_URL;
-    } else if (/\.git\b/i.test(ref)) {
-      return SOURCE_TYPE_GIT;
+  _getSourceType(source) {
+    if (/^https?:/i.test(source)) {
+      return sourceTypes.URL;
+    } else if (/\.git\b/i.test(source)) {
+      return sourceTypes.GIT;
     } else {
-      return SOURCE_TYPE_LOCAL_FILE;
+      return sourceTypes.LOCAL_FILE;
     }
   }
 
@@ -81,7 +93,16 @@ class Builder {
     this._localFileSearchDirs = value;
   }
 
+  get sourceName() {
+    return this._sourceName || 'main';
+  }
+
+  set sourceName(value) {
+    this._sourceName = value;
+  }
+
   // </editor-fold>
 }
 
 module.exports = Builder;
+module.exports.sourceTypes = sourceTypes;
