@@ -1,5 +1,5 @@
 /**
- * Tokenizer
+ * Source parser
  * @author Mikhail Yurasov <me@yurasov.me>
  */
 
@@ -17,18 +17,18 @@ const tokens = {
   SOURCE_LINE: 'source_line'
 };
 
-class Tokenizer {
+class SourceParser {
 
   /**
    * Tokenize a string
    * @param {string} content
    * @return {Array}
    */
-  static tokenize(content) {
+  static parse(content) {
     const res = [];
 
     for (const line of content.toString().split(/\n|\r\n/)) {
-      res.push(this.tokenizeLine(line));
+      res.push(this.parseLine(line));
     }
 
     return res;
@@ -39,7 +39,7 @@ class Tokenizer {
    * @param {string} line
    * @return {{value, token}}
    */
-  static tokenizeLine(line) {
+  static parseLine(line) {
     let m;
 
     if (m = line.trim().match(/^@(include|define|undefine|if|else|elseif|endif)\b(.*)$/)) {
@@ -75,5 +75,5 @@ class Tokenizer {
   }
 }
 
-module.exports = Tokenizer;
+module.exports = SourceParser;
 module.exports.tokens = tokens;
