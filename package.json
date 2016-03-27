@@ -20,6 +20,7 @@
     "colors": "^1.1.2"
   },
   "devDependencies": {
-    "jasmine": "^2.4.1"
+    "jasmine": "^2.4.1",
+    "jasmine-expect": "^2.0.2"
   }
 }
