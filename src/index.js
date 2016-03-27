@@ -14,7 +14,7 @@ const SOURCE_TYPE_URL = 'url';
 const SOURCE_TYPE_GIT = 'git';
 const SOURCE_TYPE_LOCAL_FILE = 'local_file';
 
-class ImpBuilder {
+class Builder {
 
   constructor() {
     DebugMixin.call(this);
@@ -27,11 +27,10 @@ class ImpBuilder {
    * @return {Promise}
    */
   build(source) {
-    let lines = this._readSource(source).split('\n');
-
-    for (const line of lines) {
-
-    }
+    return new Promise((resolve, reject) => {
+      this._readSource(source)
+        .then(resolve, reject);
+    });
   }
 
   /**
@@ -41,19 +40,19 @@ class ImpBuilder {
    * @private
    */
   _readSource(source) {
-      let reader;
-      const sourceType = this._getSourceType(source);
+    let reader;
+    const sourceType = this._getSourceType(source);
 
-      switch (sourceType) {
-        case SOURCE_TYPE_LOCAL_FILE:
-          reader = new LocalFileReader();
-          reader.debug = this.debug;
-          reader.searchDirs = reader.searchDirs.concat(this.localFileSearchDirs);
-          return reader.read(source);
+    switch (sourceType) {
+      case SOURCE_TYPE_LOCAL_FILE:
+        reader = new LocalFileReader();
+        reader.debug = this.debug;
+        reader.searchDirs = reader.searchDirs.concat(this.localFileSearchDirs);
+        return reader.read(source);
 
-        default:
-          throw new Error('Unknown source type');
-      }
+      default:
+        throw new Error('Unknown source type');
+    }
   }
 
   /**
@@ -85,4 +84,4 @@ class ImpBuilder {
   // </editor-fold>
 }
 
-module.exports = ImpBuilder;
+module.exports = Builder;

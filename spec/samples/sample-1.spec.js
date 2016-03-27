@@ -1,27 +1,27 @@
 /**
- * Spec for ImpBuilder
+ * Spec for Builder
  * @author Mikhail Yurasov <mikhail@electricimp.com>
  */
 
 'use strict';
 
-const ImpBuilder = require('../../src');
+const Builder = require('../../src');
 
 let builder;
 
-describe('ImpBuilder', () => {
+describe('Builder', () => {
 
   beforeEach(() => {
-    builder = new ImpBuilder();
-    builder.debug = true;
+    builder = new Builder();
+    builder.debug = !!parseInt(process.env.SPEC_DEBUG);
     builder.localFileSearchDirs = [
       __dirname + '/fixtures/sample-1'
     ];
   });
 
-  it('should process sample alright', () => {
-    const res = builder.build('input.nut');
-    console.log(res);
+  it('should process sample alright', (done) => {
+    builder.build('input.nut')
+      .then(done, done.fail);
   });
 
 });
