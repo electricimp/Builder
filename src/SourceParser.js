@@ -8,8 +8,7 @@
 // token types
 const tokens = {
   INCLUDE: 'include',
-  DEFINE: 'define',
-  UNDEFINE: 'undefine',
+  SET: 'set',
   IF: 'if',
   ELSE: 'else',
   ELSEIF: 'elseif',
@@ -42,7 +41,7 @@ class SourceParser {
   static parseLine(line) {
     let m;
 
-    if (m = line.trim().match(/^@(include|define|undefine|if|else|elseif|endif)\b(.*)$/)) {
+    if (m = line.trim().match(/^@(include|set|if|else|elseif|endif)\b(.*)$/)) {
 
       const keyword = m[1];
       const value = m[2].trim();
@@ -53,13 +52,13 @@ class SourceParser {
         case 'include':
           return {token: tokens.INCLUDE, source: value};
 
-        case 'define':
+        // @set <variable:varname> <value:expression>
+        case 'set':
 
-          // @define <variable:varname> <value:expression>
           if (m = value.match(/^([_A-Za-z][_A-Za-z0-9]*)\s+(.*)$/)) {
-            return {token: tokens.DEFINE, varname: m[1], value: m[2]};
+            return {token: tokens.SET, variable: m[1], value: m[2]};
           } else {
-            throw new Error('Syntax error in @define');
+            throw new Error('Syntax error in @set');
           }
 
           break;

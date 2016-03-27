@@ -39,17 +39,17 @@ describe('Tokenizer', () => {
     expect(res).toBeArrayOfSize(4);
   });
 
-  it('should parse @define correctly', () => {
-    const res = SourceParser.parseLine('@define  varname  expression');
+  it('should parse @set correctly', () => {
+    const res = SourceParser.parseLine('@set  varname  expression');
     expect(res).toEqual({
-      token: SourceParser.tokens.DEFINE,
-      varname: 'varname',
+      token: SourceParser.tokens.SET,
+      variable: 'varname',
       value: 'expression'
     });
   });
 
-  it('should throw error on incorrect @define syntax', () => {
-    expect(() => SourceParser.parseLine('@define 1varname  expression'))
+  it('should throw error on incorrect @set syntax', () => {
+    expect(() => SourceParser.parseLine('@set 1varname  expression'))
       // todo: check for custom error type
       .toThrowAnyError();
   });
