@@ -11,15 +11,15 @@ const LocalFileReader = require('./LocalFileReader');
 class Machine {
 
   constructor() {
-    this._source = []; // tokens
+    this._instructions = []; // tokens
     this._pointer = 0; // execution poiner
   }
 
   excecute() {
     let instruction;
 
-    while (this._pointer < this._source.length) {
-      instruction = this._source[this._pointer++];
+    while (this._pointer < this._instructions.length) {
+      instruction = this._instructions[this._pointer++];
 
       switch (instruction.token) {
 
@@ -50,12 +50,12 @@ class Machine {
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
-  get source() {
-    return this._source;
+  get instructions() {
+    return this._instructions;
   }
 
-  set source(value) {
-    this._source = value;
+  set instructions(value) {
+    this._instructions = value;
   }
 
   get localFileReader() {
