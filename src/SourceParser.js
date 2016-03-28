@@ -58,11 +58,11 @@ class SourceParser {
 
       switch (keyword) {
 
-        // @include <source:expression>
+        // @include <path:expression>
         case 'include':
 
           r.token = tokens.INCLUDE;
-          r.source = value;
+          r.path = value;
 
           break;
 
