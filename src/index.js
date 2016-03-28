@@ -5,9 +5,9 @@
 
 'use strict';
 
-const DebugMixin = require('../lib/DebugMixin');
-const LocalFileReader = require('./LocalFileReader');
+const Machine = require('./Machine');
 const SourceParser = require('./SourceParser');
+const DebugMixin = require('../lib/DebugMixin');
 
 // source reference types
 const sourceTypes = {
@@ -31,40 +31,22 @@ class Builder {
    * @return {Promise}
    */
   build(content) {
+
     return new Promise((resolve, reject) => {
+      // create machine
+      this._machine = new Machine();
 
       // parse contents
       const parser = new SourceParser();
       parser.sourceName = 'main';
-      this._source = parser.parse(content);
+      this._machine.source = parser.parse(content);
 
       resolve();
     });
   }
 
   _execute() {
-    //
-  }
 
-  /**
-   * Read source reference
-   * @param source
-   * @return {string}
-   * @private
-   */
-  _readSource(source) {
-    const sourceType = this._getSourceType(source);
-
-    switch (sourceType) {
-      case sourceTypes.LOCAL_FILE:
-        const reader = new LocalFileReader();
-        reader.debug = this.debug;
-        reader.searchDirs = reader.searchDirs.concat(this.localFileSearchDirs);
-        return reader.read(source);
-
-      default:
-        throw new Error('Unsupported source reference type');
-    }
   }
 
   /**
