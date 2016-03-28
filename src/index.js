@@ -20,9 +20,6 @@ class Builder {
 
   constructor() {
     DebugMixin.call(this);
-
-    // tokenized source
-    this._source = [];
   }
 
   /**
@@ -39,7 +36,7 @@ class Builder {
       // parse contents
       const parser = new SourceParser();
       parser.sourceName = 'main';
-      this._machine.source = parser.parse(content);
+      this._machine.instructions = parser.parse(content);
 
       resolve();
     });
@@ -47,22 +44,6 @@ class Builder {
 
   _execute() {
 
-  }
-
-  /**
-   * Determine type of source reference
-   * @param {string} source
-   * @return {string}
-   * @private
-   */
-  _getSourceType(source) {
-    if (/^https?:/i.test(source)) {
-      return sourceTypes.URL;
-    } else if (/\.git\b/i.test(source)) {
-      return sourceTypes.GIT;
-    } else {
-      return sourceTypes.LOCAL_FILE;
-    }
   }
 
   // <editor-fold desc="accessors" defaultstate="collapsed">
