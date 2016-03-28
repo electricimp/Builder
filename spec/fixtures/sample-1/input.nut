@@ -1,9 +1,7 @@
 @include "inc-a.nut"
 
-@define SOMEVAR1 123
-@define SOMEVAR2 256
-
-@undefine SOMEVAR1
+@set SOMEVAR1 123
+@set SOMEVAR2 256
 
 @if SOMEVAR1 == 123
   // should not be included
