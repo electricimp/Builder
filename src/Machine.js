@@ -7,7 +7,6 @@
 
 const path = require('path');
 const SourceParser = require('./SourceParser');
-const LocalFileReader = require('./LocalFileReader');
 
 class Machine {
 
