@@ -16,12 +16,12 @@ describe('Builder', () => {
     builder = new Builder();
     builder.debug = !!parseInt(process.env.SPEC_DEBUG);
     builder.localFileSearchDirs = [
-      __dirname + '/fixtures/sample-1'
+      __dirname + '/../fixtures/sample-1'
     ];
   });
 
   it('should process sample alright', (done) => {
-    const content = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut');
+    const content = fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut');
     builder.sourceName = 'inout.nut';
     builder.build(content)
       .then(done, done.fail);
