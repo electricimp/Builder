@@ -21,24 +21,21 @@ class LocalFileReader {
 
   /**
    * Read local file
-   * @param {string} source
-   * @return {Promise}
+   * @param {string} path
+   * @return {string}
    */
-  read(source) {
-    return new Promise((resolve, reject) => {
+  read(path) {
+    // iterate through the search dirs
+    for (const dir of this.searchDirs) {
+      const sourcePath = dir + '/' + path;
 
-      // iterate through the search dirs
-      for (const dir of this.searchDirs) {
-        const sourcePath = dir + '/' + source;
-
-        if (fs.existsSync(sourcePath)) {
-          this._debug(c.blue('Reading local source file ') + sourcePath);
-          resolve(fs.readFileSync(sourcePath, 'utf-8'));
-        }
+      if (fs.existsSync(sourcePath)) {
+        this._debug(c.blue('Reading local source file ') + sourcePath);
+        return fs.readFileSync(sourcePath, 'utf-8');
       }
+    }
 
-      throw new Error('Local file "' + source + '" not found');
-    });
+    throw new Error('Local file "' + path + '" not found');
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
