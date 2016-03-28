@@ -19,8 +19,36 @@ describe('Expression', () => {
   });
 
   it('should evaluate expressions with binary operators', () => {
-    const res = expression.evaluate('156*4+3');
-    console.log(res);
+    let res;
+
+    res = expression.evaluate('156*4+3');
+    expect(res).toBe(627);
+
+    res = expression.evaluate('(256- 128)/2');
+    expect(res).toBe(64);
+
+    // division by zero should throw an error
+    // todo: check for custom err type
+    expect(() => expression.evaluate('1/0')).toThrowAnyError();
+  });
+
+  it('should recognize variables', () => {
+    let res;
+
+    expression.variables = {
+      'SOMEVAR1' : 123,
+      '_SOMEVAR2' : 'abc',
+      'some_var_3' : 100500,
+    };
+
+    res = expression.evaluate('SOMEVAR1');
+    expect(res).toBe(expression.variables['SOMEVAR1']);
+
+    res = expression.evaluate('_SOMEVAR2');
+    expect(res).toBe(expression.variables['_SOMEVAR2']);
+
+    res = expression.evaluate('some_var_3 * SOMEVAR1');
+    expect(res).toBe(expression.variables['SOMEVAR1'] * expression.variables['some_var_3']);
   });
 
 });

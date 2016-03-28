@@ -9,7 +9,6 @@
  *  - + * /
  *
  *
- *
  */
 
 'use strict';
@@ -66,7 +65,18 @@ class Expression {
         break;
 
       case 'Literal':
+
         res = node.value;
+        break;
+
+      case 'Identifier':
+
+        // check if we have a variable
+        if (!this.variables.hasOwnProperty(node.name)) {
+          throw new Error(`Variable "${node.value}" is not defined`);
+        }
+
+        res = this.variables[node.name];
         break;
 
       default:
