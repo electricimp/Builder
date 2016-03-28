@@ -22,6 +22,7 @@ describe('Machine', () => {
 
     // prepare instructions
     const content = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
+    machine.sourceParser.sourceName = 'input.nut';
     const instructions = machine.sourceParser.parse(content);
 
     // set search dirs
