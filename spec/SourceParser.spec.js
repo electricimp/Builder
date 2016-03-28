@@ -27,7 +27,7 @@ describe('Tokenizer', () => {
         _line: 1,
         _source: 'test',
         token: SourceParser.tokens.INCLUDE,
-        source: 'some file'
+        path: 'some file'
       });
 
     // extra spaces between token and value
@@ -36,7 +36,7 @@ describe('Tokenizer', () => {
         _line: 1,
         _source: 'test',
         token: SourceParser.tokens.INCLUDE,
-        source: 'some file'
+        path: 'some file'
       });
 
     // extra spaces before/after value
@@ -45,7 +45,7 @@ describe('Tokenizer', () => {
         _line: 1,
         _source: 'test',
         token: SourceParser.tokens.INCLUDE,
-        source: 'some file'
+        path: 'some file'
       });
 
     // source line, w/o extra spaces
