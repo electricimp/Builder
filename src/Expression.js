@@ -6,7 +6,7 @@
 /**
  * Supported binary operators:
  *
- *  - + * /
+ *  - + * / %
  *
  *
  */
@@ -59,6 +59,15 @@ class Expression {
             }
 
             res = left / right;
+            break;
+
+          case '%':
+
+            if (0 === right) {
+              throw new Error('Division by zero');
+            }
+
+            res = left % right;
             break;
         }
 
