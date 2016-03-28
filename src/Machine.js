@@ -5,6 +5,7 @@
 
 'use strict';
 
+const path = require('path');
 const SourceParser = require('./SourceParser');
 const LocalFileReader = require('./LocalFileReader');
 
@@ -19,7 +20,7 @@ class Machine {
     let instruction;
 
     while (this._pointer < this._instructions.length) {
-      instruction = this._instructions[this._pointer++];
+      instruction = this._instructions[this._pointer];
 
       switch (instruction.token) {
 
@@ -30,10 +31,20 @@ class Machine {
         default:
           throw new Error('Unknown token "' + instruction.token + '"');
       }
+
+      this._pointer++;
     }
   }
 
+  /**
+   * Execute include instruction
+   * @param {{}} instruction
+   * @private
+   */
   _executeInclude(instruction) {
+
+    let content;
+    let includesInstructions;
 
     if (/^https?:/i.test(instruction.path)) {
       // URL
@@ -43,8 +54,18 @@ class Machine {
       throw new Error('GIT sources are not supported at the moment');
     } else {
       // local file
-      this.localFileReader.read(instruction.path);
+
+      // read
+      content = this.localFileReader.read(instruction.path);
+
+      // parse
+      this.sourceParser.sourceName = path.basename(instruction.path);
+      includesInstructions = this.sourceParser.parse(content);
     }
+
+    // replace include instruction with included instructions
+    this._instructions.splice.apply(this._instructions,
+      [this._pointer, 1].concat(includesInstructions));
 
   }
 
@@ -66,7 +87,15 @@ class Machine {
     this._localFileReader = value;
   }
 
-  // </editor-fold>
+  get sourceParser() {
+    return this._sourceParser;
+  }
+
+  set sourceParser(value) {
+    this._sourceParser = value;
+  }
+
+// </editor-fold>
 }
 
 module.exports = Machine;

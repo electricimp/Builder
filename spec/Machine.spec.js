@@ -14,19 +14,18 @@ const LocalFileReader = require('../src/LocalFileReader');
 
 describe('Machine', () => {
 
-  const localFileReader = new LocalFileReader();
   const machine = new Machine();
-  machine.localFileReader = localFileReader;
-  const parser = new SourceParser();
+  machine.localFileReader = new LocalFileReader();
+  machine.sourceParser = new SourceParser();
 
   it('should do alright #1', () => {
 
     // prepare instructions
     const content = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
-    const instructions = parser.parse(content);
+    const instructions = machine.sourceParser.parse(content);
 
     // set search dirs
-    localFileReader.searchDirs = [
+    machine.localFileReader.searchDirs = [
       __dirname + '/fixtures/sample-1'
     ];
 
