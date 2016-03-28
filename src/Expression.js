@@ -29,6 +29,9 @@ class Expression {
     this._jsep.removeBinaryOp('|');
     this._jsep.removeBinaryOp('!==');
     this._jsep.removeBinaryOp('===');
+
+    // remove unary ops
+    this._jsep.removeUnaryOp('~');
   }
 
   evaluate(expression) {
@@ -49,8 +52,8 @@ class Expression {
 
       case 'BinaryExpression':
 
-        const left = parseFloat(this._evaluate(node.left));
-        const right = parseFloat(this._evaluate(node.right));
+        const left = this._evaluate(node.left);
+        const right = this._evaluate(node.right);
 
         switch (node.operator) {
 
@@ -132,6 +135,29 @@ class Expression {
         }
 
         res = this.variables[node.name];
+        break;
+
+      case 'UnaryExpression':
+
+        const argument = this._evaluate(node.argument);
+
+        switch (node.operator) {
+          case '+':
+            res = argument;
+            break;
+
+          case '!':
+            res = !argument;
+            break;
+
+          case '-':
+            res = -argument;
+            break;
+
+          default:
+            throw new Error('Unknown unary operator: ' + node.operator);
+        }
+
         break;
 
       default:

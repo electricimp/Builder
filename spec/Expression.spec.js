@@ -51,4 +51,10 @@ describe('Expression', () => {
     expect(res).toBe(expression.variables['SOMEVAR1'] * expression.variables['some_var_3']);
   });
 
+  it('should do fine with unary operators', () => {
+    let res;
+    res = expression.evaluate('!10');
+    expect(res).toBe(false);
+  });
+
 });
