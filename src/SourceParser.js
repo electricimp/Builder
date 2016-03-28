@@ -62,7 +62,13 @@ class SourceParser {
         case 'include':
 
           r.token = tokens.INCLUDE;
-          r.path = value;
+
+          // remove bounding qouotes
+          if (value.length >= 2 && value.charAt(0) === '"' && value.charAt(value.length - 1) === value.charAt(0)) {
+            r.path = value.substr(1, value.length - 2);
+          } else {
+            r.path = value;
+          }
 
           break;
 
