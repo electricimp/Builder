@@ -17,6 +17,17 @@ const jsep = require('jsep');
 
 class Expression {
 
+  constructor() {
+    // configure JSEP
+
+    this._jsep = jsep;
+
+    // remove binary ops
+    this._jsep.removeBinaryOp('>>>');
+    this._jsep.removeBinaryOp('!==');
+    this._jsep.removeBinaryOp('===');
+  }
+
   evaluate(expression) {
     return this._evaluate(jsep(expression));
   }
