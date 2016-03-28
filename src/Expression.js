@@ -5,7 +5,7 @@
 
 /**
  * Supported binary operators:
- * || && == != < > <= >= + - * / %
+ * || && == != < > <= >= + - * / % >> << >>> & ^ |
  * @see https://github.com/soney/jsep/blob/master/src/jsep.js#L55
  */
 
@@ -21,12 +21,6 @@ class Expression {
     this._jsep = jsep;
 
     // remove binary ops
-    this._jsep.removeBinaryOp('>>>');
-    this._jsep.removeBinaryOp('>>');
-    this._jsep.removeBinaryOp('<<');
-    this._jsep.removeBinaryOp('&');
-    this._jsep.removeBinaryOp('^');
-    this._jsep.removeBinaryOp('|');
     this._jsep.removeBinaryOp('!==');
     this._jsep.removeBinaryOp('===');
 
@@ -117,6 +111,30 @@ class Expression {
 
           case '<=':
             res = left <= right;
+            break;
+
+          case '>>':
+            res = left >> right;
+            break;
+
+          case '<<':
+            res = left << right;
+            break;
+
+          case '>>>':
+            res = left >>> right;
+            break;
+
+          case '&':
+            res = left & right;
+            break;
+
+          case '^':
+            res = left ^ right;
+            break;
+
+          case '|':
+            res = left | right;
             break;
         }
 
