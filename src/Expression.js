@@ -187,6 +187,11 @@ class Expression {
 
         break;
 
+      case 'ArrayExpression':
+
+        res = node.elements.map(v => this._evaluate(v));
+        break;
+
       default:
         throw new Error('Unknown node type: "' + node.type + '"');
     }

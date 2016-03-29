@@ -39,9 +39,9 @@ describe('Expression', () => {
     let res;
 
     expression.variables = {
-      'SOMEVAR1' : 123,
-      '_SOMEVAR2' : 'abc',
-      'some_var_3' : 100500,
+      'SOMEVAR1': 123,
+      '_SOMEVAR2': 'abc',
+      'some_var_3': 100500,
     };
 
     res = expression.evaluate('SOMEVAR1');
@@ -73,6 +73,13 @@ describe('Expression', () => {
     // should not get to undefined var
     res = expression.evaluate('1 ? 100 : undefinedVar');
     expect(res).toBe(100);
+  });
+
+  it('should support array expressions', () => {
+    let res;
+
+    res = expression.evaluate('[1,2,3]');
+    expect(res).toEqual([1, 2, 3]);
   });
 
   it('should not support compound, this, member expressions', () => {
