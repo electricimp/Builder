@@ -61,8 +61,11 @@ describe('Expression', () => {
     expect(res).toBe(false);
   });
 
-  it('should not support compound expressions', () => {
+  it('should not support compound, this, member expressions', () => {
     // todo: check for custom type
     expect(() => expression.evaluate('"abc" "def"')).toThrowAnyError();
+    expect(() => expression.evaluate('this')).toThrowAnyError();
+    expect(() => expression.evaluate('abc.def')).toThrowAnyError();
+    expect(() => expression.evaluate('abc["def"]')).toThrowAnyError();
   });
 });

@@ -170,7 +170,11 @@ class Expression {
         break;
 
       case 'Compound':
-        throw new Error('Compound expressions are not supported');
+      case 'MemberExpression':
+        throw new Error('Syntax error');
+
+      case 'ThisExpression':
+        throw new Error('`this` keyword is not supported');
 
       default:
         throw new Error('Unknown node type: "' + node.type + '"');
