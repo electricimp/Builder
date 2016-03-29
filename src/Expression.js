@@ -7,6 +7,9 @@
  * Supported binary operators:
  * || && == != < > <= >= + - * / %
  * @see https://github.com/soney/jsep/blob/master/src/jsep.js#L55
+ *
+ * Supported unary operators:
+ * + - !
  */
 
 'use strict';
