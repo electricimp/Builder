@@ -4,12 +4,16 @@
  */
 
 /**
- * Supported binary operators:
- * || && == != < > <= >= + - * / %
- * @see https://github.com/soney/jsep/blob/master/src/jsep.js#L55
+ * Supported syntax:
  *
- * Supported unary operators:
+ * @see https://github.com/soney/jsep/blob/master/src/jsep.js
+ *
+ * Binary operators:
+ * || && == != < > <= >= + - * / %
+ *
+ * Unary operators:
  * + - !
+ *
  */
 
 'use strict';
@@ -164,6 +168,9 @@ class Expression {
         }
 
         break;
+
+      case 'Compound':
+        throw new Error('Compound expressions are not supported');
 
       default:
         throw new Error('Unknown node type: "' + node.type + '"');

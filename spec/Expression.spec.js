@@ -61,4 +61,8 @@ describe('Expression', () => {
     expect(res).toBe(false);
   });
 
+  it('should not support compound expressions', () => {
+    // todo: check for custom type
+    expect(() => expression.evaluate('"abc" "def"')).toThrowAnyError();
+  });
 });
