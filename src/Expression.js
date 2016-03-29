@@ -6,14 +6,42 @@
 /**
  * Supported syntax:
  *
- * @see https://github.com/soney/jsep/blob/master/src/jsep.js
- *
  * Binary operators:
+ * =================
+ *
  * || && == != < > <= >= + - * / %
  *
  * Unary operators:
+ * ================
+ *
  * + - !
  *
+ * Member expressions:
+ * ===================
+ *
+ * foo.bar
+ * foo["bar"]
+ * ([1, 2, 3])[1]
+ *
+ * Types:
+ * ======
+ *
+ *  true
+ *  false
+ *  null
+ *  "string" 'literals'
+ *
+ * Conditional expressions:
+ * ========================
+ *
+ *  result = test ? consequent : alternate
+ *
+ * Array expressions:
+ * ==================
+ *
+ *  [1, 2, 3]
+ *
+ * Also @see https://github.com/soney/jsep/blob/master/src/jsep.js
  */
 
 'use strict';
