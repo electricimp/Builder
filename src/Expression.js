@@ -176,6 +176,17 @@ class Expression {
       case 'ThisExpression':
         throw new Error('`this` keyword is not supported');
 
+      case 'ConditionalExpression':
+        const test = this._evaluate(node.test);
+
+        if (test) {
+          res = this._evaluate(node.consequent);
+        } else {
+          res = this._evaluate(node.alternate);
+        }
+
+        break;
+
       default:
         throw new Error('Unknown node type: "' + node.type + '"');
     }

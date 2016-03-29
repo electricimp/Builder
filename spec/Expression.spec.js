@@ -61,6 +61,20 @@ describe('Expression', () => {
     expect(res).toBe(false);
   });
 
+  it('should evaluate conditional expressions', () => {
+    let res;
+
+    res = expression.evaluate('1 ? 100 : 200');
+    expect(res).toBe(100);
+
+    res = expression.evaluate('0 ? 100 : 200');
+    expect(res).toBe(200);
+
+    // should not get to undefined var
+    res = expression.evaluate('1 ? 100 : undefinedVar');
+    expect(res).toBe(100);
+  });
+
   it('should not support compound, this, member expressions', () => {
     // todo: check for custom type
     expect(() => expression.evaluate('"abc" "def"')).toThrowAnyError();
