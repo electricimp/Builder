@@ -27,15 +27,6 @@ describe('Expression', () => {
     res = expression.evaluate('(256 - 128) / 2');
     expect(res).toBe(64);
 
-    res = expression.evaluate('1 << 2');
-    expect(res).toBe(4);
-
-    res = expression.evaluate('100500 >> 2');
-    expect(res).toBe(25125);
-
-    res = expression.evaluate('100500 ^ 500');
-    expect(res).toBe(100704);
-
     // division by zero should throw an error
     // todo: check for custom err type
     expect(() => expression.evaluate('1/0')).toThrowAnyError();

@@ -5,7 +5,7 @@
 
 /**
  * Supported binary operators:
- * || && == != < > <= >= + - * / % >> << >>> & ^ |
+ * || && == != < > <= >= + - * / %
  * @see https://github.com/soney/jsep/blob/master/src/jsep.js#L55
  */
 
@@ -23,6 +23,12 @@ class Expression {
     // remove binary ops
     this._jsep.removeBinaryOp('!==');
     this._jsep.removeBinaryOp('===');
+    this._jsep.removeBinaryOp('>>');
+    this._jsep.removeBinaryOp('<<');
+    this._jsep.removeBinaryOp('>>>');
+    this._jsep.removeBinaryOp('&');
+    this._jsep.removeBinaryOp('^');
+    this._jsep.removeBinaryOp('|');
 
     // remove unary ops
     this._jsep.removeUnaryOp('~');
@@ -112,30 +118,6 @@ class Expression {
           case '<=':
             res = left <= right;
             break;
-
-          case '>>':
-            res = left >> right;
-            break;
-
-          case '<<':
-            res = left << right;
-            break;
-
-          case '>>>':
-            res = left >>> right;
-            break;
-
-          case '&':
-            res = left & right;
-            break;
-
-          case '^':
-            res = left ^ right;
-            break;
-
-          case '|':
-            res = left | right;
-            break;
         }
 
         break;
@@ -160,6 +142,7 @@ class Expression {
         const argument = this._evaluate(node.argument);
 
         switch (node.operator) {
+
           case '+':
             res = argument;
             break;
