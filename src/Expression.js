@@ -54,6 +54,7 @@ class Expression {
     switch (node.type) {
 
       case 'BinaryExpression':
+      case 'LogicalExpression':
 
         const left = this._evaluate(node.left);
         const right = this._evaluate(node.right);

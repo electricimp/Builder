@@ -27,6 +27,9 @@ describe('Expression', () => {
     res = expression.evaluate('(256 - 128) / 2');
     expect(res).toBe(64);
 
+    res = expression.evaluate('true || false && false');
+    expect(res).toBe(true);
+
     // division by zero should throw an error
     // todo: check for custom err type
     expect(() => expression.evaluate('1/0')).toThrowAnyError();
@@ -53,6 +56,7 @@ describe('Expression', () => {
 
   it('should do fine with unary operators', () => {
     let res;
+
     res = expression.evaluate('!10');
     expect(res).toBe(false);
   });
