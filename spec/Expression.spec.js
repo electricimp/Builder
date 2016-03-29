@@ -90,6 +90,19 @@ describe('Expression', () => {
     expect(res).toBe(123);
   });
 
+  it('shuould support string literals', () => {
+    let res;
+
+    res = expression.evaluate('"abc"');
+    expect(res).toBe('abc');
+
+    res = expression.evaluate('\'abc\'');
+    expect(res).toBe('abc');
+
+    // todo: check for custom type
+    expect(() => expression.evaluate('`abc`')).toThrowAnyError();
+  });
+
   it('should not support compound & this expressions', () => {
     // todo: check for custom type
     expect(() => expression.evaluate('"abc" "def"')).toThrowAnyError();
