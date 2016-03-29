@@ -56,7 +56,6 @@ describe('Expression', () => {
 
   it('should do fine with unary operators', () => {
     let res;
-
     res = expression.evaluate('!10');
     expect(res).toBe(false);
   });
@@ -77,12 +76,21 @@ describe('Expression', () => {
 
   it('should support array expressions', () => {
     let res;
-
     res = expression.evaluate('[1,2,3]');
     expect(res).toEqual([1, 2, 3]);
   });
 
-  it('should not support compound, this, member expressions', () => {
+  it('should support member expressions', () => {
+    let res;
+    res = expression.evaluate('([1,2,3])[1]');
+    expect(res).toBe(2);
+
+    expression.variables = {abc: {a: 123}};
+    res = expression.evaluate('abc.a');
+    expect(res).toBe(123);
+  });
+
+  it('should not support compound & this expressions', () => {
     // todo: check for custom type
     expect(() => expression.evaluate('"abc" "def"')).toThrowAnyError();
     expect(() => expression.evaluate('this')).toThrowAnyError();

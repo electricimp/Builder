@@ -139,7 +139,7 @@ class Expression {
 
         // check if we have a variable
         if (!this.variables.hasOwnProperty(node.name)) {
-          throw new Error(`Variable "${node.value}" is not defined`);
+          throw new Error(`Variable "${node.name}" is not defined`);
         }
 
         res = this.variables[node.name];
@@ -170,8 +170,20 @@ class Expression {
         break;
 
       case 'Compound':
-      case 'MemberExpression':
         throw new Error('Syntax error');
+
+      case 'MemberExpression':
+
+        const object = this._evaluate(node.object);
+        const property = node.computed ? this._evaluate(node.property) : node.property.name;
+
+        if (!object.hasOwnProperty(property)) {
+          throw new Error(`Property "${property} is not defined`);
+        }
+
+        res = object[property];
+
+        break;
 
       case 'ThisExpression':
         throw new Error('`this` keyword is not supported');
