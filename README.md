@@ -1,9 +1,5 @@
-_Please note that this repository is published for preview purposes at this time._
+<img src=docs/logo.png width=200 alt=Builder><br />
 
-# imp-builder
+_Builder language implementation_
 
-Builder for Electric Imp.
-
-## License
-
-_MIT_
+Please note that this repository is published for preview purposes at this time.
