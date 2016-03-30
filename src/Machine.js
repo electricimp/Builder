@@ -56,7 +56,7 @@ class Machine {
     let includedInstrctions;
 
     // path is an expression, evaluate it
-    let sourcePath = this.expression.evaluate(instruction.path);
+    const sourcePath = this.expression.evaluate(instruction.path);
 
     if (/^https?:/i.test(instruction.path)) {
       // URL
