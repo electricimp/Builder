@@ -103,6 +103,26 @@ describe('Expression', () => {
     expect(() => expression.evaluate('`abc`')).toThrowAnyError();
   });
 
+  it('should support functions', () => {
+    let res;
+
+    res = expression.evaluate('abs(-10)');
+    expect(res).toBe(10);
+
+    res = expression.evaluate('min(-10, 10, -11)');
+    expect(res).toBe(-11);
+
+    // todo: check for custom type
+    expect(() => expression.evaluate('min()')).toThrowAnyError();
+
+    res = expression.evaluate('defined("undefinedVar")');
+    expect(res).toBe(false);
+
+    expression.variables = {abc: null};
+    res = expression.evaluate('defined("abc")');
+    expect(res).toBe(true);
+  });
+
   it('should not support compound & this expressions', () => {
     // todo: check for custom type
     expect(() => expression.evaluate('"abc" "def"')).toThrowAnyError();

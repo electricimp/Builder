@@ -30,6 +30,7 @@
  *  false
  *  null
  *  "string" 'literals'
+ *  numbers: 1, 2, 3, 1.1005000, 1E6 1E-6, 1e6
  *
  * Conditional expressions:
  * ========================
@@ -67,6 +68,9 @@ class Expression {
 
     // remove unary ops
     this._jsep.removeUnaryOp('~');
+
+    // supported dunctions
+    this._supportedFunctions = ['abs', 'max', 'min', 'defined'];
   }
 
   evaluate(expression) {
@@ -165,12 +169,21 @@ class Expression {
 
       case 'Identifier':
 
-        // check if we have a variable
-        if (!this.variables.hasOwnProperty(node.name)) {
-          throw new Error(`Variable "${node.name}" is not defined`);
+        if (this._supportedFunctions.indexOf(node.name) !== -1) /* function name */ {
+
+          res = node.name;
+
+        } else /* variable */ {
+
+          // check if we have a variable
+          if (!this.variables.hasOwnProperty(node.name)) {
+            throw new Error(`Variable "${node.name}" is not defined`);
+          }
+
+          res = this.variables[node.name];
+
         }
 
-        res = this.variables[node.name];
         break;
 
       case 'UnaryExpression':
@@ -230,6 +243,33 @@ class Expression {
       case 'ArrayExpression':
 
         res = node.elements.map(v => this._evaluate(v));
+        break;
+
+      case 'CallExpression':
+
+        const callee = this._evaluate(node.callee);
+        const args = node.arguments.map(v => this._evaluate(v));
+
+        if (args.length < 1) {
+          throw new Error('Wrong number of arguments for ' + callee + '()');
+        }
+
+        switch (callee) {
+          case 'abs':
+          case 'max':
+          case 'min':
+            res = Math[callee].apply(this, args);
+            break;
+
+          case 'defined':
+
+            res = this.variables.hasOwnProperty(args[0]);
+            break;
+
+          default:
+            throw new Error(`Function "${callee}" is not defined`);
+        }
+
         break;
 
       default:
