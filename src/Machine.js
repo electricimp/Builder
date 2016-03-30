@@ -7,7 +7,6 @@
 
 const path = require('path');
 const SourceParser = require('./SourceParser');
-const Expression = require('./Expression');
 
 class Machine {
 
@@ -22,6 +21,15 @@ class Machine {
 
     while (this._pointer < this._instructions.length) {
       instruction = this._instructions[this._pointer];
+
+      // assign __*__ variables
+      this.expression.variables = Object.assign(
+        this._variables,
+        {
+          __LINE__: instruction._line,
+          __FILE__: instruction._file
+        }
+      );
 
       switch (instruction.token) {
 
