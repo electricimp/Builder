@@ -11,12 +11,14 @@ const fs = require('fs');
 const Machine = require('../src/Machine');
 const SourceParser = require('../src/SourceParser');
 const LocalFileReader = require('../src/LocalFileReader');
+const Expression = require('../src/Expression');
 
 describe('Machine', () => {
 
   const machine = new Machine();
   machine.localFileReader = new LocalFileReader();
   machine.sourceParser = new SourceParser();
+  machine.expression = new Expression();
 
   it('should do alright #1', () => {
 

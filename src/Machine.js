@@ -7,12 +7,14 @@
 
 const path = require('path');
 const SourceParser = require('./SourceParser');
+const Expression = require('./Expression');
 
 class Machine {
 
   constructor() {
     this._instructions = []; // tokens
     this._pointer = 0; // execution poiner
+    this._variables = {};
   }
 
   excecute() {
@@ -78,20 +80,46 @@ class Machine {
     this._instructions = value;
   }
 
+  /**
+   * @return {LocalFileReader}
+   */
   get localFileReader() {
     return this._localFileReader;
   }
 
+  /**
+   * @param {LocalFileReader} value
+   */
   set localFileReader(value) {
     this._localFileReader = value;
   }
 
+  /**
+   * @return {SourceParser}
+   */
   get sourceParser() {
     return this._sourceParser;
   }
 
+  /**
+   * @param {SourceParser} value
+   */
   set sourceParser(value) {
     this._sourceParser = value;
+  }
+
+  /**
+   * @return {Expression}
+   */
+  get expression() {
+    return this._expression;
+  }
+
+  /**
+   * @param {Expression} value
+   */
+  set expression(value) {
+    this._expression = value;
   }
 
 // </editor-fold>
