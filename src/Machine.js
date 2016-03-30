@@ -37,6 +37,10 @@ class Machine {
           this._executeInclude(instruction);
           break;
 
+        case SourceParser.tokens.SOURCE_LINE:
+          this._executeSourceLine(instruction);
+          break;
+
         default:
           throw new Error('Unknown token "' + instruction.token + '"');
       }
@@ -79,6 +83,16 @@ class Machine {
     this._instructions.splice.apply(this._instructions,
       [this._pointer, 1].concat(includedInstrctions));
 
+  }
+
+  /**
+   * Execute "source line" instruction
+   * @param {{}} instruction
+   * @private
+   */
+  _executeSourceLine(instruction) {
+    // noop for now
+    // todo: replace @{expr} expressions
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
