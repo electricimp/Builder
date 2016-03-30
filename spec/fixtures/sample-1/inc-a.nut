@@ -1,2 +1,2 @@
 // included file a
-@include inc-b.nut
+@include "inc-b.nut"

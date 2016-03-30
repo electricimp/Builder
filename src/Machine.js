@@ -53,7 +53,10 @@ class Machine {
   _executeInclude(instruction) {
 
     let content;
-    let includesInstructions;
+    let includedInstrctions;
+
+    // path is an expression, evaluate it
+    let sourcePath = this.expression.evaluate(instruction.path);
 
     if (/^https?:/i.test(instruction.path)) {
       // URL
@@ -65,16 +68,16 @@ class Machine {
       // local file
 
       // read
-      content = this.localFileReader.read(instruction.path);
+      content = this.localFileReader.read(sourcePath);
 
       // parse
-      this.sourceParser.sourceName = path.basename(instruction.path);
-      includesInstructions = this.sourceParser.parse(content);
+      this.sourceParser.sourceName = path.basename(sourcePath);
+      includedInstrctions = this.sourceParser.parse(content);
     }
 
     // replace include instruction with included instructions
     this._instructions.splice.apply(this._instructions,
-      [this._pointer, 1].concat(includesInstructions));
+      [this._pointer, 1].concat(includedInstrctions));
 
   }
 
@@ -130,7 +133,7 @@ class Machine {
     this._expression = value;
   }
 
-// </editor-fold>
+  // </editor-fold>
 }
 
 module.exports = Machine;
