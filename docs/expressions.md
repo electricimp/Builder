@@ -10,7 +10,6 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
-      - [Predefined Variables](#predefined-variables)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -40,12 +39,22 @@ For example:
 
 ### Binary Operators
 
+`|| && == != < > <= >= + - * / %`
+
 ### Unary Operators
+
+`+ - !`
 
 ### Member Expressions
 
+- `somevar.member`
+- `somevar["member"]
+- `([1, 2, 3])[1]`
+
 ### Conditional Expressions
+
+`test ? consequent : alternate`
 
 ### Variables
 
-#### Predefined Variables
+Variables defined by `@set` statements are available in expressions.
