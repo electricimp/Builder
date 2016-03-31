@@ -11,15 +11,20 @@ const SourceParser = require('./SourceParser');
 class Machine {
 
   constructor() {
-    this._instructions = []; // tokens
-    this._pointer = 0; // execution poiner
+    this._pointer = 0; // instruction poiner
     this._variables = {};
+    this._instructions = [];
+
+    // stack of "if" test results
+    this._if = [true];
+    this._if.peek = () => !!this._if[this._if.length - 1]; // get topmost of the stack
   }
 
   excecute() {
     let instruction;
 
     while (this._pointer < this._instructions.length) {
+
       instruction = this._instructions[this._pointer];
 
       // assign __*__ variables
@@ -34,15 +39,19 @@ class Machine {
       switch (instruction.token) {
 
         case SourceParser.tokens.INCLUDE:
-          this._executeInclude(instruction);
+          this._if.peek() && this._executeInclude(instruction);
           break;
 
         case SourceParser.tokens.SOURCE_LINE:
-          this._executeSourceLine(instruction);
+          this._if.peek() && this._executeSourceLine(instruction);
+          break;
+
         case SourceParser.tokens.SET:
           this._if.peek() && this._executeSet(instruction);
           break;
 
+        case SourceParser.tokens.IF:
+          this._executeIf(instruction);
           break;
 
         default:
@@ -107,6 +116,16 @@ class Machine {
   _executeSet(instruction) {
     const value = this.expression.evaluate(instruction.value);
     this._variables[instruction.variable] = value;
+  }
+
+  /**
+   * Execute "if" instruction
+   * @param {{}} instruction
+   * @private
+   */
+  _executeIf(instruction) {
+    const test = this.expression.evaluate('true == ' + instruction.condition);
+    this._if.push(test);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
