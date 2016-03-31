@@ -40,23 +40,47 @@ class Machine {
       switch (instruction.token) {
 
         case SourceParser.tokens.INCLUDE:
-          this._if.peek() && this._executeInclude(instruction);
+
+          if (this._if.peek()) {
+            this._executeInclude(instruction);
+          }
+
           break;
 
         case SourceParser.tokens.SOURCE_LINE:
-          this._if.peek() && this._executeSourceLine(instruction);
+
+          if (this._if.peek()) {
+            this._executeSourceLine(instruction);
+          }
+
           break;
 
         case SourceParser.tokens.SET:
-          this._if.peek() && this._executeSet(instruction);
+
+          if (this._if.peek()) {
+            this._executeSet(instruction);
+          }
+
           break;
 
         case SourceParser.tokens.IF:
           this._executeIf(instruction);
           break;
 
+        case SourceParser.tokens.ELSEIF:
+          this._executeElseIf(instruction);
+          break;
+
+        case SourceParser.tokens.ELSE:
+          this._executeElse(instruction);
+          break;
+
+        case SourceParser.tokens.ENDIF:
+          this._executeEndIf(instruction);
+          break;
+
         default:
-          throw new Error('Unknown token "' + instruction.token + '"');
+          throw new Error('Unsupported token: "' + instruction.token + '"');
       }
 
       this._pointer++;
@@ -125,8 +149,41 @@ class Machine {
    * @private
    */
   _executeIf(instruction) {
-    const test = this.expression.evaluate('true == ' + instruction.condition);
+    const test = this.expression.evaluate(instruction.condition);
     this._if.push(test);
+  }
+
+  /**
+   * Execute "elseif" instruction
+   * @param {{}} instruction
+   * @private
+   */
+  _executeElseIf(instruction) {
+    if (this._if.peek()) {
+      // if if-clause test was true, then behave like else statement
+      this._if.flip();
+    } else if (this.expression.evaluate(instruction.condition)) {
+      // if if-clause was falsy, then flip to true if else-if test is truthful
+      this._if.flip();
+    }
+  }
+
+  /**
+   * Execute "else" instruction
+   * @param instruction
+   * @private
+   */
+  _executeElse(instruction) {
+    this._if.flip();
+  }
+
+  /**
+   * Execute "endif" instruction
+   * @param {{}} instruction
+   * @private
+   */
+  _executeEndIf(instruction) {
+    this._if.pop();
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
