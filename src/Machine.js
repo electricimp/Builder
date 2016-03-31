@@ -39,6 +39,10 @@ class Machine {
 
         case SourceParser.tokens.SOURCE_LINE:
           this._executeSourceLine(instruction);
+        case SourceParser.tokens.SET:
+          this._if.peek() && this._executeSet(instruction);
+          break;
+
           break;
 
         default:
@@ -93,6 +97,16 @@ class Machine {
   _executeSourceLine(instruction) {
     // noop for now
     // todo: replace @{expr} expressions
+  }
+
+  /**
+   * Execute "set" instruction
+   * @param {{}} instruction
+   * @private
+   */
+  _executeSet(instruction) {
+    const value = this.expression.evaluate(instruction.value);
+    this._variables[instruction.variable] = value;
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
