@@ -17,7 +17,8 @@ class Machine {
 
     // stack of "if" test results
     this._if = [true];
-    this._if.peek = () => !!this._if[this._if.length - 1]; // get topmost of the stack
+    this._if.prototype.peek = () => !!this._if[this._if.length - 1]; // get topmost element
+    this._if.prototype.flip = () => this._if[this._if.length - 1] ^= true; // flip the topmost element
   }
 
   excecute() {
