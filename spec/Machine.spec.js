@@ -45,6 +45,8 @@ describe('Machine', () => {
 
     machine.instructions = instructions;
     const res = machine.excecute();
+
+    expect(res).not.toMatch(/should not be included/);
   });
 
   it('should detect and fail on multi-else statements', () => {
