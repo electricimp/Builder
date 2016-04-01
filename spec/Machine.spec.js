@@ -16,20 +16,23 @@ const Log = require('log');
 
 describe('Machine', () => {
 
-  // create logger
-  // @see https://www.npmjs.com/package/log#log-levels
-  const logger = new Log(process.env.SPEC_LOGLEVEL);
+  let machine;
 
-  // build the machine
-  const machine = new Machine();
-  machine.localFileReader = new LocalFileReader();
-  machine.localFileReader.logger = logger;
-  machine.sourceParser = new SourceParser();
-  machine.expression = new Expression();
-  machine.logger = logger;
+  beforeEach(() => {
+    // create logger
+    // @see https://www.npmjs.com/package/log#log-levels
+    const logger = new Log(process.env.SPEC_LOGLEVEL);
 
-  it('should do alright #1', () => {
+    // build the machine
+    machine = new Machine();
+    machine.localFileReader = new LocalFileReader();
+    machine.localFileReader.logger = logger;
+    machine.sourceParser = new SourceParser();
+    machine.expression = new Expression();
+    machine.logger = logger;
+  });
 
+  it('should do alright with sample#1', () => {
     // prepare instructions
     const content = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
     machine.sourceParser.sourceName = 'input.nut';
@@ -42,8 +45,21 @@ describe('Machine', () => {
 
     machine.instructions = instructions;
     const res = machine.excecute();
-
     console.log(res);
+  });
+
+  it('should detect and fail on multi-else statements', () => {
+    // prepare instructions
+    const content = fs.readFileSync(__dirname + '/fixtures/sample-2/multi-else.nut', 'utf-8');
+    machine.sourceParser.sourceName = 'multi-else.nut';
+    expect(() => machine.sourceParser.parse(content)).toThrowAnyError();
+  });
+
+  it('should detect and fail on unbalanced if statements', () => {
+    // prepare instructions
+    const content = fs.readFileSync(__dirname + '/fixtures/sample-2/unclosed-if.nut', 'utf-8');
+    machine.sourceParser.sourceName = 'unclosed-if.nut';
+    expect(() => machine.sourceParser.parse(content)).toThrowAnyError();
   });
 
 });

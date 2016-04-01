@@ -17,6 +17,9 @@ const tokens = {
   SOURCE_LINE: 'source_line'
 };
 
+// regex to detect if a like is a statement
+const STATEMENT_REGEX = /^@(include|set|if|else|elseif|endif|error)\b(.*)$/;
+
 class SourceParser {
 
   /**
@@ -33,6 +36,9 @@ class SourceParser {
       res.push(this._parseLine(line, l + 1));
     }
 
+    // validate parsed file for correctness
+    this._validate(res);
+
     return res;
   }
 
@@ -48,10 +54,10 @@ class SourceParser {
 
     const r = {
       _line: lineNumber, // line #
-      _source: this.sourceName // source name
+      _file: this.sourceName // source name
     };
 
-    if (m = line.trim().match(/^@(include|set|if|else|elseif|endif|error)\b(.*)$/)) {
+    if (m = line.trim().match(STATEMENT_REGEX)) {
 
       const keyword = m[1];
       const value = m[2].trim();
@@ -133,6 +139,49 @@ class SourceParser {
     }
 
     return r;
+  }
+
+  /**
+   * Validate parsed file
+   * @private
+   */
+  _validate(instructions) {
+
+    const ifs = [];
+    ifs.peek = () => ifs[ifs.length - 1];
+
+    for (const i of instructions) {
+      switch (i.token) {
+
+        case tokens.IF:
+          ifs.push({'else': false});
+          break;
+
+        case tokens.ELSE:
+
+          if (ifs.peek().else) {
+            throw new Error(`Multiple @else statements are not allowed in ${i._file}:${i._line}`);
+          }
+
+          ifs.peek().else = true;
+          break;
+
+        case tokens.ENDIF:
+          if (0 === ifs.length) {
+            throw new Error(`Unexpected @endif statement in ${i._file}:${i._line}`);
+          }
+
+          ifs.pop();
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    if (0 !== ifs.length) {
+      throw new Error(`Unbalanced @if clause in ${this.sourceName}`);
+    }
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
