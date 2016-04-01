@@ -12,13 +12,21 @@ const Machine = require('../src/Machine');
 const SourceParser = require('../src/SourceParser');
 const LocalFileReader = require('../src/LocalFileReader');
 const Expression = require('../src/Expression');
+const Log = require('log');
 
 describe('Machine', () => {
 
+  // create logger
+  // @see https://www.npmjs.com/package/log#log-levels
+  const logger = new Log(process.env.SPEC_LOGLEVEL || 'debug');
+
+  // build the machine
   const machine = new Machine();
   machine.localFileReader = new LocalFileReader();
+  machine.localFileReader.logger = logger;
   machine.sourceParser = new SourceParser();
   machine.expression = new Expression();
+  machine.logger = logger;
 
   it('should do alright #1', () => {
 

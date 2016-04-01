@@ -1,5 +1,9 @@
 /**
  * Builder VM
+ *
+ * Events:
+ *  - log {level, message}
+ *
  * @author Mikhail Yurasov <me@yurasov.me>
  */
 
@@ -113,6 +117,7 @@ class Machine {
       // local file
 
       // read
+      this.logger.info(`Including local file "${sourcePath}"`);
       content = this.localFileReader.read(sourcePath);
 
       // parse
@@ -239,6 +244,25 @@ class Machine {
    */
   set expression(value) {
     this._expression = value;
+  }
+
+  /**
+   * @return {{debug(),info(),warning(),error()}}
+   */
+  get logger() {
+    return this._logger || {
+        debug: console.log,
+        info: console.info,
+        warning: console.warning,
+        error: console.error
+      };
+  }
+
+  /**
+   * @param {{debug(),info(),warning(),error()}} value
+   */
+  set logger(value) {
+    this._logger = value;
   }
 
   // </editor-fold>

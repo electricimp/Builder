@@ -18,7 +18,8 @@
   "homepage": "https://github.com/electricimp/imp-builder#readme",
   "dependencies": {
     "colors": "^1.1.2",
-    "jsep": "^0.3.0"
+    "jsep": "^0.3.0",
+    "log": "^1.4.0"
   },
   "devDependencies": {
     "jasmine": "^2.4.1",

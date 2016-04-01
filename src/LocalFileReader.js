@@ -6,14 +6,11 @@
 'use strict';
 
 const fs = require('fs');
-const c = require('colors');
 const path = require('path');
-const DebugMixin = require('../lib/DebugMixin');
 
 class LocalFileReader {
 
   constructor() {
-    DebugMixin.call(this);
     this.searchDirs = [
       path.resolve('.')
     ];
@@ -30,7 +27,7 @@ class LocalFileReader {
       const sourcePath = dir + '/' + path;
 
       if (fs.existsSync(sourcePath)) {
-        this._debug(c.blue('Reading local source file ') + sourcePath);
+        this.logger.debug(`Reading local file "${sourcePath}"`);
         return fs.readFileSync(sourcePath, 'utf-8');
       }
     }
@@ -46,6 +43,25 @@ class LocalFileReader {
 
   set searchDirs(value) {
     this._searchDirs = value;
+  }
+
+  /**
+   * @return {{debug(),info(),warning(),error()}}
+   */
+  get logger() {
+    return this._logger || {
+        debug: console.log,
+        info: console.info,
+        warning: console.warning,
+        error: console.error
+      };
+  }
+
+  /**
+   * @param {{debug(),info(),warning(),error()}} value
+   */
+  set logger(value) {
+    this._logger = value;
   }
 
   // </editor-fold>
