@@ -18,7 +18,7 @@ describe('Machine', () => {
 
   // create logger
   // @see https://www.npmjs.com/package/log#log-levels
-  const logger = new Log(process.env.SPEC_LOGLEVEL || 'debug');
+  const logger = new Log(process.env.SPEC_LOGLEVEL);
 
   // build the machine
   const machine = new Machine();

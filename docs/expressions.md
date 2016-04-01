@@ -48,7 +48,7 @@ For example:
 ### Member Expressions
 
 - `somevar.member`
-- `somevar["member"]
+- `somevar["member"]`
 - `([1, 2, 3])[1]`
 
 ### Conditional Expressions

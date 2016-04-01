@@ -7,7 +7,6 @@
 
 const Machine = require('./Machine');
 const SourceParser = require('./SourceParser');
-const DebugMixin = require('../lib/DebugMixin');
 
 // source reference types
 const sourceTypes = {
@@ -17,10 +16,6 @@ const sourceTypes = {
 };
 
 class Builder {
-
-  constructor() {
-    DebugMixin.call(this);
-  }
 
   /**
    * Build
