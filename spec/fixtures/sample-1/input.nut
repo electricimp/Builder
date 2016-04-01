@@ -4,7 +4,7 @@
 @set SOMEVAR2 256
 
 @if SOMEVAR1 == 123
-  // should not be included
+  // should be included
 @elseif SOMEVAR2 == 0
   // should not be included
 @elseif SOMEVAR2 == 256

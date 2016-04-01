@@ -45,7 +45,6 @@ describe('Machine', () => {
 
     machine.instructions = instructions;
     const res = machine.excecute();
-    console.log(res);
   });
 
   it('should detect and fail on multi-else statements', () => {

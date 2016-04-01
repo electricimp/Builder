@@ -29,6 +29,9 @@ class Machine {
    * Excute set of instructions
    */
   excecute() {
+    // clear outpout buffer
+    this._output = [];
+
     let instruction;
 
     while (this._pointer < this._instructions.length) {
@@ -92,6 +95,8 @@ class Machine {
 
       this._pointer++;
     }
+
+    return this._output.join('\n');
   }
 
   /**
@@ -139,6 +144,7 @@ class Machine {
   _executeSourceLine(instruction) {
     // noop for now
     // todo: replace @{expr} expressions
+    this._output.push(instruction.line);
   }
 
   /**
