@@ -17,10 +17,13 @@ class Machine {
 
     // stack of "if" test results
     this._if = [true];
-    this._if.prototype.peek = () => !!this._if[this._if.length - 1]; // get topmost element
-    this._if.prototype.flip = () => this._if[this._if.length - 1] ^= true; // flip the topmost element
+    this._if.__proto__.peek = () => !!this._if[this._if.length - 1]; // get topmost element
+    this._if.__proto__.flip = () => this._if[this._if.length - 1] ^= true; // flip the topmost element
   }
 
+  /**
+   * Excute set of instructions
+   */
   excecute() {
     let instruction;
 
