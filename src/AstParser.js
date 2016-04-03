@@ -26,7 +26,7 @@ const TOKENS = {
   ELSEIF: 'elseif',
   INCLUDE: 'include',
   SOURCE_FRAGMENT: 'source_fragment',
-  SOURCE_EXPRESSION: 'source_expression'
+  INLINE_EXPRESSION: 'inline_expression'
 };
 
 // lines gobbling regex
