@@ -9,11 +9,24 @@ const INSTRUCTIONS = {
   SOURCE_FRAGMENT: 'source_fragment'
 };
 
+// states
 const STATES = {
   OK: 'ok',
   IF_ELSEIF: 'if_elseif',
   IF_ALTERNATE: 'if_alternate',
   IF_CONSEQUENT: 'if_consequent'
+};
+
+// token types
+const TOKENS = {
+  IF: 'if',
+  SET: 'set',
+  ELSE: 'else',
+  ENDIF: 'endif',
+  ELSEIF: 'elseif',
+  INCLUDE: 'include',
+  SOURCE_FRAGMENT: 'source_fragment',
+  SOURCE_EXPRESSION: 'source_expression'
 };
 
 // regex to detect if a like is a statement
@@ -34,13 +47,63 @@ class AstParser {
   }
 
   _tokenize(source) {
-    const tokens = source.split(/\n|\r\n/);
+    let matches, type;
 
-    for (const l in tokens) {
-      tokens[l] = {
-        line: 1 + l,
-        text: tokens[l]
-      };
+    const lines = source.split(/\n|\r\n/);
+    const tokens = [];
+
+    for (const i in lines) {
+
+      const text = lines[i];
+      const token = {line: 1 + i, text: text};
+
+      if (matches = text.trim().match(STATEMENT)) {
+
+        type = matches[1];
+        token.args = [matches[2].trim()];
+
+        switch (type) {
+
+          case 'include':
+            token.type = TOKENS.INCLUDE;
+            break;
+
+          case 'set':
+            token.type = TOKENS.SET;
+            break;
+
+          case 'if':
+            token.type = TOKENS.IF;
+            break;
+
+          case 'else':
+            token.type = TOKENS.ELSE;
+            break;
+
+          case 'elseif':
+            token.type = TOKENS.ELSEIF;
+            break;
+
+          case 'endif':
+            token.type = TOKENS.ENDIF;
+            break;
+
+          case 'error':
+            token.type = TOKENS.ERROR;
+            break;
+
+          default:
+            throw new Error(`Unsupported keyword "${type}" (${this.file}:${token.line})`);
+        }
+
+      } else {
+
+        token.type = TOKENS.SOURCE_FRAGMENT;
+        token.args = text;
+
+      }
+
+      tokens.push(token);
     }
 
     return tokens;
@@ -56,40 +119,32 @@ class AstParser {
    */
   _parse(parent, state) {
 
-    let token, text, keyword, argument, matches;
+    let token, matches;
 
     while (this._pointer < this._tokens.length) {
 
       token = this._tokens[this._pointer];
-      text = token.text;
-
-      if (matches = text.trim().match(STATEMENT)) {
-        keyword = matches[1];
-        argument = matches[2].trim();
-      } else {
-        keyword = null;
-      }
 
       const node = {
         line: token.line,
         file: this.file
       };
 
-      switch (keyword) {
+      switch (token.type) {
 
         // @include <path:expression>
-        case 'include':
+        case TOKENS.INCLUDE:
 
           node.type = INSTRUCTIONS.INCLUDE;
-          node.value = argument;
+          node.value = token.args[0];
           this._append(parent, node, state);
 
           break;
 
         // @set <variable:varname> <value:expression>
-        case 'set':
+        case TOKENS.SET:
 
-          if (matches = argument.match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
+          if (matches = token.args[0].match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
             node.type = INSTRUCTIONS.SET;
             node.variable = matches[1];
             node.value = matches[2];
@@ -102,19 +157,19 @@ class AstParser {
           break;
 
         // @error <message:expression>
-        case 'error':
+        case TOKENS.ERROR:
 
           node.type = INSTRUCTIONS.ERROR;
-          node.value = argument;
+          node.value = token.args[0];
           this._append(parent, node, state);
 
           break;
 
         // @if <condition:expression>
-        case 'if':
+        case TOKENS.IF:
 
           node.type = INSTRUCTIONS.IF;
-          node.test = argument;
+          node.test = token.args[0];
           node.consequent = [];
 
           this._pointer++;
@@ -123,7 +178,7 @@ class AstParser {
 
           break;
 
-        case 'else':
+        case TOKENS.ELSE:
 
           switch (state) {
 
@@ -145,7 +200,7 @@ class AstParser {
 
           break;
 
-        case 'elseif':
+        case TOKENS.ELSEIF:
 
           switch (state) {
 
@@ -154,7 +209,7 @@ class AstParser {
 
               // save as IF instruction
               node.type = INSTRUCTIONS.IF;
-              node.test = argument;
+              node.test = token.args[0];
               node.consequent = [];
 
               // add node to elseifs block
@@ -174,7 +229,7 @@ class AstParser {
 
           break;
 
-        case 'endif':
+        case TOKENS.ENDIF:
 
           switch (state) {
             case STATES.IF_CONSEQUENT:
@@ -189,17 +244,17 @@ class AstParser {
 
           break;
 
-        // source line
-        case null:
+        // source fragment
+        case TOKENS.SOURCE_FRAGMENT:
 
           node.type = INSTRUCTIONS.SOURCE_FRAGMENT;
-          node.value = this._tokens[this._pointer];
+          node.value = token.args.join('');
           this._append(parent, node, state);
 
           break;
 
         default:
-          throw new Error(`Unsupported keyword "${keyword}" (${node.file}:${node.line})`);
+          throw new Error(`Unsupported token type "${token.type}" (${node.file}:${node.line})`);
       }
 
       this._pointer++;
