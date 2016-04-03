@@ -29,7 +29,10 @@ const TOKENS = {
   SOURCE_EXPRESSION: 'source_expression'
 };
 
-// regex to detect if a like is a statement
+// lines gobbling regex
+const LINES = /(.*(?:\n|\r\n)?)/g;
+
+// regex to detect if fragment is a statement
 const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error)\b(.*)$/;
 
 class AstParser {
@@ -46,13 +49,20 @@ class AstParser {
     return this._parse([], STATES.OK);
   }
 
+  /**
+   * Tokenizes source
+   *
+   * @param {string} source
+   * @return {Array}
+   * @private
+   */
   _tokenize(source) {
     let matches, type;
 
-    const lines = source.split(/\n|\r\n/);
+    const lines = source.match(LINES);
     const tokens = [];
 
-    for (const i in lines) {
+    for (let i = 0; i < lines.length - 1 /* last line with the regex above is always empty */; i++) {
 
       const text = lines[i];
       const token = {line: 1 + i, text: text};
@@ -97,10 +107,9 @@ class AstParser {
         }
 
       } else {
-
+        // todo: detect inline expressions - @{}
         token.type = TOKENS.SOURCE_FRAGMENT;
-        token.args = text;
-
+        token.args = [text];
       }
 
       tokens.push(token);
