@@ -19,11 +19,13 @@ describe('AstParser', () => {
 
   it('should do something alright', () => {
     const r = p.parse(
-`// main
+`// main 1
 @if 1
 // then:1
+@else
+// else:1
 @endif
-// main`
+// main (last)`
     );
 
     console.error(JSON.stringify(r, null, '    '));
