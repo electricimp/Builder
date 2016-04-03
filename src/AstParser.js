@@ -65,7 +65,7 @@ class AstParser {
     for (let i = 0; i < lines.length - 1 /* last line with the regex above is always empty */; i++) {
 
       const text = lines[i];
-      const token = {line: 1 + i, text: text};
+      const token = {_line: 1 + i, text: text};
 
       if (matches = text.trim().match(STATEMENT)) {
 
@@ -135,8 +135,8 @@ class AstParser {
       token = this._tokens[this._pointer];
 
       const node = {
-        line: token.line,
-        file: this.file
+        _line: token._line,
+        _file: this.file
       };
 
       switch (token.type) {
@@ -196,7 +196,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               if (parent.alternate) {
-                throw new Error(`Multiple @else statements are not allowed (${node.file}:${node.line})`);
+                throw new Error(`Multiple @else statements are not allowed (${node._file}:${node._line})`);
               }
 
               parent.alternate = [];
@@ -204,7 +204,7 @@ class AstParser {
               break;
 
             default:
-              throw new Error(`Unexpected @else (${node.file}:${node.line})`);
+              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
           }
 
           break;
@@ -230,10 +230,10 @@ class AstParser {
               break;
 
             case STATES.IF_ALTERNATE:
-              throw new Error(`@elseif after @else is not allowed (${node.file}:${node.line})`);
+              throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
 
             default:
-              throw new Error(`Unexpected @else (${node.file}:${node.line})`);
+              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
           }
 
           break;
@@ -248,7 +248,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif in (${node.file}:${node.line})`);
+              throw new Error(`Unexpected @endif in (${node._file}:${node._line})`);
           }
 
           break;
@@ -264,7 +264,7 @@ class AstParser {
           break;
 
         default:
-          throw new Error(`Unsupported token type "${token.type}" (${node.file}:${node.line})`);
+          throw new Error(`Unsupported token type "${token.type}" (${node._file}:${node._line})`);
       }
 
       this._pointer++;
@@ -278,7 +278,7 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Error(`Unclosed @if statement (${this.file}:${this._tokens[this._tokens.length - 1].line})`);
+        throw new Error(`Unclosed @if statement (${this.file}:${this._tokens[this._tokens.length - 1]._line})`);
 
       default:
         throw new Error(`Syntax error (${parent.file})`);
