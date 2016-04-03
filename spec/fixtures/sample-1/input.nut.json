@@ -155,11 +155,5 @@
         "value": "  // should be included\n"
       }
     ]
-  },
-  {
-    "line": 28,
-    "file": "input.nut",
-    "type": "source_fragment",
-    "value": "\n"
   }
 ]
