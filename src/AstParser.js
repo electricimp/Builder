@@ -6,7 +6,7 @@ const INSTRUCTIONS = {
   SET: 'set',
   ERROR: 'error',
   INCLUDE: 'include',
-  SOURCE_LINE: 'source_line'
+  SOURCE_FRAGMENT: 'source_fragment'
 };
 
 const STATES = {
@@ -29,8 +29,21 @@ class AstParser {
    */
   parse(source) {
     this._pointer = 0; // line pointer
-    this._lines = source.split(/\n|\r\n/);
+    this._tokens = this._tokenize(source);
     return this._parse([], STATES.OK);
+  }
+
+  _tokenize(source) {
+    const tokens = source.split(/\n|\r\n/);
+
+    for (const l in tokens) {
+      tokens[l] = {
+        line: 1 + l,
+        text: tokens[l]
+      };
+    }
+
+    return tokens;
   }
 
   /**
@@ -43,25 +56,26 @@ class AstParser {
    */
   _parse(parent, state) {
 
-    let line, matches, token, argument;
+    let token, text, keyword, argument, matches;
 
-    while (this._pointer < this._lines.length) {
+    while (this._pointer < this._tokens.length) {
 
-      line = this._lines[this._pointer];
+      token = this._tokens[this._pointer];
+      text = token.text;
 
-      if (matches = line.trim().match(STATEMENT)) {
-        token = matches[1];
+      if (matches = text.trim().match(STATEMENT)) {
+        keyword = matches[1];
         argument = matches[2].trim();
       } else {
-        token = null;
+        keyword = null;
       }
 
       const node = {
-        line: 1 + this._pointer,
+        line: token.line,
         file: this.file
       };
 
-      switch (token) {
+      switch (keyword) {
 
         // @include <path:expression>
         case 'include':
@@ -178,14 +192,14 @@ class AstParser {
         // source line
         case null:
 
-          node.type = INSTRUCTIONS.SOURCE_LINE;
-          node.value = this._lines[this._pointer];
+          node.type = INSTRUCTIONS.SOURCE_FRAGMENT;
+          node.value = this._tokens[this._pointer];
           this._append(parent, node, state);
 
           break;
 
         default:
-          throw new Error(`Unsupported keyword "${token}" (${node.file}:${node.line})`);
+          throw new Error(`Unsupported keyword "${keyword}" (${node.file}:${node.line})`);
       }
 
       this._pointer++;
@@ -199,7 +213,7 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Error(`Unclosed @if statement (${this.file}:${this._lines.length})`);
+        throw new Error(`Unclosed @if statement (${this.file}:${this._tokens[this._tokens.length - 1].line})`);
 
       default:
         throw new Error(`Syntax error (${parent.file})`);
