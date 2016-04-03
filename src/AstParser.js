@@ -191,6 +191,20 @@ class AstParser {
       this._pointer++;
     }
 
+    // check final state
+    switch (state) {
+      case STATES.OK:
+        break;
+
+      case STATES.IF_ALTERNATE:
+      case STATES.IF_CONSEQUENT:
+      case STATES.IF_ELSEIF:
+        throw new Error(`Unclosed @if statement (${this.file}:${this._lines.length})`);
+
+      default:
+        throw new Error(`Syntax error (${parent.file})`);
+    }
+
     return parent;
   }
 
@@ -219,9 +233,6 @@ class AstParser {
       case STATES.IF_ELSEIF:
         parent.elseifs[parent.elseifs.length - 1].consequent.push(node);
         break;
-
-      default:
-        throw new Error(`Unknown state "${state}"`);
     }
   }
 
