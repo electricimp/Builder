@@ -21,20 +21,31 @@ const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error)\b(.*)$/;
 
 class AstParser {
 
+  /**
+   * Parse source into AST
+   *
+   * @param {string} source
+   * @return [] Root-level base block
+   */
   parse(source) {
     this._pointer = 0; // line pointer
     this._lines = source.split(/\n|\r\n/);
     return this._parse([], STATES.OK);
   }
 
+  /**
+   * Parse source into AST
+   *
+   * @param {*} parent
+   * @param {string} state
+   * @return {*}
+   * @private
+   */
   _parse(parent, state) {
 
-    let line, matches, keyword, argument, skip;
+    let line, matches, keyword, argument;
 
     while (this._pointer < this._lines.length) {
-
-      // do not append current instruction to base block
-      skip = false;
 
       line = this._lines[this._pointer];
 
@@ -57,6 +68,7 @@ class AstParser {
 
           node.type = INSTRUCTIONS.INCLUDE;
           node.value = argument;
+          this._append(parent, node, state);
 
           break;
 
@@ -71,6 +83,8 @@ class AstParser {
             throw new Error(`Syntax error in @set (${this.file}:${this._pointer})`);
           }
 
+          this._append(parent, node, state);
+
           break;
 
         // @error <message:expression>
@@ -78,6 +92,7 @@ class AstParser {
 
           node.type = INSTRUCTIONS.ERROR;
           node.value = argument;
+          this._append(parent, node, state);
 
           break;
 
@@ -90,6 +105,7 @@ class AstParser {
 
           this._pointer++;
           this._parse(node, STATES.IF_CONSEQUENT);
+          this._append(parent, node, state);
 
           break;
 
@@ -105,7 +121,6 @@ class AstParser {
                 throw new Error(`Multiple @else statements are not allowed (${node.file}:${node.line})`);
               }
 
-              skip = true;
               parent.alternate = [];
               state = STATES.IF_ALTERNATE;
               break;
@@ -133,7 +148,6 @@ class AstParser {
               parent.elseifs.push(node);
 
               state = STATES.IF_ELSEIF;
-              skip = true;
 
               break;
 
@@ -152,6 +166,7 @@ class AstParser {
             case STATES.IF_CONSEQUENT:
             case STATES.IF_ALTERNATE:
             case STATES.IF_ELSEIF:
+              // we got here through recursion, get back
               return;
 
             default:
@@ -162,45 +177,52 @@ class AstParser {
 
         // source line
         case null:
+
           node.type = INSTRUCTIONS.SOURCE_LINE;
           node.value = this._lines[this._pointer];
+          this._append(parent, node, state);
+
           break;
 
         default:
           throw new Error(`Unsupported keyword "${keyword}" (${node.file}:${node.line})`);
       }
 
-      // append node
-
-      if (!skip) {
-
-        switch (state) {
-          case STATES.OK:
-            parent.push(node);
-            break;
-
-          case STATES.IF_CONSEQUENT:
-            parent.consequent.push(node);
-            break;
-
-          case STATES.IF_ALTERNATE:
-            parent.alternate.push(node);
-            break;
-
-          case STATES.IF_ELSEIF:
-            parent.elseifs[parent.elseifs.length - 1].consequent.push(node);
-            break;
-
-          default:
-            throw new Error(`Unknown state "${state}"`);
-        }
-
-      }
-
       this._pointer++;
     }
 
     return parent;
+  }
+
+  /**
+   * Append node to appropriate base block
+   *
+   * @param {*} parent
+   * @param {{}} node
+   * @param {string} state
+   * @private
+   */
+  _append(parent, node, state) {
+    switch (state) {
+      case STATES.OK:
+        parent.push(node);
+        break;
+
+      case STATES.IF_CONSEQUENT:
+        parent.consequent.push(node);
+        break;
+
+      case STATES.IF_ALTERNATE:
+        parent.alternate.push(node);
+        break;
+
+      case STATES.IF_ELSEIF:
+        parent.elseifs[parent.elseifs.length - 1].consequent.push(node);
+        break;
+
+      default:
+        throw new Error(`Unknown state "${state}"`);
+    }
   }
 
   get file() {
