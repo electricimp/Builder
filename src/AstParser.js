@@ -2,11 +2,11 @@
 
 // instruction types
 const INSTRUCTIONS = {
-  IF: 'if',
   SET: 'set',
   ERROR: 'error',
+  OUTPUT: 'output',
   INCLUDE: 'include',
-  SOURCE_FRAGMENT: 'source_fragment'
+  CONDITIONAL: 'conditional'
 };
 
 // states
@@ -177,13 +177,13 @@ class AstParser {
         // @if <condition:expression>
         case TOKENS.IF:
 
-          node.type = INSTRUCTIONS.IF;
+          node.type = INSTRUCTIONS.CONDITIONAL;
           node.test = token.args[0];
           node.consequent = [];
+          this._append(parent, node, state);
 
           this._pointer++;
           this._parse(node, STATES.IF_CONSEQUENT);
-          this._append(parent, node, state);
 
           break;
 
@@ -217,7 +217,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               // save as IF instruction
-              node.type = INSTRUCTIONS.IF;
+              node.type = INSTRUCTIONS.CONDITIONAL;
               node.test = token.args[0];
               node.consequent = [];
 
@@ -256,7 +256,7 @@ class AstParser {
         // source fragment
         case TOKENS.SOURCE_FRAGMENT:
 
-          node.type = INSTRUCTIONS.SOURCE_FRAGMENT;
+          node.type = INSTRUCTIONS.OUTPUT;
           node.value = token.args.join('');
           this._append(parent, node, state);
 

@@ -8,7 +8,7 @@
   {
     "line": 2,
     "file": "input.nut",
-    "type": "source_fragment",
+    "type": "output",
     "value": "\n"
   },
   {
@@ -28,31 +28,31 @@
   {
     "line": 5,
     "file": "input.nut",
-    "type": "source_fragment",
+    "type": "output",
     "value": "\n"
   },
   {
     "line": 6,
     "file": "input.nut",
-    "type": "if",
+    "type": "conditional",
     "test": "SOMEVAR1 == 123",
     "consequent": [
       {
         "line": 7,
         "file": "input.nut",
-        "type": "source_fragment",
+        "type": "output",
         "value": "  // should be included\n"
       },
       {
         "line": 8,
         "file": "input.nut",
-        "type": "source_fragment",
+        "type": "output",
         "value": "\n"
       },
       {
         "line": 9,
         "file": "input.nut",
-        "type": "if",
+        "type": "conditional",
         "test": "level2",
         "consequent": [
           {
@@ -65,7 +65,7 @@
           {
             "line": 11,
             "file": "input.nut",
-            "type": "source_fragment",
+            "type": "output",
             "value": "    // alternate syntax for @set\n"
           },
           {
@@ -87,7 +87,7 @@
           {
             "line": 15,
             "file": "input.nut",
-            "type": "source_fragment",
+            "type": "output",
             "value": "    // l2 else\n"
           }
         ]
@@ -95,7 +95,7 @@
       {
         "line": 17,
         "file": "input.nut",
-        "type": "source_fragment",
+        "type": "output",
         "value": "\n"
       }
     ],
@@ -103,13 +103,13 @@
       {
         "line": 18,
         "file": "input.nut",
-        "type": "if",
+        "type": "conditional",
         "test": "SOMEVAR2 == 0",
         "consequent": [
           {
             "line": 19,
             "file": "input.nut",
-            "type": "source_fragment",
+            "type": "output",
             "value": "  // should not be included\n"
           }
         ]
@@ -117,19 +117,19 @@
       {
         "line": 20,
         "file": "input.nut",
-        "type": "if",
+        "type": "conditional",
         "test": "SOMEVAR2 == 256",
         "consequent": [
           {
             "line": 21,
             "file": "input.nut",
-            "type": "source_fragment",
+            "type": "output",
             "value": "  // should be included\n"
           },
           {
             "line": 22,
             "file": "input.nut",
-            "type": "source_fragment",
+            "type": "output",
             "value": "  // should be included\n"
           }
         ]
@@ -139,19 +139,19 @@
   {
     "line": 24,
     "file": "input.nut",
-    "type": "source_fragment",
+    "type": "output",
     "value": "\n"
   },
   {
     "line": 25,
     "file": "input.nut",
-    "type": "if",
+    "type": "conditional",
     "test": "SOMEVAR2",
     "consequent": [
       {
         "line": 26,
         "file": "input.nut",
-        "type": "source_fragment",
+        "type": "output",
         "value": "  // should be included\n"
       }
     ]
