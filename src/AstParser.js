@@ -43,17 +43,17 @@ class AstParser {
    */
   _parse(parent, state) {
 
-    let line, matches, keyword, argument;
+    let line, matches, token, argument;
 
     while (this._pointer < this._lines.length) {
 
       line = this._lines[this._pointer];
 
       if (matches = line.trim().match(STATEMENT)) {
-        keyword = matches[1];
+        token = matches[1];
         argument = matches[2].trim();
       } else {
-        keyword = null;
+        token = null;
       }
 
       const node = {
@@ -61,7 +61,7 @@ class AstParser {
         file: this.file
       };
 
-      switch (keyword) {
+      switch (token) {
 
         // @include <path:expression>
         case 'include':
@@ -185,7 +185,7 @@ class AstParser {
           break;
 
         default:
-          throw new Error(`Unsupported keyword "${keyword}" (${node.file}:${node.line})`);
+          throw new Error(`Unsupported keyword "${token}" (${node.file}:${node.line})`);
       }
 
       this._pointer++;
@@ -246,4 +246,4 @@ class AstParser {
 }
 
 module.exports = AstParser;
-module.exports.TOKENS = INSTRUCTIONS;
+module.exports.INSTRUCTIONS = INSTRUCTIONS;
