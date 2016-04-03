@@ -258,6 +258,7 @@ class AstParser {
 
           node.type = INSTRUCTIONS.OUTPUT;
           node.value = token.args.join('');
+          node.computed = true;
           this._append(parent, node, state);
 
           break;

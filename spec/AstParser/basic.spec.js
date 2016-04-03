@@ -29,7 +29,7 @@ describe('AstParser', () => {
     );
 
   //noinspection Eslint
-    expect(r).toEqual([{'line':1,'file':'main','type':'output','value':'// main 1\n'},{'line':2,'file':'main','type':'conditional','test':'1','consequent':[{'line':3,'file':'main','type':'output','value':'// then:1\n'}],'alternate':[{'line':5,'file':'main','type':'output','value':'// else:1\n'}]},{'line':7,'file':'main','type':'output','value':'// main (last)'}]);
+    expect(r).toEqual([{'line':1,'file':'main','type':'output','computed':true,'value':'// main 1\n'},{'line':2,'file':'main','type':'conditional','test':'1','consequent':[{'line':3,'file':'main','type':'output','computed':true,'value':'// then:1\n'}],'alternate':[{'line':5,'file':'main','type':'output','computed':true,'value':'// else:1\n'}]},{'line':7,'file':'main','type':'output','computed':true,'value':'// main (last)'}]);
 
     // console.error(JSON.stringify(r).replace(/\"/g, '\''));
     // console.error(JSON.stringify(r, null, '  '));
@@ -58,7 +58,7 @@ describe('AstParser', () => {
     // console.error(JSON.stringify(r, null, '  '));
 
     //noinspection Eslint
-    expect(r).toEqual([{'line':1,'file':'main','type':'output','value':'// main 1\n'},{'line':2,'file':'main','type':'conditional','test':'1','consequent':[{'line':3,'file':'main','type':'output','value':'  // then:1\n'}],'elseifs':[{'line':4,'file':'main','type':'conditional','test':'1','consequent':[{'line':5,'file':'main','type':'output','value':'  // elseif 1:1\n'},{'line':6,'file':'main','type':'output','value':'  // elseif 1:2\n'},{'line':7,'file':'main','type':'output','value':'  // elseif 1:3\n'}]},{'line':8,'file':'main','type':'conditional','test':'2','consequent':[{'line':9,'file':'main','type':'output','value':'  // elseif 2:1\n'},{'line':10,'file':'main','type':'output','value':'  // elseif 2:2\n'}]}],'alternate':[{'line':12,'file':'main','type':'output','value':'  // else:1\n'}]},{'line':14,'file':'main','type':'output','value':'// main (last)'}]);
+    expect(r).toEqual([{'line':1,'file':'main','type':'output','computed':true,'value':'// main 1\n'},{'line':2,'file':'main','type':'conditional','test':'1','consequent':[{'line':3,'file':'main','type':'output','computed':true,'value':'  // then:1\n'}],'elseifs':[{'line':4,'file':'main','type':'conditional','test':'1','consequent':[{'line':5,'file':'main','type':'output','computed':true,'value':'  // elseif 1:1\n'},{'line':6,'file':'main','type':'output','computed':true,'value':'  // elseif 1:2\n'},{'line':7,'file':'main','type':'output','computed':true,'value':'  // elseif 1:3\n'}]},{'line':8,'file':'main','type':'conditional','test':'2','consequent':[{'line':9,'file':'main','type':'output','computed':true,'value':'  // elseif 2:1\n'},{'line':10,'file':'main','type':'output','computed':true,'value':'  // elseif 2:2\n'}]}],'alternate':[{'line':12,'file':'main','type':'output','computed':true,'value':'  // else:1\n'}]},{'line':14,'file':'main','type':'output','computed':true,'value':'// main (last)'}]);
 
   });
 });
