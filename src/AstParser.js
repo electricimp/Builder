@@ -6,18 +6,14 @@ const INSTRUCTIONS = {
   SET: 'set',
   ERROR: 'error',
   INCLUDE: 'include',
-  BASE_BLOCK: 'base_block',
   SOURCE_LINE: 'source_line'
 };
 
 const STATES = {
   OK: 'ok',
   IF_ELSEIF: 'if_elseif',
-  IF_ELSEIF_BODY: 'if_elseif_body',
   IF_ALTERNATE: 'if_alternate',
-  IF_ALTERNATE_BODY: 'if_alternate_body',
-  IF_CONSEQUENT: 'if_consequent',
-  IF_CONSEQUENT_BODY: 'if_consequent_body',
+  IF_CONSEQUENT: 'if_consequent'
 };
 
 // regex to detect if a like is a statement
@@ -28,9 +24,7 @@ class AstParser {
   parse(source) {
     this._pointer = 0; // line pointer
     this._lines = source.split(/\n|\r\n/);
-    this._root = {type: 'base_block', body: []}; // root base block
-    this._parse(this._root, STATES.OK);
-    return this._root;
+    return this._parse([], STATES.OK);
   }
 
   _parse(parent, state) {
@@ -52,8 +46,8 @@ class AstParser {
       }
 
       const node = {
-        _line: 1 + this._pointer,
-        _file: this.file
+        line: 1 + this._pointer,
+        file: this.file
       };
 
       switch (keyword) {
@@ -104,21 +98,47 @@ class AstParser {
           switch (state) {
 
             case STATES.IF_CONSEQUENT:
+            case STATES.IF_ALTERNATE:
+            case STATES.IF_ELSEIF:
+
+              if (parent.alternate) {
+                throw new Error(`Multiple @else statements are not allowed (${node._file}:${node._line})`);
+              }
+
               skip = true;
               parent.alternate = [];
               state = STATES.IF_ALTERNATE;
               break;
 
-            case STATES.IF_ALTERNATE:
-              throw new Error(`Multiple @else statements (${node._file}:${node._line})`);
+            default:
+              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
+          }
 
+          break;
+
+        case 'elseif':
+
+          switch (state) {
+
+            case STATES.IF_CONSEQUENT:
             case STATES.IF_ELSEIF:
 
-              if (parent.alternate) {
-                throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
-              }
+              // save as IF instruction
+              node.type = INSTRUCTIONS.IF;
+              node.test = argument;
+              node.consequent = [];
+
+              // add node to elseifs block
+              if (!parent.elseifs) parent.elseifs = [];
+              parent.elseifs.push(node);
+
+              state = STATES.IF_ELSEIF;
+              skip = true;
 
               break;
+
+            case STATES.IF_ALTERNATE:
+              throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
 
             default:
               throw new Error(`Unexpected @else (${node._file}:${node._line})`);
@@ -156,7 +176,7 @@ class AstParser {
 
         switch (state) {
           case STATES.OK:
-            parent.body.push(node);
+            parent.push(node);
             break;
 
           case STATES.IF_CONSEQUENT:
@@ -168,7 +188,7 @@ class AstParser {
             break;
 
           case STATES.IF_ELSEIF:
-            parent.elseifs[parent.elseifs.length - 1].body.push(node);
+            parent.elseifs[parent.elseifs.length - 1].consequent.push(node);
             break;
 
           default:
@@ -179,6 +199,8 @@ class AstParser {
 
       this._pointer++;
     }
+
+    return parent;
   }
 
   get file() {
