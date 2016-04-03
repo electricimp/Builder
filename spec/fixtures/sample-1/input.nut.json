@@ -8,8 +8,8 @@
   {
     "line": 2,
     "file": "input.nut",
-    "type": "source_line",
-    "value": ""
+    "type": "source_fragment",
+    "value": "\n"
   },
   {
     "line": 3,
@@ -28,8 +28,8 @@
   {
     "line": 5,
     "file": "input.nut",
-    "type": "source_line",
-    "value": ""
+    "type": "source_fragment",
+    "value": "\n"
   },
   {
     "line": 6,
@@ -40,14 +40,14 @@
       {
         "line": 7,
         "file": "input.nut",
-        "type": "source_line",
-        "value": "  // should be included"
+        "type": "source_fragment",
+        "value": "  // should be included\n"
       },
       {
         "line": 8,
         "file": "input.nut",
-        "type": "source_line",
-        "value": ""
+        "type": "source_fragment",
+        "value": "\n"
       },
       {
         "line": 9,
@@ -65,8 +65,8 @@
           {
             "line": 11,
             "file": "input.nut",
-            "type": "source_line",
-            "value": "    // alternate syntax for @set"
+            "type": "source_fragment",
+            "value": "    // alternate syntax for @set\n"
           },
           {
             "line": 12,
@@ -87,16 +87,16 @@
           {
             "line": 15,
             "file": "input.nut",
-            "type": "source_line",
-            "value": "    // l2 else"
+            "type": "source_fragment",
+            "value": "    // l2 else\n"
           }
         ]
       },
       {
         "line": 17,
         "file": "input.nut",
-        "type": "source_line",
-        "value": ""
+        "type": "source_fragment",
+        "value": "\n"
       }
     ],
     "elseifs": [
@@ -109,8 +109,8 @@
           {
             "line": 19,
             "file": "input.nut",
-            "type": "source_line",
-            "value": "  // should not be included"
+            "type": "source_fragment",
+            "value": "  // should not be included\n"
           }
         ]
       },
@@ -123,14 +123,14 @@
           {
             "line": 21,
             "file": "input.nut",
-            "type": "source_line",
-            "value": "  // should be included"
+            "type": "source_fragment",
+            "value": "  // should be included\n"
           },
           {
             "line": 22,
             "file": "input.nut",
-            "type": "source_line",
-            "value": "  // should be included"
+            "type": "source_fragment",
+            "value": "  // should be included\n"
           }
         ]
       }
@@ -139,8 +139,8 @@
   {
     "line": 24,
     "file": "input.nut",
-    "type": "source_line",
-    "value": ""
+    "type": "source_fragment",
+    "value": "\n"
   },
   {
     "line": 25,
@@ -151,15 +151,15 @@
       {
         "line": 26,
         "file": "input.nut",
-        "type": "source_line",
-        "value": "  // should be included"
+        "type": "source_fragment",
+        "value": "  // should be included\n"
       }
     ]
   },
   {
     "line": 28,
     "file": "input.nut",
-    "type": "source_line",
-    "value": ""
+    "type": "source_fragment",
+    "value": "\n"
   }
 ]
