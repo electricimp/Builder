@@ -63,12 +63,12 @@ class AstParser {
         // @set <variable:varname> <value:expression>
         case 'set':
 
-          if (matches = argument.match(/^([_$A-Za-z][_A-Za-z0-9]*)\s+(.*)$/)) {
+          if (matches = argument.match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
             node.type = INSTRUCTIONS.SET;
             node.variable = matches[1];
             node.value = matches[2];
           } else {
-            throw new Error(`Syntax error in @set  at ${this.file}:${this._pointer}`);
+            throw new Error(`Syntax error in @set (${this.file}:${this._pointer})`);
           }
 
           break;
@@ -102,7 +102,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               if (parent.alternate) {
-                throw new Error(`Multiple @else statements are not allowed (${node._file}:${node._line})`);
+                throw new Error(`Multiple @else statements are not allowed (${node.file}:${node.line})`);
               }
 
               skip = true;
@@ -111,7 +111,7 @@ class AstParser {
               break;
 
             default:
-              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @else (${node.file}:${node.line})`);
           }
 
           break;
@@ -138,10 +138,10 @@ class AstParser {
               break;
 
             case STATES.IF_ALTERNATE:
-              throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
+              throw new Error(`@elseif after @else is not allowed (${node.file}:${node.line})`);
 
             default:
-              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @else (${node.file}:${node.line})`);
           }
 
           break;
@@ -155,7 +155,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif in (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @endif in (${node.file}:${node.line})`);
           }
 
           break;
@@ -167,7 +167,7 @@ class AstParser {
           break;
 
         default:
-          throw new Error(`Unsupported keyword "${keyword}" (${node._file}:${node._line})`);
+          throw new Error(`Unsupported keyword "${keyword}" (${node.file}:${node.line})`);
       }
 
       // append node

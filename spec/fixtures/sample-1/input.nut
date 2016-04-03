@@ -7,8 +7,12 @@
   // should be included
 
   @if level2
-    //
     @set abc def
+    // alternate syntax for @set
+    @set abc=def
+    @set abc= def
+  @else
+    // l2 else
   @endif
 
 @elseif SOMEVAR2 == 0
