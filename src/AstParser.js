@@ -64,10 +64,11 @@ class AstParser {
 
     for (let i = 0; i < lines.length - 1 /* last line with the regex above is always empty */; i++) {
 
-      const text = lines[i];
-      const token = {_line: 1 + i, text: text};
+      let text = lines[i];
 
       if (matches = text.trim().match(STATEMENT)) {
+
+        const token = {_line: 1 + i};
 
         type = matches[1];
         token.args = [matches[2].trim()];
@@ -106,13 +107,40 @@ class AstParser {
             throw new Error(`Unsupported keyword "${type}" (${this.file}:${token.line})`);
         }
 
+        tokens.push(token);
+
       } else {
-        // todo: detect inline expressions - @{}
-        token.type = TOKENS.SOURCE_FRAGMENT;
-        token.args = [text];
+
+        while (matches = /@{(.*?)}/.exec(text)) {
+
+          // push source fragment
+          if (matches.index > 0) {
+            tokens.push({
+              _line: 1 + i,
+              type: TOKENS.SOURCE_FRAGMENT,
+              args: [text.substr(0, matches.index)]
+            });
+          }
+
+          // push inline expression
+          tokens.push({
+            _line: 1 + i,
+            type: TOKENS.INLINE_EXPRESSION,
+            args: [matches[1]]
+          });
+
+          text = text.substr(matches.index + matches[0].length);
+        }
+
+        if (text !== '') {
+          tokens.push({
+            _line: 1 + i,
+            type: TOKENS.SOURCE_FRAGMENT,
+            args: [text]
+          });
+        }
       }
 
-      tokens.push(token);
     }
 
     return tokens;
