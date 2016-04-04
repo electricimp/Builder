@@ -111,6 +111,7 @@ class AstParser {
 
       } else {
 
+        // extract source fragments and inline expressions
         while (matches = /@{(.*?)}/.exec(text)) {
 
           // push source fragment
@@ -132,6 +133,7 @@ class AstParser {
           text = text.substr(matches.index + matches[0].length);
         }
 
+        // push last source fragment
         if (text !== '') {
           tokens.push({
             _line: 1 + i,
@@ -290,6 +292,17 @@ class AstParser {
           this._append(parent, node, state);
 
           break;
+
+        // inline expression
+        case TOKENS.INLINE_EXPRESSION:
+
+          node.type = INSTRUCTIONS.OUTPUT;
+          node.value = token.args[0];
+          node.computed = false;
+          this._append(parent, node, state);
+
+          break;
+
 
         default:
           throw new Error(`Unsupported token type "${token.type}" (${node._file}:${node._line})`);
