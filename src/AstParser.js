@@ -142,6 +142,7 @@ class AstParser {
             }
 
             token.type = TOKENS.ERROR;
+            token.args = [arg];
             break;
 
           default:
