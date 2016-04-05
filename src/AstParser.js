@@ -57,7 +57,7 @@ class AstParser {
    * @private
    */
   _tokenize(source) {
-    let matches, type;
+    let matches, type, arg;
 
     const lines = source.match(LINES);
     const tokens = [];
@@ -71,35 +71,75 @@ class AstParser {
         const token = {_line: 1 + i};
 
         type = matches[1];
-        token.args = [matches[2].trim()];
+        arg = matches[2].trim();
 
         switch (type) {
 
           case 'include':
+
+            if ('' === arg) {
+              throw new Error(`Syntax error in @include (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.INCLUDE;
+            token.args = [arg];
             break;
 
           case 'set':
+
+            if ('' === arg) {
+              throw new Error(`Syntax error in @set (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.SET;
+            // todo: split args
+            token.args = [arg];
             break;
 
           case 'if':
+
+            if ('' === arg) {
+              throw new Error(`Syntax error in @if (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.IF;
+            token.args = [arg];
             break;
 
           case 'else':
+
+            if ('' !== arg) {
+              throw new Error(`Syntax error in @else (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.ELSE;
             break;
 
           case 'elseif':
+
+            if ('' === arg) {
+              throw new Error(`Syntax error in @elseif (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.ELSEIF;
+            token.args = [arg];
             break;
 
           case 'endif':
+
+            if ('' !== arg) {
+              throw new Error(`Syntax error in @endif (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.ENDIF;
             break;
 
           case 'error':
+
+            if ('' === arg) {
+              throw new Error(`Syntax error in @error (${this.file}:${token._line})`);
+            }
+
             token.type = TOKENS.ERROR;
             break;
 
