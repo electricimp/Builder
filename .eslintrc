@@ -97,6 +97,7 @@
     "it": false,
     "expect": false,
     "jasmine": false,
-    "beforeEach": false
+    "beforeEach": false,
+    "fail": false
   }
 }
