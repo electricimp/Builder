@@ -150,38 +150,53 @@ class AstParser {
 
       } else {
 
-        // extract source fragments and inline expressions
-        while (matches = /@{(.*?)}/.exec(text)) {
+        // split source fragment into computed/uncomupted chunks
+        yield* this._tokenizeSourceFragment(text, 1 + i);
 
-          // push source fragment
-          if (matches.index > 0) {
-            yield {
-              _line: 1 + i,
-              type: TOKENS.SOURCE_FRAGMENT,
-              args: [text.substr(0, matches.index)]
-            };
-          }
-
-          // push inline expression
-          yield {
-            _line: 1 + i,
-            type: TOKENS.INLINE_EXPRESSION,
-            args: [matches[1]]
-          };
-
-          text = text.substr(matches.index + matches[0].length);
-        }
-
-        // push last source fragment
-        if (text !== '') {
-          yield {
-            _line: 1 + i,
-            type: TOKENS.SOURCE_FRAGMENT,
-            args: [text]
-          };
-        }
       }
 
+    }
+  }
+
+  /**
+   * Split source fragment into computed/uncomupted chunks
+   * @param {string} fragment
+   * @param {number} line #
+   * @private
+   */
+  * _tokenizeSourceFragment(fragment, line) {
+
+    let matches;
+
+    // extract source fragments and inline expressions
+    while (matches = /@{(.*?)}/.exec(fragment)) {
+
+      // push source fragment
+      if (matches.index > 0) {
+        yield {
+          _line: line,
+          type: TOKENS.SOURCE_FRAGMENT,
+          args: [fragment.substr(0, matches.index)]
+        };
+      }
+
+      // push inline expression
+      yield {
+        _line: line,
+        type: TOKENS.INLINE_EXPRESSION,
+        args: [matches[1]]
+      };
+
+      fragment = fragment.substr(matches.index + matches[0].length);
+    }
+
+    // push last source fragment
+    if (fragment !== '') {
+      yield {
+        _line: line,
+        type: TOKENS.SOURCE_FRAGMENT,
+        args: [fragment]
+      };
     }
   }
 
