@@ -62,7 +62,7 @@ class AstParser {
     const lines = source.match(LINES);
     const tokens = [];
 
-    for (let i = 0; i < lines.length - 1 /* last line with the regex above is always empty */; i++) {
+    for (let i = 0; i < lines.length - 1 /* last line is always empty */; i++) {
 
       let text = lines[i];
 
@@ -87,13 +87,14 @@ class AstParser {
 
           case 'set':
 
-            if ('' === arg) {
+            // split arg
+            if (matches = arg.match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
+              token.args = [matches[1], matches[2]];
+            } else {
               throw new Error(`Syntax error in @set (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.SET;
-            // todo: split args
-            token.args = [arg];
             break;
 
           case 'if':
@@ -198,7 +199,7 @@ class AstParser {
    */
   _parse(parent, state) {
 
-    let token, matches;
+    let token;
 
     while (this._pointer < this._tokens.length) {
 
@@ -223,14 +224,9 @@ class AstParser {
         // @set <variable:varname> <value:expression>
         case TOKENS.SET:
 
-          if (matches = token.args[0].match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
-            node.type = INSTRUCTIONS.SET;
-            node.variable = matches[1];
-            node.value = matches[2];
-          } else {
-            throw new Error(`Syntax error in @set (${this.file}:${this._pointer})`);
-          }
-
+          node.type = INSTRUCTIONS.SET;
+          node.variable = token.args[0];
+          node.value = token.args[1];
           this._append(parent, node, state);
 
           break;
