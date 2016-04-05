@@ -16,16 +16,27 @@ describe('AstParser', () => {
     parser = new AstParser();
   });
 
-  //noinspection Eslint
   it('should detect incorrect @if syntax', () => {
-    let res;
-
-    expect(() => res = parser.parse(
-      `@if
+    try {
+      parser.parse(
+`@if
 @endif`
-    )).toThrowAnyError();
-
-    console.error(JSON.stringify(res).replace(/\"/g, '\''));
-    console.error(JSON.stringify(res, null, '  '));
+      );
+    } catch (e) {
+      expect(e.message).toBe('Syntax error in @if (main:1)');
+    }
   });
+
+  it('should detect incorrect @elseif syntax', () => {
+    try {
+      parser.parse(
+`@if 1
+@elseif
+@endif`
+      );
+    } catch (e) {
+      expect(e.message).toBe('Syntax error in @elseif (main:2)');
+    }
+  });
+
 });
