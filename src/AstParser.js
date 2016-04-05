@@ -1,13 +1,7 @@
 'use strict';
 
 // instruction types
-const INSTRUCTIONS = {
-  SET: 'set',
-  ERROR: 'error',
-  OUTPUT: 'output',
-  INCLUDE: 'include',
-  CONDITIONAL: 'conditional'
-};
+const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 
 // states
 const STATES = {
