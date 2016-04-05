@@ -61,7 +61,7 @@ class AstParser {
 
     for (let i = 0; i < lines.length - 1 /* last line is always empty */; i++) {
 
-      let text = lines[i];
+      const text = lines[i];
 
       if (matches = text.trim().match(STATEMENT)) {
 
