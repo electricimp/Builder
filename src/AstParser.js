@@ -44,7 +44,7 @@ class AstParser {
    * @return [] Root-level base block
    */
   parse(source) {
-    this._pointer = 0; // line pointer
+    this._pointer = 0; // token pointer
     this._tokens = this._tokenize(source);
     return this._parse([], STATES.OK);
   }
@@ -300,7 +300,7 @@ class AstParser {
               throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
 
             default:
-              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @elseif (${node._file}:${node._line})`);
           }
 
           break;
@@ -315,7 +315,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif in (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @endif (${node._file}:${node._line})`);
           }
 
           break;
@@ -356,7 +356,7 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Error(`Unclosed @if statement (${this.file}:${this._tokens[this._tokens.length - 1]._line})`);
+        throw new Error(`Unclosed @if statement (${this.file}:${token._line})`);
 
       default:
         throw new Error(`Syntax error (${parent.file})`);

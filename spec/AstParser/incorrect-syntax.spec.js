@@ -9,11 +9,12 @@ require('jasmine-expect');
 
 const AstParser = require('../../src/AstParser');
 
-describe('AstParser', () => {
+describe('Tokenizer', () => {
   let parser;
 
   beforeEach(() => {
     parser = new AstParser();
+    parser.file = 'main';
   });
 
   it('should detect incorrect @if syntax', () => {
@@ -88,10 +89,10 @@ describe('AstParser', () => {
 
   it('should detect incorrect @else syntax', () => {
     try {
-      parser.parse(`@else 1`);
+      parser.parse(`@if 1\n@else 0\n@endif`);
       fail();
     } catch (e) {
-      expect(e.message).toBe('Syntax error in @else (main:1)');
+      expect(e.message).toBe('Syntax error in @else (main:2)');
     }
   });
 
@@ -103,4 +104,82 @@ describe('AstParser', () => {
       expect(e.message).toBe('Syntax error in @endif (main:1)');
     }
   });
+});
+
+describe('Parser', () => {
+  let parser;
+
+  beforeEach(() => {
+    parser = new AstParser();
+  });
+
+  it('should detect multiple @else', () => {
+    try {
+      parser.parse(
+        `@if 1
+@else
+@else
+@endif`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toBe('Multiple @else statements are not allowed (main:3)');
+    }
+  });
+
+  it('should detect unexpected @else', () => {
+    try {
+      parser.parse(
+        `@else`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toBe('Unexpected @else (main:1)');
+    }
+  });
+
+  it('should detect unexpected @elseif', () => {
+    try {
+      parser.parse(
+        `@elseif 1`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toBe('Unexpected @elseif (main:1)');
+    }
+  });
+
+  it('should detect unexpected @endif', () => {
+    try {
+      parser.parse(
+        `@endif`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unexpected @endif (main:1)');
+    }
+  });
+
+  it('should detect @elseif after @else', () => {
+    try {
+      parser.parse(
+        `@if 1\n@else\n@elseif 1\n@endif`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('@elseif after @else is not allowed (main:3)');
+    }
+  });
+
+  it('should detect unclosed @if', () => {
+    try {
+      parser.parse(
+        `@if 1\n@else`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unclosed @if statement (main:2)');
+    }
+  });
+
 });
