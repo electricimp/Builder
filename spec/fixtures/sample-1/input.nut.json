@@ -1,0 +1,171 @@
+[
+  {
+    "_line": 1,
+    "_file": "input.nut",
+    "type": "include",
+    "value": "\"inc-a.nut\""
+  },
+  {
+    "_line": 2,
+    "_file": "input.nut",
+    "type": "output",
+    "computed": true,
+    "value": "\n"
+  },
+  {
+    "_line": 3,
+    "_file": "input.nut",
+    "type": "set",
+    "variable": "SOMEVAR1",
+    "value": "123"
+  },
+  {
+    "_line": 4,
+    "_file": "input.nut",
+    "type": "set",
+    "variable": "SOMEVAR2",
+    "value": "256"
+  },
+  {
+    "_line": 5,
+    "_file": "input.nut",
+    "type": "output",
+    "computed": true,
+    "value": "\n"
+  },
+  {
+    "_line": 6,
+    "_file": "input.nut",
+    "type": "conditional",
+    "test": "SOMEVAR1 == 123",
+    "consequent": [
+      {
+        "_line": 7,
+        "_file": "input.nut",
+        "type": "output",
+        "computed": true,
+        "value": "  // should be included\n"
+      },
+      {
+        "_line": 8,
+        "_file": "input.nut",
+        "type": "output",
+        "computed": true,
+        "value": "\n"
+      },
+      {
+        "_line": 9,
+        "_file": "input.nut",
+        "type": "conditional",
+        "test": "level2",
+        "consequent": [
+          {
+            "_line": 10,
+            "_file": "input.nut",
+            "type": "set",
+            "variable": "abc",
+            "value": "def"
+          },
+          {
+            "_line": 11,
+            "_file": "input.nut",
+            "type": "output",
+            "computed": true,
+            "value": "    // alternate syntax for @set\n"
+          },
+          {
+            "_line": 12,
+            "_file": "input.nut",
+            "type": "set",
+            "variable": "abc",
+            "value": "def"
+          },
+          {
+            "_line": 13,
+            "_file": "input.nut",
+            "type": "set",
+            "variable": "abc",
+            "value": "def"
+          }
+        ],
+        "alternate": [
+          {
+            "_line": 15,
+            "_file": "input.nut",
+            "type": "output",
+            "computed": true,
+            "value": "    // l2 else\n"
+          }
+        ]
+      },
+      {
+        "_line": 17,
+        "_file": "input.nut",
+        "type": "output",
+        "computed": true,
+        "value": "\n"
+      }
+    ],
+    "elseifs": [
+      {
+        "_line": 18,
+        "_file": "input.nut",
+        "type": "conditional",
+        "test": "SOMEVAR2 == 0",
+        "consequent": [
+          {
+            "_line": 19,
+            "_file": "input.nut",
+            "type": "output",
+            "computed": true,
+            "value": "  // should not be included\n"
+          }
+        ]
+      },
+      {
+        "_line": 20,
+        "_file": "input.nut",
+        "type": "conditional",
+        "test": "SOMEVAR2 == 256",
+        "consequent": [
+          {
+            "_line": 21,
+            "_file": "input.nut",
+            "type": "output",
+            "computed": true,
+            "value": "  // should be included\n"
+          },
+          {
+            "_line": 22,
+            "_file": "input.nut",
+            "type": "output",
+            "computed": true,
+            "value": "  // should be included\n"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_line": 24,
+    "_file": "input.nut",
+    "type": "output",
+    "computed": true,
+    "value": "\n"
+  },
+  {
+    "_line": 25,
+    "_file": "input.nut",
+    "type": "conditional",
+    "test": "SOMEVAR2",
+    "consequent": [
+      {
+        "_line": 26,
+        "_file": "input.nut",
+        "type": "output",
+        "computed": true,
+        "value": "  // should be included\n"
+      }
+    ]
+  }
+]
