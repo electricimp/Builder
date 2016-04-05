@@ -44,8 +44,9 @@ class AstParser {
    * @return [] Root-level base block
    */
   parse(source) {
-    this._tokens = this._tokenize(source);
-    return this._parse([], STATES.OK);
+    return this._parse(
+      this._tokenize(source), [], STATES.OK
+    );
   }
 
   /**
@@ -208,11 +209,11 @@ class AstParser {
    * @return {*}
    * @private
    */
-  _parse(parent, state) {
+  _parse(tokens, parent, state) {
 
     let token;
 
-    for (token of this._tokens) {
+    for (token of tokens) {
 
       const node = {
         _line: token._line,
@@ -257,8 +258,7 @@ class AstParser {
           node.consequent = [];
           this._append(parent, node, state);
 
-          // this._tokens.next();
-          this._parse(node, STATES.IF_CONSEQUENT);
+          this._parse(tokens, node, STATES.IF_CONSEQUENT);
 
           break;
 
