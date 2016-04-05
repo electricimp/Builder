@@ -44,23 +44,20 @@ class AstParser {
    * @return [] Root-level base block
    */
   parse(source) {
-    this._pointer = 0; // token pointer
     this._tokens = this._tokenize(source);
     return this._parse([], STATES.OK);
   }
 
   /**
-   * Tokenizes source
-   *
-   * @param {string} source
-   * @return {Array}
+   * Returns tokens generator
+   * @param {string{ source
    * @private
    */
-  _tokenize(source) {
+  * _tokenize(source) {
+
     let matches, type, arg;
 
     const lines = source.match(LINES);
-    const tokens = [];
 
     for (let i = 0; i < lines.length - 1 /* last line is always empty */; i++) {
 
@@ -149,7 +146,7 @@ class AstParser {
             throw new Error(`Unsupported keyword "${type}" (${this.file}:${token.line})`);
         }
 
-        tokens.push(token);
+        yield token;
 
       } else {
 
@@ -158,36 +155,34 @@ class AstParser {
 
           // push source fragment
           if (matches.index > 0) {
-            tokens.push({
+            yield {
               _line: 1 + i,
               type: TOKENS.SOURCE_FRAGMENT,
               args: [text.substr(0, matches.index)]
-            });
+            };
           }
 
           // push inline expression
-          tokens.push({
+          yield {
             _line: 1 + i,
             type: TOKENS.INLINE_EXPRESSION,
             args: [matches[1]]
-          });
+          };
 
           text = text.substr(matches.index + matches[0].length);
         }
 
         // push last source fragment
         if (text !== '') {
-          tokens.push({
+          yield {
             _line: 1 + i,
             type: TOKENS.SOURCE_FRAGMENT,
             args: [text]
-          });
+          };
         }
       }
 
     }
-
-    return tokens;
   }
 
   /**
@@ -202,9 +197,7 @@ class AstParser {
 
     let token;
 
-    while (this._pointer < this._tokens.length) {
-
-      token = this._tokens[this._pointer];
+    for (token of this._tokens) {
 
       const node = {
         _line: token._line,
@@ -249,7 +242,7 @@ class AstParser {
           node.consequent = [];
           this._append(parent, node, state);
 
-          this._pointer++;
+          // this._tokens.next();
           this._parse(node, STATES.IF_CONSEQUENT);
 
           break;
@@ -344,8 +337,6 @@ class AstParser {
         default:
           throw new Error(`Unsupported token type "${token.type}" (${node._file}:${node._line})`);
       }
-
-      this._pointer++;
     }
 
     // check final state
