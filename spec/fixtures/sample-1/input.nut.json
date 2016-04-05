@@ -139,6 +139,41 @@
             "_line": 22,
             "_file": "input.nut",
             "type": "output",
+            "value": "  // ",
+            "computed": true
+          },
+          {
+            "_line": 22,
+            "_file": "input.nut",
+            "type": "output",
+            "value": "__FILE__",
+            "computed": false
+          },
+          {
+            "_line": 22,
+            "_file": "input.nut",
+            "type": "output",
+            "value": ":",
+            "computed": true
+          },
+          {
+            "_line": 22,
+            "_file": "input.nut",
+            "type": "output",
+            "value": "__LINE__",
+            "computed": false
+          },
+          {
+            "_line": 22,
+            "_file": "input.nut",
+            "type": "output",
+            "value": "\n",
+            "computed": true
+          },
+          {
+            "_line": 23,
+            "_file": "input.nut",
+            "type": "output",
             "value": "  // should be included\n",
             "computed": true
           }
@@ -147,20 +182,20 @@
     ]
   },
   {
-    "_line": 24,
+    "_line": 25,
     "_file": "input.nut",
     "type": "output",
     "value": "\n",
     "computed": true
   },
   {
-    "_line": 25,
+    "_line": 26,
     "_file": "input.nut",
     "type": "conditional",
     "test": "SOMEVAR2",
     "consequent": [
       {
-        "_line": 26,
+        "_line": 27,
         "_file": "input.nut",
         "type": "output",
         "value": "  // should be included\n",

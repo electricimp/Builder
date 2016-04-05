@@ -19,6 +19,7 @@
   // should not be included
 @elseif SOMEVAR2 == 256
   // should be included
+  // @{__FILE__}:@{__LINE__}
   // should be included
 @endif
 
