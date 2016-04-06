@@ -10,232 +10,117 @@
 'use strict';
 
 const path = require('path');
-const SourceParser = require('./SourceParser');
+
+// instruction types
+const INSTRUCTIONS = {
+  SET: 'set',
+  ERROR: 'error',
+  OUTPUT: 'output',
+  INCLUDE: 'include',
+  CONDITIONAL: 'conditional'
+};
 
 class Machine {
 
   constructor() {
-    this._pointer = 0; // instruction poiner
-    this._variables = {};
-    this._instructions = [];
-
-    // stack of "if" test results
-    this._if = [true];
-    this._if.peek = () => !!this._if[this._if.length - 1]; // get topmost element
-    this._if.flip = () => this._if[this._if.length - 1] ^= true; // flip the topmost element
   }
 
   /**
-   * Excute set of instructions
+   * Execute some code
+   * @param {string} source
    */
-  excecute() {
-    // clear outpout buffer
-    this._output = [];
+  execute(source) {
+    this._variables = {};
+    this._output = '';
+    this._execute(this.parser.parse(source));
+    return this._output;
+  }
 
-    let instruction;
+  /**
+   * Execute AST
+   * @param {[]} ast
+   * @private
+   */
+  _execute(ast) {
+    for (const insruction of ast) {
 
-    while (this._pointer < this._instructions.length) {
+      switch (insruction.type) {
 
-      instruction = this._instructions[this._pointer];
-
-      // assign __*__ variables
-      this.expression.variables = Object.assign(
-        this._variables,
-        {
-          __LINE__: instruction._line,
-          __FILE__: instruction._file
-        }
-      );
-
-      switch (instruction.token) {
-
-        case SourceParser.tokens.INCLUDE:
-
-          if (this._if.peek()) {
-            this._executeInclude(instruction);
-          }
-
+        case INSTRUCTIONS.INCLUDE:
+          this._executeInclude(insruction);
           break;
 
-        case SourceParser.tokens.SOURCE_LINE:
-
-          if (this._if.peek()) {
-            this._executeSourceLine(instruction);
-          }
-
-          break;
-
-        case SourceParser.tokens.SET:
-
-          if (this._if.peek()) {
-            this._executeSet(instruction);
-          }
-
-          break;
-
-        case SourceParser.tokens.IF:
-          this._executeIf(instruction);
-          break;
-
-        case SourceParser.tokens.ELSEIF:
-          this._executeElseIf(instruction);
-          break;
-
-        case SourceParser.tokens.ELSE:
-          this._executeElse(instruction);
-          break;
-
-        case SourceParser.tokens.ENDIF:
-          this._executeEndIf(instruction);
+        case INSTRUCTIONS.OUTPUT:
+          this._executeOutput(insruction);
           break;
 
         default:
-          throw new Error('Unsupported token: "' + instruction.token + '"');
+          throw new Error(`Unsupported instruction "${insruction.type}"`);
       }
 
-      this._pointer++;
     }
-
-    return this._output.join('\n');
   }
 
   /**
-   * Execute include instruction
-   * @param {{}} instruction
+   * Execute "include" instruction
+   * @param {{type, value}} instruction
    * @private
    */
   _executeInclude(instruction) {
 
-    let content;
-    let includedInstrctions;
-
     // path is an expression, evaluate it
-    const sourcePath = this.expression.evaluate(instruction.path);
+    const includePath = this.expression.evaluate(instruction.value);
 
-    if (/^https?:/i.test(instruction.path)) {
-      // URL
-      throw new Error('Remote sources are not supported at the moment');
-    } else if (/\.git\b/i.test(instruction.path)) {
-      // GIT
+    let reader;
+
+    if (/^https?:/i.test(includePath)) {
+      // http
+      throw new Error('HTTP sources are not supported at the moment');
+    } else if (/\.git\b/i.test(includePath)) {
+      // git
       throw new Error('GIT sources are not supported at the moment');
     } else {
-      // local file
-
-      // read
-      this.logger.info(`Including local file "${sourcePath}"`);
-      content = this.localFileReader.read(sourcePath);
-
-      // parse
-      this.sourceParser.sourceName = path.basename(sourcePath);
-      includedInstrctions = this.sourceParser.parse(content);
+      // file
+      reader = this.readers['file'];
     }
 
-    // replace include instruction with included instructions
-    this._instructions.splice.apply(this._instructions,
-      [this._pointer, 1].concat(includedInstrctions));
+    // read
+    this.logger.info(`Including local file "${includePath}"`);
+    const source = reader.read(includePath);
 
+    // parse
+    this.parser.file = path.basename(includePath);
+
+    // execute included AST
+    this._execute(this.parser.parse(source));
   }
 
   /**
-   * Execute "source line" instruction
+   * Execute "output" instruction
    * @param {{}} instruction
    * @private
    */
-  _executeSourceLine(instruction) {
-    // noop for now
-    // todo: replace @{expr} expressions
-    this._output.push(instruction.line);
-  }
-
-  /**
-   * Execute "set" instruction
-   * @param {{}} instruction
-   * @private
-   */
-  _executeSet(instruction) {
-    const value = this.expression.evaluate(instruction.value);
-    this._variables[instruction.variable] = value;
-  }
-
-  /**
-   * Execute "if" instruction
-   * @param {{}} instruction
-   * @private
-   */
-  _executeIf(instruction) {
-    const test = this.expression.evaluate(instruction.condition);
-    this._if.push(test);
-  }
-
-  /**
-   * Execute "elseif" instruction
-   * @param {{}} instruction
-   * @private
-   */
-  _executeElseIf(instruction) {
-    if (this._if.peek()) {
-      // if if-clause test was true, then behave like else statement
-      this._if.flip();
-    } else if (this.expression.evaluate(instruction.condition)) {
-      // if if-clause was falsy, then flip to true if else-if test is truthful
-      this._if.flip();
-    }
-  }
-
-  /**
-   * Execute "else" instruction
-   * @param instruction
-   * @private
-   */
-  _executeElse(instruction) {
-    this._if.flip();
-  }
-
-  /**
-   * Execute "endif" instruction
-   * @param {{}} instruction
-   * @private
-   */
-  _executeEndIf(instruction) {
-    this._if.pop();
+  _executeOutput(instruction) {
+    const output = instruction.computed
+      ? instruction.value
+      : this.expression.evaluate(instruction.value);
+    this._output += output;
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
-  get instructions() {
-    return this._instructions;
-  }
-
-  set instructions(value) {
-    this._instructions = value;
-  }
-
   /**
-   * @return {LocalFileReader}
+   * @return {{http, git, file: FileReader}}
    */
-  get localFileReader() {
+  get readers() {
     return this._localFileReader;
   }
 
   /**
-   * @param {LocalFileReader} value
+   * @param {{http, git, file: FileReader}} value
    */
-  set localFileReader(value) {
+  set readers(value) {
     this._localFileReader = value;
-  }
-
-  /**
-   * @return {SourceParser}
-   */
-  get sourceParser() {
-    return this._sourceParser;
-  }
-
-  /**
-   * @param {SourceParser} value
-   */
-  set sourceParser(value) {
-    this._sourceParser = value;
   }
 
   /**
@@ -271,7 +156,22 @@ class Machine {
     this._logger = value;
   }
 
-  // </editor-fold>
+  /**
+   * @return {AstParser}
+   */
+  get parser() {
+    return this._astParser;
+  }
+
+  /**
+   * @param {AstParser} value
+   */
+  set parser(value) {
+    this._astParser = value;
+  }
+
+// </editor-fold>
 }
 
 module.exports = Machine;
+module.exports.INSTRUCTIONS = INSTRUCTIONS;

@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-class LocalFileReader {
+class FileReader {
 
   constructor() {
     this.searchDirs = [
@@ -38,7 +38,7 @@ class LocalFileReader {
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   get searchDirs() {
-    return this._searchDirs;
+    return this._searchDirs || [];
   }
 
   set searchDirs(value) {
@@ -67,4 +67,4 @@ class LocalFileReader {
   // </editor-fold>
 }
 
-module.exports = LocalFileReader;
+module.exports = FileReader;
