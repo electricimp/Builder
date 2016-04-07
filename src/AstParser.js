@@ -210,8 +210,7 @@ class AstParser {
     for (token of tokens) {
 
       const node = {
-        _line: token._line,
-        _file: this.file
+        _line: token._line
       };
 
       switch (token.type) {
@@ -265,7 +264,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               if (parent.alternate) {
-                throw new Error(`Multiple @else statements are not allowed (${node._file}:${node._line})`);
+                throw new Error(`Multiple @else statements are not allowed (${this.file}:${node._line})`);
               }
 
               parent.alternate = [];
@@ -273,7 +272,7 @@ class AstParser {
               break;
 
             default:
-              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @else (${this.file}:${node._line})`);
           }
 
           break;
@@ -299,10 +298,10 @@ class AstParser {
               break;
 
             case STATES.IF_ALTERNATE:
-              throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
+              throw new Error(`@elseif after @else is not allowed (${this.file}:${node._line})`);
 
             default:
-              throw new Error(`Unexpected @elseif (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @elseif (${this.file}:${node._line})`);
           }
 
           break;
@@ -317,7 +316,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @endif (${this.file}:${node._line})`);
           }
 
           break;
@@ -344,7 +343,7 @@ class AstParser {
 
 
         default:
-          throw new Error(`Unsupported token type "${token.type}" (${node._file}:${node._line})`);
+          throw new Error(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
       }
     }
 
@@ -397,6 +396,9 @@ class AstParser {
     return this._file || 'main';
   }
 
+  /**
+   * Set filename for error messages
+   */
   set file(value) {
     this._file = value;
   }

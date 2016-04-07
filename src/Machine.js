@@ -22,27 +22,38 @@ const INSTRUCTIONS = {
 
 class Machine {
 
-  constructor() {
-  }
-
   /**
    * Execute some code
    * @param {string} source
+   * @param {string="main"} file name
    */
-  execute(source) {
-    this._variables = {};
+  execute(source, file) {
+    // reset state
+    this.expression.variables = {};
     this._output = '';
-    this._execute(this.parser.parse(source));
+
+    // parse & execute code
+    const ast = this.parser.parse(source);
+    this._execute(ast, file);
+
     return this._output;
   }
 
   /**
    * Execute AST
    * @param {[]} ast
+   * @param {string} file
    * @private
    */
-  _execute(ast) {
+  _execute(ast, file) {
+
+    // set __FILE__ variable
+    this.expression.__FILE__ = file;
+
     for (const insruction of ast) {
+
+      // set __LINE__ variable
+      this.expression.variables.__LINE__ = insruction._line;
 
       switch (insruction.type) {
 
@@ -52,6 +63,10 @@ class Machine {
 
         case INSTRUCTIONS.OUTPUT:
           this._executeOutput(insruction);
+          break;
+
+        case INSTRUCTIONS.SET:
+          this._executeSet(insruction);
           break;
 
         default:
@@ -81,7 +96,7 @@ class Machine {
       throw new Error('GIT sources are not supported at the moment');
     } else {
       // file
-      reader = this.readers['file'];
+      reader = this.readers.file;
     }
 
     // read
@@ -89,15 +104,16 @@ class Machine {
     const source = reader.read(includePath);
 
     // parse
-    this.parser.file = path.basename(includePath);
+    const ast = this.parser.parse(source);
 
     // execute included AST
-    this._execute(this.parser.parse(source));
+    const file = path.basename(includePath);
+    this._execute(ast, file);
   }
 
   /**
    * Execute "output" instruction
-   * @param {{}} instruction
+   * @param {{type, value, computed}} instruction
    * @private
    */
   _executeOutput(instruction) {
@@ -105,6 +121,16 @@ class Machine {
       ? instruction.value
       : this.expression.evaluate(instruction.value);
     this._output += output;
+  }
+
+  /**
+   * Eexecute "set" instruction
+   * @param {{type, varname, value}} instruction
+   * @private
+   */
+  _executeSet(instruction) {
+    this.expression.variables[instruction.varname] =
+      this.expression.evaluate(instruction.value);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
