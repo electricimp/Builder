@@ -73,15 +73,22 @@ class Expression {
     this._supportedFunctions = ['abs', 'max', 'min', 'defined'];
   }
 
-  evaluate(expression) {
-    return this._evaluate(jsep(expression));
+  /**
+   * Evaluate an expression
+   * @param {string} expression
+   * @param {{}={}} context - defined variables
+   * @return {*}
+   */
+  evaluate(expression, context) {
+    return this._evaluate(jsep(expression), context || {});
   }
 
   /**
    * @param {{}} node
+   * @param {{}} context - defined variables
    * @private
    */
-  _evaluate(node) {
+  _evaluate(node, context) {
 
     let res;
 
@@ -92,8 +99,8 @@ class Expression {
       case 'BinaryExpression':
       case 'LogicalExpression':
 
-        const left = this._evaluate(node.left);
-        const right = this._evaluate(node.right);
+        const left = this._evaluate(node.left, context);
+        const right = this._evaluate(node.right, context);
 
         switch (node.operator) {
 
@@ -176,11 +183,11 @@ class Expression {
         } else /* variable */ {
 
           // check if we have a variable
-          if (!this.variables.hasOwnProperty(node.name)) {
+          if (!context.hasOwnProperty(node.name)) {
             throw new Error(`Variable "${node.name}" is not defined`);
           }
 
-          res = this.variables[node.name];
+          res = context[node.name];
 
         }
 
@@ -188,7 +195,7 @@ class Expression {
 
       case 'UnaryExpression':
 
-        const argument = this._evaluate(node.argument);
+        const argument = this._evaluate(node.argument, context);
 
         switch (node.operator) {
 
@@ -215,8 +222,8 @@ class Expression {
 
       case 'MemberExpression':
 
-        const object = this._evaluate(node.object);
-        const property = node.computed ? this._evaluate(node.property) : node.property.name;
+        const object = this._evaluate(node.object, context);
+        const property = node.computed ? this._evaluate(node.property, context) : node.property.name;
 
         if (!object.hasOwnProperty(property)) {
           throw new Error(`Property "${property} is not defined`);
@@ -230,44 +237,53 @@ class Expression {
         throw new Error('`this` keyword is not supported');
 
       case 'ConditionalExpression':
-        const test = this._evaluate(node.test);
+        const test = this._evaluate(node.test, context);
 
         if (test) {
-          res = this._evaluate(node.consequent);
+          res = this._evaluate(node.consequent, context);
         } else {
-          res = this._evaluate(node.alternate);
+          res = this._evaluate(node.alternate, context);
         }
 
         break;
 
       case 'ArrayExpression':
 
-        res = node.elements.map(v => this._evaluate(v));
+        res = node.elements.map(v => this._evaluate(v, context));
         break;
 
       case 'CallExpression':
 
-        const callee = this._evaluate(node.callee);
-        const args = node.arguments.map(v => this._evaluate(v));
+        const callee = this._evaluate(node.callee, context);
 
-        if (args.length < 1) {
-          throw new Error('Wrong number of arguments for ' + callee + '()');
-        }
+        if ('defined' === callee) {
 
-        switch (callee) {
-          case 'abs':
-          case 'max':
-          case 'min':
-            res = Math[callee].apply(this, args);
-            break;
+          // defined(varName) should not evaluate variable
+          if ('Identifier' !== node.arguments[0].type) {
+            throw new Error('defined() can only be called with an identifier as an argument');
+          }
 
-          case 'defined':
+          res = context.hasOwnProperty(node.arguments[0].name);
 
-            res = this.variables.hasOwnProperty(args[0]);
-            break;
+        } else {
 
-          default:
-            throw new Error(`Function "${callee}" is not defined`);
+          const args = node.arguments.map(v => this._evaluate(v, context));
+
+          if (args.length < 1) {
+            throw new Error('Wrong number of arguments for ' + callee + '()');
+          }
+
+          switch (callee) {
+            case 'abs':
+            case 'max':
+            case 'min':
+              res = Math[callee].apply(this, args);
+              break;
+
+            default:
+              throw new Error(`Function "${callee}" is not defined`);
+          }
+
         }
 
         break;
@@ -279,18 +295,6 @@ class Expression {
     return res;
 
   }
-
-  // <editor-fold desc="Accessors" defaultstate="collapsed">
-
-  get variables() {
-    return this._variables || {};
-  }
-
-  set variables(value) {
-    this._variables = value;
-  }
-
-  // </editor-fold>
 }
 
 module.exports = Expression;
