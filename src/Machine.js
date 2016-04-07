@@ -29,8 +29,8 @@ class Machine {
    */
   execute(source, file) {
     // reset state
-    this.expression.variables = {};
     this._output = '';
+    this.context = {};
 
     // parse & execute code
     const ast = this.parser.parse(source);
@@ -46,19 +46,23 @@ class Machine {
    * @private
    */
   _execute(ast, file) {
-
     // set __FILE__ variable
-    this.expression.__FILE__ = file;
+    this.context.__FILE__ = file;
 
     for (const insruction of ast) {
 
       // set __LINE__ variable
-      this.expression.variables.__LINE__ = insruction._line;
+      this.context.__LINE__ = insruction._line;
 
       switch (insruction.type) {
 
         case INSTRUCTIONS.INCLUDE:
+
           this._executeInclude(insruction);
+
+          // restore __FILE__ variable
+          this.context.__FILE__ = file;
+
           break;
 
         case INSTRUCTIONS.OUTPUT:
@@ -84,7 +88,7 @@ class Machine {
   _executeInclude(instruction) {
 
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(instruction.value);
+    const includePath = this.expression.evaluate(instruction.value, this.context);
 
     let reader;
 
@@ -119,18 +123,18 @@ class Machine {
   _executeOutput(instruction) {
     const output = instruction.computed
       ? instruction.value
-      : this.expression.evaluate(instruction.value);
+      : this.expression.evaluate(instruction.value, this.context);
     this._output += output;
   }
 
   /**
    * Eexecute "set" instruction
-   * @param {{type, varname, value}} instruction
+   * @param {{type, variable, value}} instruction
    * @private
    */
   _executeSet(instruction) {
-    this.expression.variables[instruction.varname] =
-      this.expression.evaluate(instruction.value);
+    this.context[instruction.variable] =
+      this.expression.evaluate(instruction.value, this.context);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -194,6 +198,21 @@ class Machine {
    */
   set parser(value) {
     this._astParser = value;
+  }
+
+  /**
+   * Variables
+   * @return {{}}
+   */
+  get context() {
+    return this._context || {};
+  }
+
+  /**
+   * @param {{}} value
+   */
+  set context(value) {
+    this._context = value;
   }
 
 // </editor-fold>
