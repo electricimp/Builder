@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const AstParser = require('../../src/AstParser');
 
-const FILE = __dirname + '/../fixtures/sample-1/input.nut';
+const FILE = __dirname + '/../fixtures/sample-2/input.nut';
 
 describe('AstParser', () => {
 

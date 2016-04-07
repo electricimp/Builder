@@ -1,2 +1,2 @@
 @include "inc-a.nut"
-// input.nut:2
+// @{__FILE__}:@{__LINE__}
