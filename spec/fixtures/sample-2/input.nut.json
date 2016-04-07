@@ -1,0 +1,15 @@
+[
+  {
+    "_line": 1,
+    "_file": "input.nut",
+    "type": "include",
+    "value": "\"inc-a.nut\""
+  },
+  {
+    "_line": 2,
+    "_file": "input.nut",
+    "type": "output",
+    "value": "// input.nut:2\n",
+    "computed": true
+  }
+]
