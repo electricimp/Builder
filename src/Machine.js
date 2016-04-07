@@ -25,16 +25,16 @@ class Machine {
   /**
    * Execute some code
    * @param {string} source
-   * @param {string="main"} file name
+   * @param {{__FILE__}} context - defined variables
    */
-  execute(source, file) {
+  execute(source, context) {
     // reset state
     this._output = '';
-    this.context = {};
+    this._context = Object.assign(context || {}, {__FILE__: 'main'});
 
     // parse & execute code
     const ast = this.parser.parse(source);
-    this._execute(ast, file);
+    this._execute(ast, context);
 
     return this._output;
   }
@@ -42,27 +42,20 @@ class Machine {
   /**
    * Execute AST
    * @param {[]} ast
-   * @param {string} file
+   * @param {{__FILE__}} context - defined variables
    * @private
    */
-  _execute(ast, file) {
-    // set __FILE__ variable
-    this.context.__FILE__ = file;
-
+  _execute(ast) {
     for (const insruction of ast) {
 
       // set __LINE__ variable
-      this.context.__LINE__ = insruction._line;
+      this._context.__LINE__ = insruction._line;
 
       switch (insruction.type) {
 
         case INSTRUCTIONS.INCLUDE:
 
           this._executeInclude(insruction);
-
-          // restore __FILE__ variable
-          this.context.__FILE__ = file;
-
           break;
 
         case INSTRUCTIONS.OUTPUT:
@@ -88,7 +81,7 @@ class Machine {
   _executeInclude(instruction) {
 
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(instruction.value, this.context);
+    const includePath = this.expression.evaluate(instruction.value, this._context);
 
     let reader;
 
@@ -111,8 +104,12 @@ class Machine {
     const ast = this.parser.parse(source);
 
     // execute included AST
-    const file = path.basename(includePath);
-    this._execute(ast, file);
+    const parentFile = this._context.__FILE__;
+    this._context.__FILE__ = path.basename(includePath);
+    this._execute(ast);
+
+    // restore __FILE__ variable
+    this._context.__FILE__ = parentFile;
   }
 
   /**
@@ -123,7 +120,7 @@ class Machine {
   _executeOutput(instruction) {
     const output = instruction.computed
       ? instruction.value
-      : this.expression.evaluate(instruction.value, this.context);
+      : this.expression.evaluate(instruction.value, this._context);
     this._output += output;
   }
 
@@ -133,8 +130,8 @@ class Machine {
    * @private
    */
   _executeSet(instruction) {
-    this.context[instruction.variable] =
-      this.expression.evaluate(instruction.value, this.context);
+    this._context[instruction.variable] =
+      this.expression.evaluate(instruction.value, this._context);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -200,22 +197,7 @@ class Machine {
     this._astParser = value;
   }
 
-  /**
-   * Variables
-   * @return {{}}
-   */
-  get context() {
-    return this._context || {};
-  }
-
-  /**
-   * @param {{}} value
-   */
-  set context(value) {
-    this._context = value;
-  }
-
-// </editor-fold>
+  // </editor-fold>
 }
 
 module.exports = Machine;

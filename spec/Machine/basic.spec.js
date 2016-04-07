@@ -21,6 +21,11 @@ describe('Machine', () => {
     expect(res).toBe(`def`);
   });
 
+  it('should use predefined vars', () => {
+    const res = machine.execute(`@{__FILE__}:@{__LINE__}`);
+    expect(res).toBe(`main:1`);
+  });
+
   it('should throw an error on undefined variable use', () => {
     try {
       machine.execute(`@{abc}`);
