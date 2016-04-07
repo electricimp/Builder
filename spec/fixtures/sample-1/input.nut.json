@@ -48,7 +48,7 @@
       {
         "_line": 9,
         "type": "conditional",
-        "test": "level2",
+        "test": "null",
         "consequent": [
           {
             "_line": 10,

@@ -6,7 +6,7 @@
 @if SOMEVAR1 == 123
   // should be included
 
-  @if level2
+  @if null
     @set abc def
     // alternate syntax for @set
     @set abc=def
