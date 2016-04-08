@@ -27,13 +27,10 @@ describe('Machine', () => {
     expect(res).toBe(`main:1`);
   });
 
-  it('should throw an error on undefined variable use', () => {
-    try {
-      machine.execute(`@{abc}`);
-      fail();
-    } catch (e) {
-      expect(e.message).toBe('Variable "abc" is not defined');
-    }
+  it('should handle undefined vars', () => {
+    expect(machine.execute(`@{abc}`)).toBe('null');
+    expect(machine.execute(`@if abc\n123\n@endif`)).toBe('');
+    expect(machine.execute(`@if !abc\n123\n@endif`)).toBe('123\n');
   });
 
   it('should handle conditional expressions', () => {

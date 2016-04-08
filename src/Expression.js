@@ -177,18 +177,10 @@ class Expression {
       case 'Identifier':
 
         if (this._supportedFunctions.indexOf(node.name) !== -1) /* function name */ {
-
           res = node.name;
-
         } else /* variable */ {
-
-          // check if we have a variable
-          if (!context.hasOwnProperty(node.name)) {
-            throw new Error(`Variable "${node.name}" is not defined`);
-          }
-
-          res = context[node.name];
-
+          res = context.hasOwnProperty(node.name)
+            ? context[node.name] : null;
         }
 
         break;
