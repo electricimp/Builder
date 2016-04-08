@@ -8,6 +8,7 @@
 require('jasmine-expect');
 
 const init = require('./init')('main');
+const Machine = require('../../src/Machine');
 
 describe('Machine', () => {
   let machine;
@@ -72,5 +73,15 @@ describe('Machine', () => {
       c: false
     })).toBe(`\n  // if-else\n`);
 
+  });
+
+  it('should handle @error directives', () => {
+    try {
+      machine.execute(`@error "abc"`);
+      fail();
+    } catch (e) {
+      expect(e instanceof Machine.Errors.UserDefinedError).toBe(true);
+      expect(e.message).toBe('abc');
+    }
   });
 });

@@ -20,6 +20,11 @@ const INSTRUCTIONS = {
   CONDITIONAL: 'conditional'
 };
 
+const Errors = {
+  'UserDefinedError': class UserDefinedError extends Error {
+  }
+};
+
 class Machine {
 
   /**
@@ -67,6 +72,10 @@ class Machine {
 
         case INSTRUCTIONS.CONDITIONAL:
           this._executeConditional(insruction);
+          break;
+
+        case INSTRUCTIONS.ERROR:
+          this._executeError(insruction);
           break;
 
         default:
@@ -135,6 +144,16 @@ class Machine {
   _executeSet(instruction) {
     this._context[instruction.variable] =
       this.expression.evaluate(instruction.value, this._context);
+  }
+
+  /**
+   * @param {{type, value}} instruction
+   * @private
+   */
+  _executeError(instruction) {
+    throw new Errors.UserDefinedError(
+      this.expression.evaluate(instruction.value, this._context)
+    );
   }
 
   /**
@@ -239,3 +258,4 @@ class Machine {
 
 module.exports = Machine;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;
+module.exports.Errors = Errors;
