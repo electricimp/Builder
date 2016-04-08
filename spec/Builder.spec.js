@@ -1,5 +1,5 @@
 /**
- * Expression spec
+ * Builder spec
  * @author Mikhail Yurasov <mikhail@electricimp.com>
  */
 
@@ -10,12 +10,8 @@ const Machine = require('../src/Machine');
 
 describe('Expression', () => {
 
-  let builder;
-
-  beforeEach(() => {
-    builder = new Builder();
-    builder.machine.generateLineControlStatements = true;
-  });
+  const builder = new Builder();
+  builder.machine.generateLineControlStatements = true;
 
   it('should build something', () => {
     expect(builder.machine instanceof Machine).toBeTruthy();
