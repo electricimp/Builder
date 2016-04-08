@@ -1,23 +1,22 @@
 {
   "name": "imp-builder",
   "version": "0.0.1-dev",
-  "description": "Bundling tool for EI/Squirrel",
+  "description": "Builder language implementation",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electricimp/imp-builder.git"
+    "url": "git+https://github.com/electricimp/Builder.git"
   },
   "author": "Mikhail Yurasov <mikhail@electricimp.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/electricimp/imp-builder/issues"
+    "url": "https://github.com/electricimp/Builder/issues"
   },
-  "homepage": "https://github.com/electricimp/imp-builder#readme",
+  "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
-    "colors": "^1.1.2",
     "jsep": "^0.3.0",
     "log": "^1.4.0"
   },
