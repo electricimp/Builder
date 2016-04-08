@@ -17,10 +17,10 @@
   },
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
-    "jsep": "^0.3.0",
-    "log": "^1.4.0"
+    "jsep": "^0.3.0"
   },
   "devDependencies": {
+    "log": "^1.4.0",
     "jasmine": "^2.4.1",
     "jasmine-expect": "^2.0.2"
   }

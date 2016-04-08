@@ -6,61 +6,68 @@
 'use strict';
 
 const Machine = require('./Machine');
-const SourceParser = require('./SourceParser');
-
-// source reference types
-const sourceTypes = {
-  URL: 'url',
-  GIT: 'git',
-  LOCAL_FILE: 'local_file'
-};
+const AstParser = require('./AstParser');
+const Expression = require('./Expression');
+const LocalFileReader = require('./FileReader');
 
 class Builder {
 
+  constructor() {
+    this._initMachine();
+  }
+
   /**
-   * Build
-   * @param {string} content
-   * @return {Promise}
+   * Init machine
+   * @private
    */
-  build(content) {
+  _initMachine() {
+    const fileReader = new LocalFileReader();
+    fileReader.logger = this.logger;
 
-    return new Promise((resolve, reject) => {
-      // create machine
-      this._machine = new Machine();
+    const expression = new Expression();
+    const parser = new AstParser();
 
-      // parse contents
-      const parser = new SourceParser();
-      parser.sourceName = 'main';
-      this._machine.instructions = parser.parse(content);
+    const machine = new Machine();
 
-      resolve();
-    });
+    machine.readers = {
+      'file': fileReader,
+      'http': null,
+      'git': null
+    };
+
+    machine.expression = expression;
+    machine.parser = parser;
+    machine.logger = this.logger;
+    machine.generateLineControlStatements = false;
+
+    this._machine = machine;
   }
 
-  _execute() {
-
+  /**
+   * @return {Machine}
+   */
+  get machine() {
+    return this._machine;
   }
 
-  // <editor-fold desc="accessors" defaultstate="collapsed">
-
-  get localFileSearchDirs() {
-    return this._localFileSearchDirs || [];
+  /**
+   * @return {{debug(), info(), warning(), error()}}
+   */
+  get logger() {
+    return this._logger || {
+        debug: console.log,
+        info: console.info,
+        warning: console.warning,
+        error: console.error
+      };
   }
 
-  set localFileSearchDirs(value) {
-    this._localFileSearchDirs = value;
+  /**
+   * @param {{debug(), info(), warning(), error()}} value
+   */
+  set logger(value) {
+    this._logger = value;
   }
-
-  get sourceName() {
-    return this._sourceName || 'main';
-  }
-
-  set sourceName(value) {
-    this._sourceName = value;
-  }
-
-  // </editor-fold>
 }
 
 module.exports = Builder;
-module.exports.sourceTypes = sourceTypes;
