@@ -34,4 +34,43 @@ describe('Machine', () => {
       expect(e.message).toBe('Variable "abc" is not defined');
     }
   });
+
+  it('should handle conditional expressions', () => {
+
+    const src = `
+@if a
+  // if-consequent
+@elseif b
+  // if-elseif[0]
+@elseif c
+  // if-elseif[1]
+  @if defined(undefinedVar)
+    // ignored
+  @endif
+@else
+  // if-else
+@endif
+`;
+    expect(machine.execute(src, {
+      a: true
+    })).toBe(`\n  // if-consequent\n`);
+
+    expect(machine.execute(src, {
+      a: false,
+      b: true
+    })).toBe(`\n  // if-elseif[0]\n`);
+
+    expect(machine.execute(src, {
+      a: false,
+      b: false,
+      c: true
+    })).toBe(`\n  // if-elseif[1]\n`);
+
+    expect(machine.execute(src, {
+      a: false,
+      b: false,
+      c: false
+    })).toBe(`\n  // if-else\n`);
+
+  });
 });

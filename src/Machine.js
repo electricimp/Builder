@@ -54,7 +54,6 @@ class Machine {
       switch (insruction.type) {
 
         case INSTRUCTIONS.INCLUDE:
-
           this._executeInclude(insruction);
           break;
 
@@ -64,6 +63,10 @@ class Machine {
 
         case INSTRUCTIONS.SET:
           this._executeSet(insruction);
+          break;
+
+        case INSTRUCTIONS.CONDITIONAL:
+          this._executeConditional(insruction);
           break;
 
         default:
@@ -125,13 +128,47 @@ class Machine {
   }
 
   /**
-   * Eexecute "set" instruction
+   * Execute "set" instruction
    * @param {{type, variable, value}} instruction
    * @private
    */
   _executeSet(instruction) {
     this._context[instruction.variable] =
       this.expression.evaluate(instruction.value, this._context);
+  }
+
+  /**
+   * Execute "conditional" instruction
+   * @param {{type, test, consequent, alternate, elseifs}} instruction
+   * @private
+   */
+  _executeConditional(instruction) {
+    const test = this.expression.evaluate(instruction.test, this._context);
+
+    if (test) {
+
+      this._execute(instruction.consequent);
+
+    } else {
+
+      // elseifs
+      if (instruction.elseifs) {
+        for (const elseif of instruction.elseifs) {
+          if (this._executeConditional(elseif)) {
+            // "@elseif true" stops if-elseif...-else flow
+            return;
+          }
+        }
+      }
+
+      // else
+      if (instruction.alternate) {
+        this._execute(instruction.alternate);
+      }
+
+    }
+
+    return test;
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">

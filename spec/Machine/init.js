@@ -18,7 +18,7 @@ module.exports = (sampleFile) => {
 
     createMachine: () => {
       // @see https://www.npmjs.com/package/log#log-levels
-      const logger = new Log(process.env.SPEC_LOGLEVEL);
+      const logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
 
       const fileReader = new LocalFileReader();
       fileReader.logger = logger;
