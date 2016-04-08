@@ -6,7 +6,7 @@
 @if SOMEVAR1 == 123
   // should be included
 
-  @if level2
+  @if null
     @set abc def
     // alternate syntax for @set
     @set abc=def
@@ -18,9 +18,9 @@
 @elseif SOMEVAR2 == 0
   // should not be included
 @elseif SOMEVAR2 == 256
-  // should be included
+  // should not be included
   // @{__FILE__}:@{__LINE__}
-  // should be included
+  // should not be included
 @endif
 
 @if SOMEVAR2

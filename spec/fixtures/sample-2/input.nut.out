@@ -1,0 +1,4 @@
+// inc-a.nut:1 # inc-a.nut:1
+// inc-b.nut:1 # inc-b.nut:1
+// inc-a.nut:3 # inc-b.nut:3
+// input.nut:2 # input.nut:2

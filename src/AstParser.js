@@ -1,13 +1,7 @@
 'use strict';
 
 // instruction types
-const INSTRUCTIONS = {
-  SET: 'set',
-  ERROR: 'error',
-  OUTPUT: 'output',
-  INCLUDE: 'include',
-  CONDITIONAL: 'conditional'
-};
+const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 
 // states
 const STATES = {
@@ -44,8 +38,9 @@ class AstParser {
    * @return [] Root-level base block
    */
   parse(source) {
-    this._tokens = this._tokenize(source);
-    return this._parse([], STATES.OK);
+    return this._parse(
+      this._tokenize(source), [], STATES.OK
+    );
   }
 
   /**
@@ -208,15 +203,14 @@ class AstParser {
    * @return {*}
    * @private
    */
-  _parse(parent, state) {
+  _parse(tokens, parent, state) {
 
     let token;
 
-    for (token of this._tokens) {
+    for (token of tokens) {
 
       const node = {
-        _line: token._line,
-        _file: this.file
+        _line: token._line
       };
 
       switch (token.type) {
@@ -257,8 +251,7 @@ class AstParser {
           node.consequent = [];
           this._append(parent, node, state);
 
-          // this._tokens.next();
-          this._parse(node, STATES.IF_CONSEQUENT);
+          this._parse(tokens, node, STATES.IF_CONSEQUENT);
 
           break;
 
@@ -271,7 +264,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               if (parent.alternate) {
-                throw new Error(`Multiple @else statements are not allowed (${node._file}:${node._line})`);
+                throw new Error(`Multiple @else statements are not allowed (${this.file}:${node._line})`);
               }
 
               parent.alternate = [];
@@ -279,7 +272,7 @@ class AstParser {
               break;
 
             default:
-              throw new Error(`Unexpected @else (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @else (${this.file}:${node._line})`);
           }
 
           break;
@@ -305,10 +298,10 @@ class AstParser {
               break;
 
             case STATES.IF_ALTERNATE:
-              throw new Error(`@elseif after @else is not allowed (${node._file}:${node._line})`);
+              throw new Error(`@elseif after @else is not allowed (${this.file}:${node._line})`);
 
             default:
-              throw new Error(`Unexpected @elseif (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @elseif (${this.file}:${node._line})`);
           }
 
           break;
@@ -323,7 +316,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif (${node._file}:${node._line})`);
+              throw new Error(`Unexpected @endif (${this.file}:${node._line})`);
           }
 
           break;
@@ -350,7 +343,7 @@ class AstParser {
 
 
         default:
-          throw new Error(`Unsupported token type "${token.type}" (${node._file}:${node._line})`);
+          throw new Error(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
       }
     }
 
@@ -403,6 +396,9 @@ class AstParser {
     return this._file || 'main';
   }
 
+  /**
+   * Set filename for error messages
+   */
   set file(value) {
     this._file = value;
   }

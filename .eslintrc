@@ -7,7 +7,7 @@
     "binaryLiterals": true,
     "blockBindings": true,
     "classes": true,
-    "defaultParams": true,
+    "defaultParams": false,
     "destructuring": true,
     "forOf": true,
     "generators": true,

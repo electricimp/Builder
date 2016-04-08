@@ -1,0 +1,37 @@
+[
+  {
+    "_line": 1,
+    "type": "include",
+    "value": "\"inc-a.nut\""
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": "// ",
+    "computed": true
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": "__FILE__",
+    "computed": false
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": ":",
+    "computed": true
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": "__LINE__",
+    "computed": false
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": " # input.nut:2\n",
+    "computed": true
+  }
+]
