@@ -1,9 +1,5 @@
 /**
  * Builder VM
- *
- * Events:
- *  - log {level, message}
- *
  * @author Mikhail Yurasov <me@yurasov.me>
  */
 
@@ -20,6 +16,7 @@ const INSTRUCTIONS = {
   CONDITIONAL: 'conditional'
 };
 
+// custom errors
 const Errors = {
   'UserDefinedError': class UserDefinedError extends Error {
   }
@@ -34,7 +31,8 @@ class Machine {
    */
   execute(source, context) {
     // reset state
-    this._output = '';
+    this._output = ''; // output buffer
+    this._file = null; // current file
     this._context = Object.assign(context || {}, {__FILE__: 'main'});
 
     // parse & execute code
@@ -133,7 +131,7 @@ class Machine {
     const output = instruction.computed
       ? instruction.value
       : this.expression.evaluate(instruction.value, this._context);
-    this._output += output;
+    this._out(output);
   }
 
   /**
@@ -188,6 +186,25 @@ class Machine {
     }
 
     return test;
+  }
+
+  /**
+   * Perform outoput operation
+   * @param {string} output
+   * @private
+   */
+  _out(output) {
+    // generate line control statement
+    if (this.generateLineControlStatements) {
+      if (this._file !== this._context.__FILE__ /* detect file switch */) {
+        this._output +=
+          `#line ${this._context.__LINE__} "${this._context.__FILE__.replace(/\"/g, '\\\"')}"\n`;
+        this._file = this._context.__FILE__;
+      }
+    }
+
+    // append output
+    this._output += output;
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -251,6 +268,22 @@ class Machine {
    */
   set parser(value) {
     this._astParser = value;
+  }
+
+  /**
+   * Generate line control statements?
+   * @see https://gcc.gnu.org/onlinedocs/cpp/Line-Control.html
+   * @return {boolean}
+   */
+  get generateLineControlStatements() {
+    return this._generateLineControlStatements || false;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  set generateLineControlStatements(value) {
+    this._generateLineControlStatements = value;
   }
 
   // </editor-fold>

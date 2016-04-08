@@ -38,12 +38,17 @@ module.exports = (sampleFile) => {
       machine.expression = expression;
       machine.parser = parser;
       machine.logger = logger;
+      machine.generateLineControlStatements = false;
 
       return machine;
     },
 
     getResult: () => {
       return fs.readFileSync(sampleFile + '.out', 'utf-8');
+    },
+
+    getResultWithLineControl: () => {
+      return fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
     }
   };
 };
