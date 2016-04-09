@@ -182,4 +182,58 @@ describe('Parser', () => {
     }
   });
 
+  it('should detect unclosed @if #1', () => {
+    try {
+      parser.parse(
+        `@if 1`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unclosed @if statement (main:1)');
+    }
+  });
+
+  it('should detect unclosed @if #2', () => {
+    try {
+      parser.parse(
+        `something\n@if 1`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unclosed @if statement (main:2)');
+    }
+  });
+
+  it('should detect unclosed @macro', () => {
+    try {
+      parser.parse(
+        `@macro abc(def)`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unclosed @macro statement (main:1)');
+    }
+  });
+
+  it('should detect incorrect syntax for @endmacro', () => {
+    try {
+      parser.parse(
+        `@endmacro 123`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Syntax error in @endmacro (main:1)');
+    }
+  });
+
+  it('should detect unexpected @endmacro', () => {
+    try {
+      parser.parse(
+        `@endmacro`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unexpected @endmacro (main:1)');
+    }
+  });
 });

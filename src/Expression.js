@@ -49,6 +49,15 @@
 
 const jsep = require('jsep');
 
+const Errors = {
+  'NotMacroError': class NotMacroError extends Error {
+  },
+  'MacroDeclarationError': class MacroDeclarationError extends Error {
+  },
+  'FunctionCallError': class FunctionCallError extends Error {
+  }
+};
+
 class Expression {
 
   constructor() {
@@ -80,7 +89,53 @@ class Expression {
    * @return {*}
    */
   evaluate(expression, context) {
-    return this._evaluate(jsep(expression), context || {});
+    return this._evaluate(this._jsep(expression), context || {});
+  }
+
+  /**
+   * Parse macro call expression
+   * @param {string} text - expression text
+   * @param {{}} context - context
+   * @param {{}} macros - defined macroses
+   * @return {{name, args: []}}
+   */
+  parseMacroCall(text, context, definedMacroses) {
+    const root = this._jsep(text);
+
+    if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
+        || !definedMacroses.hasOwnProperty(root.callee.name)) {
+      // not a macro
+      throw new Errors.NotMacroError();
+    }
+
+    return {
+      name: root.callee.name,
+      args: root['arguments'].map(v => this._evaluate(v, context))
+    };
+  }
+
+  /**
+   * Parse macro declartion
+   * @param text - declaration text
+   * @return {{name, args: []}}
+   */
+  parseMacroDeclaration(text) {
+    const root = this._jsep(text);
+
+    if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
+      throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);
+    }
+
+    for (const arg of root['arguments']) {
+      if (arg.type !== 'Identifier') {
+        throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);
+      }
+    }
+
+    return {
+      name: root.callee.name,
+      args: root['arguments'].map(v => v.name)
+    };
   }
 
   /**
@@ -261,19 +316,27 @@ class Expression {
 
           const args = node.arguments.map(v => this._evaluate(v, context));
 
-          if (args.length < 1) {
-            throw new Error('Wrong number of arguments for ' + callee + '()');
-          }
-
           switch (callee) {
             case 'abs':
             case 'max':
             case 'min':
+
+              if (args.length < 1) {
+                throw new Error('Wrong number of arguments for ' + callee + '()');
+              }
+
               res = Math[callee].apply(this, args);
               break;
 
             default:
-              throw new Error(`Function "${callee}" is not defined`);
+
+              if (node.callee.type === 'Identifier') {
+                throw new Errors.FunctionCallError(`Function "${node.callee.name}" is not defined`);
+              } else if (typeof callee === 'string' || callee instanceof String) {
+                throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
+              } else {
+                throw new Errors.FunctionCallError(`Failed to call a non-callable expression`);
+              }
           }
 
         }
@@ -290,3 +353,4 @@ class Expression {
 }
 
 module.exports = Expression;
+module.exports.Errors = Errors;

@@ -1,0 +1,23 @@
+#line 1 "main.nut"
+main.nut:1 // main.nut:1
+
+#line 1 "a.nut"
+a.nut:1 // a.nut:1
+
+// should propagate to global scope
+
+#line 4 "main.nut"
+
+123 // 123
+
+
+  456 // 456 - local A overrides global A
+  main.nut // main.nut
+
+123 // 123 - global A should be used
+
+#line 7 "a.nut"
+a.nut:7 // a.nut:5
+1 // 1 - local value of a
+#line 17 "main.nut"
+null // null - should not be defined here
