@@ -161,4 +161,70 @@ describe('Expression', () => {
     }
 
   });
+
+  // macro declaration expressions
+
+  it('should parse macro declarations #1', () => {
+    const res = expression.parseMacroDeclaration('macro1(arg1, arg2)');
+    expect(res.name).toBe('macro1');
+    expect(res.args).toEqual(['arg1', 'arg2']);
+  });
+
+  it('should parse macro declarations #2', () => {
+    const res = expression.parseMacroDeclaration('macro1()');
+    expect(res.name).toBe('macro1');
+    expect(res.args).toEqual([]);
+  });
+
+  it('should fail on syntax error in macro declaration #1', () => {
+    try {
+      expression.parseMacroDeclaration('macro1');
+      fail();
+    } catch  (e) {
+      expect(e instanceof Expression.Errors.MacroDeclarationError).toBeTruthy();
+      expect(e.message).toBe('Syntax error in macro declaration');
+    }
+  });
+
+  it('should fail on syntax error in macro declaration #2', () => {
+    try {
+      expression.parseMacroDeclaration('macro1(1)');
+      fail();
+    } catch  (e) {
+      expect(e instanceof Expression.Errors.MacroDeclarationError).toBeTruthy();
+      expect(e.message).toBe('Syntax error in macro declaration');
+    }
+  });
+
+  // macro call expressions
+
+  it('should parse macro call #1', () => {
+    const res = expression.parseMacroCall('macro1(1, 2)', {}, {'macro1': {}});
+    expect(res.name).toBe('macro1');
+    expect(res.args).toEqual([1, 2]);
+  });
+
+  it('should parse macro call #2', () => {
+    const res = expression.parseMacroCall('macro1()', {}, {'macro1': {}});
+    expect(res.name).toBe('macro1');
+    expect(res.args).toEqual([]);
+  });
+
+  it('should fail on call on undefined macro #1', () => {
+    try {
+      expression.parseMacroCall('macro1()', {}, {});
+      fail();
+    } catch  (e) {
+      expect(e instanceof Expression.Errors.NotMacroError).toBeTruthy();
+    }
+  });
+
+  it('should fail to parse non-macro call expression', () => {
+    try {
+      expression.parseMacroCall('macro1', {}, {'macro1': {}});
+      fail();
+    } catch  (e) {
+      expect(e instanceof Expression.Errors.NotMacroError).toBeTruthy();
+    }
+  });
 });

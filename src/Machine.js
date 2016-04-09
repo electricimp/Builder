@@ -238,7 +238,7 @@ class Machine {
    */
   _executeMacro(instruction) {
     // parse declaration of a macro
-    const macro = this.expression.parseDeclaration(instruction.declaration);
+    const macro = this.expression.parseMacroDeclaration(instruction.declaration);
 
     // save macro
     this._macroses[macro.name] = {

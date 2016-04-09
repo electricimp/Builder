@@ -117,7 +117,7 @@ class Expression {
    * @param text - declaration text
    * @return {{name, args: []}}
    */
-  parseDeclaration(text) {
+  parseMacroDeclaration(text) {
     const root = this._jsep(text);
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
