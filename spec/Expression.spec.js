@@ -180,7 +180,7 @@ describe('Expression', () => {
     try {
       expression.parseMacroDeclaration('macro1');
       fail();
-    } catch  (e) {
+    } catch (e) {
       expect(e instanceof Expression.Errors.MacroDeclarationError).toBeTruthy();
       expect(e.message).toBe('Syntax error in macro declaration');
     }
@@ -190,7 +190,7 @@ describe('Expression', () => {
     try {
       expression.parseMacroDeclaration('macro1(1)');
       fail();
-    } catch  (e) {
+    } catch (e) {
       expect(e instanceof Expression.Errors.MacroDeclarationError).toBeTruthy();
       expect(e.message).toBe('Syntax error in macro declaration');
     }
@@ -214,7 +214,7 @@ describe('Expression', () => {
     try {
       expression.parseMacroCall('macro1()', {}, {});
       fail();
-    } catch  (e) {
+    } catch (e) {
       expect(e instanceof Expression.Errors.NotMacroError).toBeTruthy();
     }
   });
@@ -223,8 +223,38 @@ describe('Expression', () => {
     try {
       expression.parseMacroCall('macro1', {}, {'macro1': {}});
       fail();
-    } catch  (e) {
+    } catch (e) {
       expect(e instanceof Expression.Errors.NotMacroError).toBeTruthy();
+    }
+  });
+
+  it('should fail to call undefined function #1', ()=> {
+    try {
+      expression.evaluate('undefF()');
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
+      expect(e.message).toBe('Function "undefF" is not defined');
+    }
+  });
+
+  it('should fail to call undefined function #2', ()=> {
+    try {
+      expression.evaluate('(0)()');
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
+      expect(e.message).toBe('Failed to call a non-callable expression');
+    }
+  });
+
+  it('should fail to call undefined function #3', ()=> {
+    try {
+      expression.evaluate('("abc")()');
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
+      expect(e.message).toBe('Function "abc" is not defined');
     }
   });
 });

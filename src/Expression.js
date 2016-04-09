@@ -53,6 +53,8 @@ const Errors = {
   'NotMacroError': class NotMacroError extends Error {
   },
   'MacroDeclarationError': class MacroDeclarationError extends Error {
+  },
+  'FunctionCallError': class FunctionCallError extends Error {
   }
 };
 
@@ -314,19 +316,27 @@ class Expression {
 
           const args = node.arguments.map(v => this._evaluate(v, context));
 
-          if (args.length < 1) {
-            throw new Error('Wrong number of arguments for ' + callee + '()');
-          }
-
           switch (callee) {
             case 'abs':
             case 'max':
             case 'min':
+
+              if (args.length < 1) {
+                throw new Error('Wrong number of arguments for ' + callee + '()');
+              }
+
               res = Math[callee].apply(this, args);
               break;
 
             default:
-              throw new Error(`Function "${callee}" is not defined`);
+
+              if (node.callee.type === 'Identifier') {
+                throw new Errors.FunctionCallError(`Function "${node.callee.name}" is not defined`);
+              } else if (typeof callee === 'string' || callee instanceof String) {
+                throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
+              } else {
+                throw new Errors.FunctionCallError(`Failed to call a non-callable expression`);
+              }
           }
 
         }
