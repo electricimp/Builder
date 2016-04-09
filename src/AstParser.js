@@ -6,6 +6,7 @@ const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 // states
 const STATES = {
   OK: 'ok',
+  MACRO: 'macro',
   IF_ELSEIF: 'if_elseif',
   IF_ALTERNATE: 'if_alternate',
   IF_CONSEQUENT: 'if_consequent'
@@ -16,9 +17,11 @@ const TOKENS = {
   IF: 'if',
   SET: 'set',
   ELSE: 'else',
+  MACRO: 'macro',
   ENDIF: 'endif',
   ELSEIF: 'elseif',
   INCLUDE: 'include',
+  ENDMACRO: 'endmacro',
   SOURCE_FRAGMENT: 'source_fragment',
   INLINE_EXPRESSION: 'inline_expression'
 };
@@ -27,7 +30,7 @@ const TOKENS = {
 const LINES = /(.*(?:\n|\r\n)?)/g;
 
 // regex to detect if fragment is a statement
-const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error)\b(.*)$/;
+const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro)\b(.*)$/;
 
 class AstParser {
 
@@ -135,6 +138,25 @@ class AstParser {
 
             token.type = TOKENS.ERROR;
             token.args = [arg];
+            break;
+
+          case 'macro':
+
+            if ('' === arg) {
+              throw new Error(`Syntax error in @macro (${this.file}:${token._line})`);
+            }
+
+            token.type = TOKENS.MACRO;
+            token.args = [arg];
+            break;
+
+          case 'endmacro':
+
+            if ('' !== arg) {
+              throw new Error(`Syntax error in @endmacro (${this.file}:${token._line})`);
+            }
+
+            token.type = TOKENS.ENDMACRO;
             break;
 
           default:
@@ -250,7 +272,6 @@ class AstParser {
           node.test = token.args[0];
           node.consequent = [];
           this._append(parent, node, state);
-
           this._parse(tokens, node, STATES.IF_CONSEQUENT);
 
           break;
@@ -341,6 +362,30 @@ class AstParser {
 
           break;
 
+        // macro declaration start
+        case TOKENS.MACRO:
+
+          node.type = INSTRUCTIONS.MACRO;
+          node.definition = token.args[0];
+          node.body = [];
+          this._append(parent, node, state);
+          this._parse(tokens, node, STATES.MACRO);
+
+          break;
+
+        // end of macro declaration
+        case TOKENS.ENDMACRO:
+
+          switch (state) {
+            case STATES.MACRO:
+              // we got here through recursion, get back
+              return;
+
+            default:
+              throw new Error(`Unexpected @endmacro (${this.file}:${node._line})`);
+          }
+
+          break;
 
         default:
           throw new Error(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
@@ -356,6 +401,9 @@ class AstParser {
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
         throw new Error(`Unclosed @if statement (${this.file}:${token._line})`);
+
+      case STATES.MACRO:
+        throw new Error(`Unclosed @macro statement (${this.file}:${token._line})`);
 
       default:
         throw new Error(`Syntax error (${parent.file})`);
@@ -389,6 +437,13 @@ class AstParser {
       case STATES.IF_ELSEIF:
         parent.elseifs[parent.elseifs.length - 1].consequent.push(node);
         break;
+
+      case STATES.MACRO:
+        parent.body.push(node);
+        break;
+
+      default:
+        throw new Error(`Unsupported state "${state}"`);
     }
   }
 
