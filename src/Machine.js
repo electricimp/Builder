@@ -29,14 +29,11 @@ class Machine {
   /**
    * Execute some code
    * @param {string} source
-   * @param {{__FILE__}} context - defined variables
+   * @param {{}} context - global context
    */
   execute(source, context) {
     // reset state
-    this._file = null; // current file
-    this._output = ''; // output buffer
-    this._macroses = {}; // macroses
-    this._context = Object.assign({__FILE__: 'main'}, context);
+    this._reset(context);
 
     // parse & execute code
     const ast = this.parser.parse(source);
@@ -46,41 +43,60 @@ class Machine {
   }
 
   /**
-   * Execute AST
-   * @param {[]} ast
-   * @param {{__FILE__}} context - defined variables
+   * Reset state
+   * @param {{}} context
    * @private
    */
-  _execute(ast) {
+  _reset(context) {
+    this._output = ''; // output buffer
+
+    // global context
+    this._globals = Object.assign({
+      __FILE__: this.file
+    }, context);
+
+    this._macroses = {}; // macroses
+
+    // file which produced the last output
+    this._lastOutputFile = null;
+  }
+
+  /**
+   * Execute AST
+   * @param {[]} ast
+   * @param {{}} context - variables
+   * @private
+   */
+  _execute(ast, context) {
     for (const insruction of ast) {
 
       // set __LINE__ variable
-      this._context.__LINE__ = insruction._line;
+      this._globals.__LINE__ = insruction._line;
 
       switch (insruction.type) {
 
         case INSTRUCTIONS.INCLUDE:
-          this._executeInclude(insruction);
+          this._executeInclude(insruction, context);
           break;
 
         case INSTRUCTIONS.OUTPUT:
-          this._executeOutput(insruction);
+          this._executeOutput(insruction, context);
           break;
 
         case INSTRUCTIONS.SET:
-          this._executeSet(insruction);
+          this._executeSet(insruction, context);
           break;
 
         case INSTRUCTIONS.CONDITIONAL:
-          this._executeConditional(insruction);
+          this._executeConditional(insruction, context);
           break;
 
         case INSTRUCTIONS.ERROR:
-          this._executeError(insruction);
+          this._executeError(insruction, context);
           break;
 
         case INSTRUCTIONS.MACRO:
-          this._executeMacro(insruction);
+          this._executeMacro(insruction, context);
           break;
 
         default:
@@ -93,12 +109,13 @@ class Machine {
   /**
    * Execute "include" instruction
    * @param {{type, value}} instruction
+   * @param {{}} context - local variables
    * @private
    */
-  _executeInclude(instruction) {
+  _executeInclude(instruction, context) {
     try {
       const macro = this.expression.parseMacroCall(
-        instruction.value, this._context, this._macroses
+        instruction.value, this._globals, this._macroses
       );
 
       // macro inclusion
@@ -118,11 +135,12 @@ class Machine {
   /**
    * Include source
    * @param {string} source
+   * @param {{}} context - local variables
    * @private
    */
-  _includeSource(source) {
+  _includeSource(source, context) {
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(source, this._context);
+    const includePath = this.expression.evaluate(source, this._globals);
 
     let reader;
 
@@ -145,46 +163,61 @@ class Machine {
     const ast = this.parser.parse(content);
 
     // execute included AST
-    const parentFile = this._context.__FILE__;
-    this._context.__FILE__ = path.basename(includePath);
+    const parentFile = this._globals.__FILE__;
+    this._globals.__FILE__ = path.basename(includePath);
     this._execute(ast);
 
     // restore __FILE__ variable
-    this._context.__FILE__ = parentFile;
+    this._globals.__FILE__ = parentFile;
   }
 
   /**
    * Include macro
-   * @param {{name, args}} macro
+   * @param {{name, args: []}} macro
+   * @param {{}} context - local variables
    * @private
    */
-  _includeMacro(macro) {
-    const parentFile = this._context.__FILE__;
-    this._context.__FILE__ = this._macroses[macro.name].file;
+  _includeMacro(macro, context) {
+    const parentFile = this._globals.__FILE__;
+    this._globals.__FILE__ = this._macroses[macro.name].file;
+
+    // set macro arguments
+
+    const argNames = this._macroses[macro.name].args;
+    const argValues = macro.args;
+
+    for (let i = 0; i < Math.min(argNames.length, argValues.length); i++) {
+      this._globals[argNames[i]] = argValues[i];
+    }
+
+    //
+
     this._execute(this._macroses[macro.name].body);
-    this._context.__FILE__ = parentFile;
+    this._globals.__FILE__ = parentFile;
   }
 
   /**
    * Execute "output" instruction
    * @param {{type, value, computed}} instruction
+   * @param {{}} context - local variables
    * @private
    */
-  _executeOutput(instruction) {
+  _executeOutput(instruction, context) {
     const output = instruction.computed
       ? instruction.value
-      : this.expression.evaluate(instruction.value, this._context);
+      : this.expression.evaluate(instruction.value, this._globals);
     this._out(output);
   }
 
   /**
    * Execute "set" instruction
    * @param {{type, variable, value}} instruction
+   * @param {{}} context - local variables
    * @private
    */
-  _executeSet(instruction) {
-    this._context[instruction.variable] =
-      this.expression.evaluate(instruction.value, this._context);
+  _executeSet(instruction, context) {
+    this._globals[instruction.variable] =
+      this.expression.evaluate(instruction.value, this._globals);
   }
 
   /**
@@ -193,17 +226,18 @@ class Machine {
    */
   _executeError(instruction) {
     throw new Errors.UserDefinedError(
-      this.expression.evaluate(instruction.value, this._context)
+      this.expression.evaluate(instruction.value, this._globals)
     );
   }
 
   /**
    * Execute "conditional" instruction
    * @param {{type, test, consequent, alternate, elseifs}} instruction
+   * @param {{}} context - local variables
    * @private
    */
-  _executeConditional(instruction) {
-    const test = this.expression.evaluate(instruction.test, this._context);
+  _executeConditional(instruction, context) {
+    const test = this.expression.evaluate(instruction.test, this._globals);
 
     if (test) {
 
@@ -234,15 +268,16 @@ class Machine {
   /**
    * Execute macro instruction
    * @param {{type, declaration, body: []}} instruction
+   * @param {{}} context - local variables
    * @private
    */
-  _executeMacro(instruction) {
+  _executeMacro(instruction, context) {
     // parse declaration of a macro
     const macro = this.expression.parseMacroDeclaration(instruction.declaration);
 
     // save macro
     this._macroses[macro.name] = {
-      file: this._context.__FILE__,
+      file: this._globals.__FILE__,
       args: macro.args,
       body: instruction.body
     };
@@ -256,10 +291,10 @@ class Machine {
   _out(output) {
     // generate line control statement
     if (this.generateLineControlStatements) {
-      if (this._file !== this._context.__FILE__ /* detect file switch */) {
+      if (this._lastOutputFile !== this._globals.__FILE__ /* detect file switch */) {
         this._output +=
-          `#line ${this._context.__LINE__} "${this._context.__FILE__.replace(/\"/g, '\\\"')}"\n`;
-        this._file = this._context.__FILE__;
+          `#line ${this._globals.__LINE__} "${this._globals.__FILE__.replace(/\"/g, '\\\"')}"\n`;
+        this._lastOutputFile = this._globals.__FILE__;
       }
     }
 
@@ -360,7 +395,22 @@ class Machine {
     this._macroExpression = value;
   }
 
-  // </editor-fold>
+  /**
+   * Filename
+   * @return {string}
+   */
+  get file() {
+    return this._file || 'main';
+  }
+
+  /**
+   * @param {string} value
+   */
+  set file(value) {
+    this._file = value;
+  }
+
+// </editor-fold>
 }
 
 module.exports = Machine;
