@@ -49,6 +49,13 @@
 
 const jsep = require('jsep');
 
+const Errors = {
+  'NotMacroError': class NotMacroError extends Error {
+  },
+  'MacroDeclarationError': class MacroDeclarationError extends Error {
+  }
+};
+
 class Expression {
 
   constructor() {
@@ -81,6 +88,52 @@ class Expression {
    */
   evaluate(expression, context) {
     return this._evaluate(this._jsep(expression), context || {});
+  }
+
+  /**
+   * Parse macro call expression
+   * @param {string} text - expression text
+   * @param {{}} context - context
+   * @param {{}} macros - defined macroses
+   * @return {{name, args: []}}
+   */
+  parseMacroCall(text, context, definedMacroses) {
+    const root = this._jsep(text);
+
+    if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
+        || !definedMacroses.hasOwnProperty(root.callee.name)) {
+      // not a macro
+      throw new Errors.NotMacroError();
+    }
+
+    return {
+      name: root.callee.name,
+      args: root['arguments'].map(v => this._evaluate(v, context))
+    };
+  }
+
+  /**
+   * Parse macro declartion
+   * @param text - declaration text
+   * @return {{name, args: []}}
+   */
+  parseDeclaration(text) {
+    const root = this._jsep(text);
+
+    if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
+      throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);
+    }
+
+    for (const arg of root['arguments']) {
+      if (arg.type !== 'Identifier') {
+        throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);
+      }
+    }
+
+    return {
+      name: root.callee.name,
+      args: root['arguments'].map(v => v.name)
+    };
   }
 
   /**
@@ -290,3 +343,4 @@ class Expression {
 }
 
 module.exports = Expression;
+module.exports.Errors = Errors;
