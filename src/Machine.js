@@ -6,6 +6,7 @@
 'use strict';
 
 const path = require('path');
+const Expression = require('./Expression');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -34,7 +35,7 @@ class Machine {
     // reset state
     this._file = null; // current file
     this._output = ''; // output buffer
-    this._macros = {}; // macroses
+    this._macroses = {}; // macroses
     this._context = Object.assign({__FILE__: 'main'}, context);
 
     // parse & execute code
@@ -95,9 +96,33 @@ class Machine {
    * @private
    */
   _executeInclude(instruction) {
+    try {
+      const macro = this.expression.parseMacroCall(
+        instruction.value, this._context, this._macroses
+      );
 
+      // macro inclusion
+      this._includeMacro(macro);
+
+    } catch (e) {
+      // retrow non-expected errors
+      if (!(e instanceof Expression.Errors.NotMacroError)) {
+        throw e;
+      }
+
+      // source inclusion
+      this._includeSource(instruction.value);
+    }
+  }
+
+  /**
+   * Include source
+   * @param {string} source
+   * @private
+   */
+  _includeSource(source) {
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(instruction.value, this._context);
+    const includePath = this.expression.evaluate(source, this._context);
 
     let reader;
 
@@ -114,10 +139,10 @@ class Machine {
 
     // read
     this.logger.info(`Including local file "${includePath}"`);
-    const source = reader.read(includePath);
+    const content = reader.read(includePath);
 
     // parse
-    const ast = this.parser.parse(source);
+    const ast = this.parser.parse(content);
 
     // execute included AST
     const parentFile = this._context.__FILE__;
@@ -125,6 +150,18 @@ class Machine {
     this._execute(ast);
 
     // restore __FILE__ variable
+    this._context.__FILE__ = parentFile;
+  }
+
+  /**
+   * Include macro
+   * @param {{name, args}} macro
+   * @private
+   */
+  _includeMacro(macro) {
+    const parentFile = this._context.__FILE__;
+    this._context.__FILE__ = this._macroses[macro.name].file;
+    this._execute(this._macroses[macro.name].body);
     this._context.__FILE__ = parentFile;
   }
 
@@ -201,12 +238,12 @@ class Machine {
    */
   _executeMacro(instruction) {
     // parse declaration of a macro
-    this.macroExpression.parseDeclaration(instruction.declaration);
+    const macro = this.expression.parseDeclaration(instruction.declaration);
 
     // save macro
-    this._macros[this.macroExpression.macroName] = {
+    this._macroses[macro.name] = {
       file: this._context.__FILE__,
-      args: this.macroExpression.args,
+      args: macro.args,
       body: instruction.body
     };
   }
