@@ -81,4 +81,14 @@ describe('Machine', () => {
       expect(e.message).toBe('abc');
     }
   });
+
+  it('should not allow macro redeclaration', () => {
+    try {
+      machine.execute(`@macro A()\n@endmacro\n@macro A()\n@endmacro`);
+      fail();
+    } catch (e) {
+      expect(e instanceof Machine.Errors.MacroIsAlreadyDeclared).toBe(true);
+      expect(e.message).toBe('Macro "A" is alredy declared in main:1 (main:3)');
+    }
+  });
 });

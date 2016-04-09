@@ -21,6 +21,8 @@ const INSTRUCTIONS = {
 // custom errors
 const Errors = {
   'UserDefinedError': class UserDefinedError extends Error {
+  },
+  'MacroIsAlreadyDeclared': class MacroIsAlreadyDeclared extends Error {
   }
 };
 
@@ -268,7 +270,7 @@ class Machine {
   }
 
   /**
-   * Execute macro instruction
+   * Execute macro declaration instruction
    * @param {{type, declaration, body: []}} instruction
    * @param {{}} context
    * @private
@@ -277,9 +279,17 @@ class Machine {
     // parse declaration of a macro
     const macro = this.expression.parseMacroDeclaration(instruction.declaration);
 
+    // do not allow macro redeclaration
+    if (this._macroses.hasOwnProperty(macro.name)) {
+      throw new Errors.MacroIsAlreadyDeclared(`Macro "${macro.name}" is alredy declared in ` +
+                      `${this._macroses[macro.name].file}:${this._macroses[macro.name].line}` +
+                      ` (${context.__FILE__}:${context.__LINE__})`);
+    }
+
     // save macro
     this._macroses[macro.name] = {
-      file: context.__FILE__,
+      file: context.__FILE__, // file of declaration
+      line: context.__LINE__, // line of eclaration
       args: macro.args,
       body: instruction.body
     };
