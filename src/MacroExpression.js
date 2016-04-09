@@ -41,10 +41,6 @@ class MacroExpression {
     }
   }
 
-  parseCall(source, context) {
-
-  }
-
   _reset() {
     this.args = [];
     this.macroName = '';

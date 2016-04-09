@@ -11,9 +11,10 @@ const path = require('path');
 const INSTRUCTIONS = {
   SET: 'set',
   ERROR: 'error',
+  MACRO: 'macro',
   OUTPUT: 'output',
   INCLUDE: 'include',
-  CONDITIONAL: 'conditional'
+  CONDITIONAL: 'conditional',
 };
 
 // custom errors
@@ -31,9 +32,10 @@ class Machine {
    */
   execute(source, context) {
     // reset state
-    this._output = ''; // output buffer
     this._file = null; // current file
-    this._context = Object.assign(context || {}, {__FILE__: 'main'});
+    this._output = ''; // output buffer
+    this._macros = {}; // macroses
+    this._context = Object.assign({__FILE__: 'main'}, context);
 
     // parse & execute code
     const ast = this.parser.parse(source);
@@ -74,6 +76,10 @@ class Machine {
 
         case INSTRUCTIONS.ERROR:
           this._executeError(insruction);
+          break;
+
+        case INSTRUCTIONS.MACRO:
+          this._executeMacro(insruction);
           break;
 
         default:
@@ -189,6 +195,23 @@ class Machine {
   }
 
   /**
+   * Execute macro instruction
+   * @param {{type, declaration, body: []}} instruction
+   * @private
+   */
+  _executeMacro(instruction) {
+    // parse declaration of a macro
+    this.macroExpression.parseDeclaration(instruction.declaration);
+
+    // save macro
+    this._macros[this.macroExpression.macroName] = {
+      file: this._context.__FILE__,
+      args: this.macroExpression.args,
+      body: instruction.body
+    };
+  }
+
+  /**
    * Perform outoput operation
    * @param {string} output
    * @private
@@ -284,6 +307,20 @@ class Machine {
    */
   set generateLineControlStatements(value) {
     this._generateLineControlStatements = value;
+  }
+
+  /**
+   * @return {MacroExpression}
+   */
+  get macroExpression() {
+    return this._macroExpression;
+  }
+
+  /**
+   * @param {MacroExpression} value
+   */
+  set macroExpression(value) {
+    this._macroExpression = value;
   }
 
   // </editor-fold>
