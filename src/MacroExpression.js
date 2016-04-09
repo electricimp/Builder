@@ -1,5 +1,5 @@
 /**
- * Macro definition and call parser
+ * Macro declaration and call parser
  * @author Mikhail Yurasov <me@yurasov.me>
  */
 
@@ -7,25 +7,34 @@
 
 const jsep = require('jsep');
 
+const Errors = {
+  'SyntaxError': class SyntaxError extends Error {
+  }
+};
+
 class MacroExpression {
 
   constructor() {
     this._reset();
   }
 
-  parseDefinition(source) {
+  /**
+   * Parse macro declartion
+   * @param source
+   */
+  parseDeclaration(source) {
     this._reset();
     const root = jsep(source);
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
-      throw new Error(`Syntax error in macro definition`);
+      throw new Errors.SyntaxError(`Syntax error in macro declaration`);
     }
 
     this.macroName = root.callee.name;
 
     for (const arg of root.arguments) {
       if (arg.type !== 'Identifier') {
-        throw new Error(`Syntax error in macro definition`);
+        throw new Errors.SyntaxError(`Syntax error in macro declaration`);
       }
 
       this.args.push(arg.name);
@@ -60,3 +69,4 @@ class MacroExpression {
 }
 
 module.exports = MacroExpression;
+module.exports.Errors = Errors;
