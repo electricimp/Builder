@@ -214,4 +214,26 @@ describe('Parser', () => {
       expect(e.message).toEqual('Unclosed @macro statement (main:1)');
     }
   });
+
+  it('should detect incorrect syntax for @endmacro', () => {
+    try {
+      parser.parse(
+        `@endmacro 123`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Syntax error in @endmacro (main:1)');
+    }
+  });
+
+  it('should detect unexpected @endmacro', () => {
+    try {
+      parser.parse(
+        `@endmacro`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unexpected @endmacro (main:1)');
+    }
+  });
 });

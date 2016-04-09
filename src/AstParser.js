@@ -366,7 +366,7 @@ class AstParser {
         case TOKENS.MACRO:
 
           node.type = INSTRUCTIONS.MACRO;
-          node.definition = token.args[0];
+          node.declaration = token.args[0];
           node.body = [];
           this._append(parent, node, state);
           this._parse(tokens, node, STATES.MACRO);
