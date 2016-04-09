@@ -29,7 +29,7 @@ class Machine {
   /**
    * Execute some code
    * @param {string} source
-   * @param {{}={}} context - global context
+   * @param {{}={}} context
    */
   execute(source, context) {
     // reset state
@@ -37,7 +37,7 @@ class Machine {
 
     // parse & execute code
     const ast = this.parser.parse(source);
-    this._execute(ast, this._globals);
+    this._execute(ast, this._mergeContexts({__FILE__: this.file}, this._globals, context));
 
     return this._output;
   }
@@ -49,12 +49,7 @@ class Machine {
    */
   _reset(context) {
     this._output = ''; // output buffer
-
-    // global context
-    this._globals = Object.assign({
-      __FILE__: this.file
-    }, context);
-
+    this._globals = {}; // global context
     this._macroses = {}; // macroses
 
     // file which produced the last output
@@ -64,7 +59,7 @@ class Machine {
   /**
    * Execute AST
    * @param {[]} ast
-   * @param {{}} context - variables
+   * @param {{}} context
    * @private
    */
   _execute(ast, context) {
@@ -115,7 +110,7 @@ class Machine {
   /**
    * Execute "include" instruction
    * @param {{type, value}} instruction
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _executeInclude(instruction, context) {
@@ -141,7 +136,7 @@ class Machine {
   /**
    * Include source
    * @param {string} source
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _includeSource(source, context) {
@@ -180,7 +175,7 @@ class Machine {
   /**
    * Include macro
    * @param {{name, args: []}} macro
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _includeMacro(macro, context) {
@@ -204,7 +199,7 @@ class Machine {
   /**
    * Execute "output" instruction
    * @param {{type, value, computed}} instruction
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _executeOutput(instruction, context) {
@@ -217,7 +212,7 @@ class Machine {
   /**
    * Execute "set" instruction
    * @param {{type, variable, value}} instruction
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _executeSet(instruction, context) {
@@ -228,7 +223,7 @@ class Machine {
   /**
    * Execute "error: instruction
    * @param {{type, value}} instruction
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _executeError(instruction, context) {
@@ -240,7 +235,7 @@ class Machine {
   /**
    * Execute "conditional" instruction
    * @param {{type, test, consequent, alternate, elseifs}} instruction
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _executeConditional(instruction, context) {
@@ -275,7 +270,7 @@ class Machine {
   /**
    * Execute macro instruction
    * @param {{type, declaration, body: []}} instruction
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _executeMacro(instruction, context) {
@@ -293,7 +288,7 @@ class Machine {
   /**
    * Perform outoput operation
    * @param {string} output
-   * @param {{}} context - local variables
+   * @param {{}} context
    * @private
    */
   _out(output, context) {
