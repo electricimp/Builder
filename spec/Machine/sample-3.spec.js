@@ -7,7 +7,7 @@
 
 require('jasmine-expect');
 
-const FILE = __dirname + '/../fixtures/sample-2/input.nut';
+const FILE = __dirname + '/../fixtures/sample-3/input.nut';
 const init = require('./init')(FILE);
 
 describe('Machine', () => {
@@ -16,7 +16,7 @@ describe('Machine', () => {
   beforeEach(() => {
     machine = init.createMachine();
     result = init.getResult();
-    resultWithLC = init.getResultWithLineControl();
+    // resultWithLC = init.getResultWithLineControl();
   });
 
   it('should do something alright #1', () => {
@@ -24,7 +24,7 @@ describe('Machine', () => {
     expect(machine.execute('@include "input.nut"')).toBe(result);
 
     // with line control
-    machine.generateLineControlStatements = true;
-    expect(machine.execute('@include "input.nut"')).toBe(resultWithLC);
+    // machine.generateLineControlStatements = true;
+    // expect(machine.execute('@include "input.nut"')).toBe(resultWithLC);
   });
 });

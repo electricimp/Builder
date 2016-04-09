@@ -1,5 +1,5 @@
 /**
- * Spec for AST Parser
+ * Spec for Machine
  * @author Mikhail Yurasov <mikhail@electricimp.com>
  */
 

@@ -5,5 +5,5 @@
 // macro1 line 2
 @endmacro
 
-@include macro1(1, "something1")
-@include macro2(2, "something2", true)
+//@include macro1(1, "something1")
+//@include macro2(2, "something2", true)
