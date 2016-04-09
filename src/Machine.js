@@ -211,7 +211,7 @@ class Machine {
     const output = instruction.computed
       ? instruction.value
       : this.expression.evaluate(instruction.value, context);
-    this._out(output);
+    this._out(output, context);
   }
 
   /**
