@@ -80,7 +80,7 @@ class Expression {
    * @return {*}
    */
   evaluate(expression, context) {
-    return this._evaluate(jsep(expression), context || {});
+    return this._evaluate(this._jsep(expression), context || {});
   }
 
   /**
