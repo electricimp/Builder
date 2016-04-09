@@ -411,20 +411,6 @@ class Machine {
   }
 
   /**
-   * @return {MacroExpression}
-   */
-  get macroExpression() {
-    return this._macroExpression;
-  }
-
-  /**
-   * @param {MacroExpression} value
-   */
-  set macroExpression(value) {
-    this._macroExpression = value;
-  }
-
-  /**
    * Filename
    * @return {string}
    */
