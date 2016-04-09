@@ -1,0 +1,48 @@
+[
+  {
+    "_line": 1,
+    "type": "include",
+    "value": "\"inc-a.nut\""
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 3,
+    "type": "macro",
+    "definition": "macro1(arg1, arg2)",
+    "body": [
+      {
+        "_line": 4,
+        "type": "output",
+        "value": "// macro1 line 1\n",
+        "computed": true
+      },
+      {
+        "_line": 5,
+        "type": "output",
+        "value": "// macro1 line 2\n",
+        "computed": true
+      }
+    ]
+  },
+  {
+    "_line": 7,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 8,
+    "type": "include",
+    "value": "macro1(1, \"something1\")"
+  },
+  {
+    "_line": 9,
+    "type": "include",
+    "value": "macro2(2, \"something2\", true)"
+  }
+]
