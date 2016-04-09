@@ -29,7 +29,7 @@ class Machine {
   /**
    * Execute some code
    * @param {string} source
-   * @param {{}} context - global context
+   * @param {{}={}} context - global context
    */
   execute(source, context) {
     // reset state
@@ -37,7 +37,7 @@ class Machine {
 
     // parse & execute code
     const ast = this.parser.parse(source);
-    this._execute(ast, context);
+    this._execute(ast, this._globals);
 
     return this._output;
   }
@@ -70,33 +70,39 @@ class Machine {
   _execute(ast, context) {
     for (const insruction of ast) {
 
-      // set __LINE__ variable
-      this._globals.__LINE__ = insruction._line;
+      // current context
+      const c = this._mergeContexts(
+        this._globals,
+        context
+      );
+
+      // set __LINE__
+      c.__LINE__ = insruction._line;
 
       switch (insruction.type) {
 
         case INSTRUCTIONS.INCLUDE:
-          this._executeInclude(insruction, context);
+          this._executeInclude(insruction, c);
           break;
 
         case INSTRUCTIONS.OUTPUT:
-          this._executeOutput(insruction, context);
+          this._executeOutput(insruction, c);
           break;
 
         case INSTRUCTIONS.SET:
-          this._executeSet(insruction, context);
+          this._executeSet(insruction, c);
           break;
 
         case INSTRUCTIONS.CONDITIONAL:
-          this._executeConditional(insruction, context);
+          this._executeConditional(insruction, c);
           break;
 
         case INSTRUCTIONS.ERROR:
-          this._executeError(insruction, context);
+          this._executeError(insruction, c);
           break;
 
         case INSTRUCTIONS.MACRO:
-          this._executeMacro(insruction, context);
+          this._executeMacro(insruction, c);
           break;
 
         default:
@@ -115,11 +121,11 @@ class Machine {
   _executeInclude(instruction, context) {
     try {
       const macro = this.expression.parseMacroCall(
-        instruction.value, this._globals, this._macroses
+        instruction.value, context, this._macroses
       );
 
       // macro inclusion
-      this._includeMacro(macro);
+      this._includeMacro(macro, context);
 
     } catch (e) {
       // retrow non-expected errors
@@ -128,7 +134,7 @@ class Machine {
       }
 
       // source inclusion
-      this._includeSource(instruction.value);
+      this._includeSource(instruction.value, context);
     }
   }
 
@@ -139,8 +145,11 @@ class Machine {
    * @private
    */
   _includeSource(source, context) {
+
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(source, this._globals);
+    const includePath = this.expression.evaluate(
+      source, context
+    );
 
     let reader;
 
@@ -163,12 +172,9 @@ class Machine {
     const ast = this.parser.parse(content);
 
     // execute included AST
-    const parentFile = this._globals.__FILE__;
-    this._globals.__FILE__ = path.basename(includePath);
-    this._execute(ast);
-
-    // restore __FILE__ variable
-    this._globals.__FILE__ = parentFile;
+    this._execute(ast, this._mergeContexts(context, {
+      __FILE__: path.basename(includePath)
+    }));
   }
 
   /**
@@ -178,22 +184,21 @@ class Machine {
    * @private
    */
   _includeMacro(macro, context) {
-    const parentFile = this._globals.__FILE__;
-    this._globals.__FILE__ = this._macroses[macro.name].file;
+    // context for macro
+    const macroContext = {};
 
-    // set macro arguments
-
-    const argNames = this._macroses[macro.name].args;
-    const argValues = macro.args;
-
-    for (let i = 0; i < Math.min(argNames.length, argValues.length); i++) {
-      this._globals[argNames[i]] = argValues[i];
+    // iterate through macro arguments
+    // missing arguments will not be defined in macro context (ie will be evaluated as nulls)
+    // extra arguments passed in macro call are omitted
+    for (let i = 0; i < Math.min(this._macroses[macro.name].args.length, macro.args.length); i++) {
+      macroContext[this._macroses[macro.name].args[i]] = macro.args[i];
     }
 
-    //
+    // file macro was defined in
+    macroContext.__FILE__ = this._macroses[macro.name].file;
 
-    this._execute(this._macroses[macro.name].body);
-    this._globals.__FILE__ = parentFile;
+    // execute it
+    this._execute(this._macroses[macro.name].body, this._mergeContexts(context, macroContext));
   }
 
   /**
@@ -205,7 +210,7 @@ class Machine {
   _executeOutput(instruction, context) {
     const output = instruction.computed
       ? instruction.value
-      : this.expression.evaluate(instruction.value, this._globals);
+      : this.expression.evaluate(instruction.value, context);
     this._out(output);
   }
 
@@ -217,16 +222,18 @@ class Machine {
    */
   _executeSet(instruction, context) {
     this._globals[instruction.variable] =
-      this.expression.evaluate(instruction.value, this._globals);
+      this.expression.evaluate(instruction.value, context);
   }
 
   /**
+   * Execute "error: instruction
    * @param {{type, value}} instruction
+   * @param {{}} context - local variables
    * @private
    */
-  _executeError(instruction) {
+  _executeError(instruction, context) {
     throw new Errors.UserDefinedError(
-      this.expression.evaluate(instruction.value, this._globals)
+      this.expression.evaluate(instruction.value, context)
     );
   }
 
@@ -237,18 +244,18 @@ class Machine {
    * @private
    */
   _executeConditional(instruction, context) {
-    const test = this.expression.evaluate(instruction.test, this._globals);
+    const test = this.expression.evaluate(instruction.test, context);
 
     if (test) {
 
-      this._execute(instruction.consequent);
+      this._execute(instruction.consequent, context);
 
     } else {
 
       // elseifs
       if (instruction.elseifs) {
         for (const elseif of instruction.elseifs) {
-          if (this._executeConditional(elseif)) {
+          if (this._executeConditional(elseif, context)) {
             // "@elseif true" stops if-elseif...-else flow
             return;
           }
@@ -257,7 +264,7 @@ class Machine {
 
       // else
       if (instruction.alternate) {
-        this._execute(instruction.alternate);
+        this._execute(instruction.alternate, context);
       }
 
     }
@@ -277,7 +284,7 @@ class Machine {
 
     // save macro
     this._macroses[macro.name] = {
-      file: this._globals.__FILE__,
+      file: context.__FILE__,
       args: macro.args,
       body: instruction.body
     };
@@ -286,20 +293,37 @@ class Machine {
   /**
    * Perform outoput operation
    * @param {string} output
+   * @param {{}} context - local variables
    * @private
    */
-  _out(output) {
+  _out(output, context) {
     // generate line control statement
     if (this.generateLineControlStatements) {
-      if (this._lastOutputFile !== this._globals.__FILE__ /* detect file switch */) {
+      if (this._lastOutputFile !== context.__FILE__ /* detect file switch */) {
         this._output +=
-          `#line ${this._globals.__LINE__} "${this._globals.__FILE__.replace(/\"/g, '\\\"')}"\n`;
-        this._lastOutputFile = this._globals.__FILE__;
+          `#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`;
+        this._lastOutputFile = context.__FILE__;
       }
     }
 
     // append output
     this._output += output;
+  }
+
+  /**
+   * Merge local context with global
+   * @param {{}} ... - contexts
+   * @private
+   */
+  _mergeContexts() {
+    const args = Array.prototype.slice.call(arguments);
+
+    // clone target
+    let target = args.shift();
+    target = JSON.parse(JSON.stringify(target));
+    args.unshift(target);
+
+    return Object.assign.apply(this, args);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
