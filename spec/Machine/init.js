@@ -12,7 +12,6 @@ const Machine = require('../../src/Machine');
 const AstParser = require('../../src/AstParser');
 const Expression = require('../../src/Expression');
 const LocalFileReader = require('../../src/FileReader');
-const MacroExpression = require('../../src/MacroExpression');
 
 module.exports = (sampleFile) => {
   return {
@@ -27,7 +26,6 @@ module.exports = (sampleFile) => {
 
       const expression = new Expression();
       const parser = new AstParser();
-      const macroExpression = new MacroExpression();
 
       const machine = new Machine();
 
@@ -40,7 +38,6 @@ module.exports = (sampleFile) => {
       machine.expression = expression;
       machine.parser = parser;
       machine.logger = logger;
-      machine.macroExpression = macroExpression;
       machine.generateLineControlStatements = false;
 
       return machine;
