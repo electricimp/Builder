@@ -13,7 +13,7 @@
   {
     "_line": 3,
     "type": "macro",
-    "definition": "macro1(arg1, arg2)",
+    "declaration": "macro1(arg1, arg2)",
     "body": [
       {
         "_line": 4,

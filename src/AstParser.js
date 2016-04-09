@@ -400,10 +400,10 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Error(`Unclosed @if statement (${this.file}:${token._line})`);
+        throw new Error(`Unclosed @if statement (${this.file}:${token ? token._line : parent._line})`);
 
       case STATES.MACRO:
-        throw new Error(`Unclosed @macro statement (${this.file}:${token._line})`);
+        throw new Error(`Unclosed @macro statement (${this.file}:${token ? token._line : parent._line})`);
 
       default:
         throw new Error(`Syntax error (${parent.file})`);
