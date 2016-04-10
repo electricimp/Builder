@@ -244,7 +244,7 @@ describe('Expression', () => {
       fail();
     } catch (e) {
       expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
-      expect(e.message).toBe('Failed to call a non-callable expression');
+      expect(e.message).toBe('Can\'t call a non-callable expression');
     }
   });
 

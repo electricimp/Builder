@@ -335,7 +335,7 @@ class Expression {
               } else if (typeof callee === 'string' || callee instanceof String) {
                 throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
               } else {
-                throw new Errors.FunctionCallError(`Failed to call a non-callable expression`);
+                throw new Errors.FunctionCallError(`Can't call a non-callable expression`);
               }
           }
 
