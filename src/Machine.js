@@ -35,7 +35,7 @@ class Machine {
    */
   execute(source, context) {
     // reset state
-    this._reset(context);
+    this._reset();
 
     // parse & execute code
     const ast = this.parser.parse(source);
@@ -46,10 +46,9 @@ class Machine {
 
   /**
    * Reset state
-   * @param {{}} context
    * @private
    */
-  _reset(context) {
+  _reset() {
     this._output = ''; // output buffer
     this._globals = {}; // global context
     this._macroses = {}; // macroses
