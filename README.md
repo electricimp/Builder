@@ -17,8 +17,8 @@
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
-      - [Binary Operators](#binary-operators)
-      - [Unary Operators](#unary-operators)
+      - [Binary](#binary)
+      - [Unary](#unary)
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
@@ -32,7 +32,7 @@
 
 _Builder_ language combines a preprocessor with an expression language and advanced importing.
 
-_Please note that this is in-progress version and published here for preview only._
+_Please note that the works is in-progress and published for preview purposes only._
 
 # Syntax
 
@@ -43,9 +43,10 @@ Directives start with __@__ symbol.
 ### @set
 
 ```sass
-@set variable_name expression
-// or
-@set variable_name = expression
+@set <variable> <expression>
+```
+```sass
+@set <variable> = <expression>
 ```
 
 Assigns a result of an expression to a variable.
@@ -72,9 +73,19 @@ Example:
 
 ## Comments
 
-Directives can contain both `//`- and `/* */`-style comments.
+Directives can contain both `//`- and `/**/`-style comments.
 
 ## Expressions
+
+Directives that have parameters allow usage of _expression_ syntax.
+
+For example:
+
+- `@include <path:expression>`
+- `@set <variable:identifier> <value:expression>`
+- `@if <condition:expression>`
+- `@elseif <condition:expression>`
+- `@{expression}` (inline expressions)
 
 ### Types
 
@@ -88,11 +99,11 @@ The following types are supported in expressions:
 
 ### Operators
 
-#### Binary Operators
+#### Binary
 
 `|| && == != < > <= >= + - * / %`
 
-#### Unary Operators
+#### Unary
 
 `+ - !`
 
@@ -108,7 +119,9 @@ The following types are supported in expressions:
 
 ### Variables
 
-Variables defined by `@set` statements are available in expressions. Undefined variables are evaluated as `null`.
+- Variables defined by `@set` statements are available in expressions.
+- Undefined variables are evaluated as `null`.
+- Variable names can contain `$`, `_`, latin letters and digits and can start only with a non-digit.
 
 ### Functions
 
