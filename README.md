@@ -1,3 +1,32 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Syntax](#syntax)
+  - [Directives](#directives)
+    - [@set](#@set)
+    - [@macro](#@macro)
+    - [@if – @elseif – @else](#@if-%E2%80%93-@elseif-%E2%80%93-@else)
+    - [@{...} (inline expressions)](#@-inline-expressions)
+    - [@error](#@error)
+    - [@include](#@include)
+      - [Local Files](#local-files)
+      - [Remote Locations](#remote-locations)
+      - [Git Repositories](#git-repositories)
+  - [Comments](#comments)
+  - [Expressions](#expressions)
+    - [Types](#types)
+    - [Operators](#operators)
+      - [Binary Operators](#binary-operators)
+      - [Unary Operators](#unary-operators)
+    - [Member Expressions](#member-expressions)
+    - [Conditional Expressions](#conditional-expressions)
+    - [Variables](#variables)
+    - [Functions](#functions)
+- [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 <br /><img src=docs/logo.png width=200 alt=Builder><br /><br />
 
