@@ -13,7 +13,7 @@
       - [Macro](#macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
-      - [Git Repositories](#git-repositories)
+      - [From Git Repository](#from-git-repository)
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
@@ -22,11 +22,10 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
-    - [Functions](#functions)
-  - [Comments](#comments)
-  - [Predefined Variables](#predefined-variables)
       - [\_\_LINE\_\_](#%5C_%5C_line%5C_%5C_)
       - [\_\_FILE\_\_](#%5C_%5C_file%5C_%5C_)
+    - [Functions](#functions)
+  - [Comments](#comments)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -34,7 +33,7 @@
 
 <br /><img src=docs/logo.png width=200 alt=Builder><br /><br />
 
-_Builder_ language combines a preprocessor with an expression language and advanced importing.
+_Builder_ language combines a preprocessor with an expression language and advanced imports.
 
 _Please note that the works is in-progress and published for preview purposes only._
 
@@ -112,9 +111,58 @@ And violets are of unknown color.
 ### @include
 
 #### Macro
+
+```
+@include some_macro("username", 123)
+```
+
 #### Local Files
+
+```
+@include "somefile.ext"
+```
+
 #### Remote Files
-#### Git Repositories
+
+```
+@include "http://example.com/file.ext"
+```
+
+```
+@include "https://example.com/file.ext"
+```
+
+#### From Git Repository
+
+```
+@include "<repository_url>.git/<path>/<to>/<file>@<ref>"
+```
+
+For example, importing file from _GitHub_ looks like:
+
+- Head of the default branch
+
+  ```
+  @include "https://github.com/electricimp/Builder.git/README.md"
+  ```
+
+- Head of the _master_ branch
+
+  ```
+  @include "https://github.com/electricimp/Builder.git/README.md@master"
+  ```
+
+- Tag _v1.2.3_:
+
+  ```
+  @include "https://github.com/electricimp/Builder.git/README.md@v1.2.3"
+  ```
+
+- Latest existing tag
+
+  ```
+  @include "https://github.com/electricimp/Builder.git/README.md@latest"
+  ```
 
 ## Expressions
 
@@ -164,19 +212,6 @@ The following types are supported in expressions:
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits and can start only with a non-digit.
 
-### Functions
-
-- `min(<numbers>)`
-- `max(<numbers>)`
-- `abs(<number>)`
-- `defined(<variable_name>)` – returns `true` if _<variable_name>_ is defined or `false` otherwise.
-
-## Comments
-
-Directives can contain both `//`- and `/**/`-style comments.
-
-## Predefined Variables
-
 #### \_\_LINE\_\_
 
 Line number (relative to the file in which this variable appears).
@@ -196,6 +231,17 @@ Example:
 ```
 Hi from file @{__FILE__}!
 ```
+
+### Functions
+
+- `min(<numbers>)`
+- `max(<numbers>)`
+- `abs(<number>)`
+- `defined(<variable_name>)` – returns `true` if _<variable_name>_ is defined or `false` otherwise.
+
+## Comments
+
+Directives can contain both `//`- and `/**/`-style comments.
 
 # License
 
