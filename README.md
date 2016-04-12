@@ -68,7 +68,7 @@ _Sets SOMEVAR to 1:_
 ### @macro
 
 ```
-@macro <name>(<arguments)
+@macro <name>(<arguments>)
   <body>
 @endmacro
 ```
@@ -105,11 +105,90 @@ And violets are of unknown color.
 
 ### @if – @elseif – @else
 
+Conditional directive.
+
+```
+@if <test:expression>
+
+  // consequent code
+
+@elseif <test:expression>
+
+  else if #1 code
+
+...more elseifs...
+
+@else
+
+  // alternate code
+
+@endif
+```
+
+`@endif`can be replaced with `@end`.
+
+Example:
+
+```
+@if __FILE__ == 'abc.ext'
+  // include something
+@elseif __FILE__ == 'def.ext'
+  // include something else
+@else
+  // something completely different
+@endif
+```
+
 ### @{...} (inline expressions)
+
+```
+@{expression}
+```
+
+Inserts the value of the enclosed expression.
+
+Example:
+
+```
+@set name "Someone"
+Hello, @{name}, the result is: @{123 * 456}.
+```
+
+results in the following output:
+
+```
+Hello, Someone, the result is: 56088.
+```
 
 ### @error
 
+```
+@error <message:expression>
+````
+
+Emits an error.
+
+Example:
+
+```
+@if PLATFORM == "platform1"
+  // platform 1 code
+@elseif PLATFORM == "platform2"
+  // platform 2 code
+@elseif PLATFORM == "platform3"
+  // platform 3 code
+@else
+  @error "Platform is " + PLATFORM + " is unsupported"
+@endif
+```
+
 ### @include
+
+Includes local file, external source or a macro.
+
+```
+@include <source:expression>
+```
 
 #### Macro
 
