@@ -35,7 +35,7 @@ class Machine {
    */
   execute(source, context) {
     // reset state
-    this._reset(context);
+    this._reset();
 
     // parse & execute code
     const ast = this.parser.parse(source);
@@ -46,13 +46,12 @@ class Machine {
 
   /**
    * Reset state
-   * @param {{}} context
    * @private
    */
-  _reset(context) {
+  _reset() {
     this._output = ''; // output buffer
     this._globals = {}; // global context
-    this._macroses = {}; // macroses
+    this._macros = {}; // macros
 
     // file which produced the last output
     this._lastOutputFile = null;
@@ -118,7 +117,7 @@ class Machine {
   _executeInclude(instruction, context) {
     try {
       const macro = this.expression.parseMacroCall(
-        instruction.value, context, this._macroses
+        instruction.value, context, this._macros
       );
 
       // macro inclusion
@@ -187,15 +186,15 @@ class Machine {
     // iterate through macro arguments
     // missing arguments will not be defined in macro context (ie will be evaluated as nulls)
     // extra arguments passed in macro call are omitted
-    for (let i = 0; i < Math.min(this._macroses[macro.name].args.length, macro.args.length); i++) {
-      macroContext[this._macroses[macro.name].args[i]] = macro.args[i];
+    for (let i = 0; i < Math.min(this._macros[macro.name].args.length, macro.args.length); i++) {
+      macroContext[this._macros[macro.name].args[i]] = macro.args[i];
     }
 
     // file macro was defined in
-    macroContext.__FILE__ = this._macroses[macro.name].file;
+    macroContext.__FILE__ = this._macros[macro.name].file;
 
     // execute it
-    this._execute(this._macroses[macro.name].body, this._mergeContexts(context, macroContext));
+    this._execute(this._macros[macro.name].body, this._mergeContexts(context, macroContext));
   }
 
   /**
@@ -280,14 +279,14 @@ class Machine {
     const macro = this.expression.parseMacroDeclaration(instruction.declaration);
 
     // do not allow macro redeclaration
-    if (this._macroses.hasOwnProperty(macro.name)) {
+    if (this._macros.hasOwnProperty(macro.name)) {
       throw new Errors.MacroIsAlreadyDeclared(`Macro "${macro.name}" is alredy declared in ` +
-                      `${this._macroses[macro.name].file}:${this._macroses[macro.name].line}` +
-                      ` (${context.__FILE__}:${context.__LINE__})`);
+                                              `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
+                                              ` (${context.__FILE__}:${context.__LINE__})`);
     }
 
     // save macro
-    this._macroses[macro.name] = {
+    this._macros[macro.name] = {
       file: context.__FILE__, // file of declaration
       line: context.__LINE__, // line of eclaration
       args: macro.args,
