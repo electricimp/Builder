@@ -10,10 +10,10 @@
     - [@{...} (inline expressions)](#@-inline-expressions)
     - [@error](#@error)
     - [@include](#@include)
+      - [Macro](#macro)
       - [Local Files](#local-files)
-      - [Remote Locations](#remote-locations)
+      - [Remote Files](#remote-files)
       - [Git Repositories](#git-repositories)
-  - [Comments](#comments)
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
@@ -23,6 +23,10 @@
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
     - [Functions](#functions)
+  - [Comments](#comments)
+  - [Predefined Variables](#predefined-variables)
+      - [\_\_LINE\_\_](#%5C_%5C_line%5C_%5C_)
+      - [\_\_FILE\_\_](#%5C_%5C_file%5C_%5C_)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -38,26 +42,66 @@ _Please note that the works is in-progress and published for preview purposes on
 
 ## Directives
 
-Directives start with __@__ symbol.
+Directives start with `@` symbol.
 
 ### @set
 
-```sass
-@set <variable> <expression>
 ```
-```sass
-@set <variable> = <expression>
+@set <variable:identifier> <value:expression>
+```
+```
+@set <variable:identifier> = <value:expression>
 ```
 
-Assigns a result of an expression to a variable.
+Assigns a value of an _expression_ to a _variable_.
+
+Variables are defined in a _global_ context.
 
 Example:
 
-```sass
-@set MY_VAR min(1, 2, 3) // sets MY_VAR to 1
+_Sets SOMEVAR to 1:_
+
+```
+@set SOMEVAR min(1, 2, 3)
 ```
 
 ### @macro
+
+```
+@macro <name>(<arguments)
+  <body>
+@endmacro
+```
+
+_`@end` directive can be used instead of `@endmacro`._
+
+Declares a block of code that can take parameters and can be reused with an `@include` statement. Once declared macros
+
+Variables declared as parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
+
+Example:
+
+```
+@macro some_macro(a, b, c)
+  Hello, @{a}!
+  Roses are @{b},
+  And violets are @{defined(c) ? c : "of unknown color"}.
+@end
+```
+
+Then `some_macro` can be used as:
+
+```
+@include some_macro("username", 123)
+```
+
+which will produce:
+
+```
+Hello, username!
+Roses are red,
+And violets are of unknown color.
+```
 
 ### @if – @elseif – @else
 
@@ -67,13 +111,10 @@ Example:
 
 ### @include
 
+#### Macro
 #### Local Files
-#### Remote Locations
+#### Remote Files
 #### Git Repositories
-
-## Comments
-
-Directives can contain both `//`- and `/**/`-style comments.
 
 ## Expressions
 
@@ -129,6 +170,32 @@ The following types are supported in expressions:
 - `max(<numbers>)`
 - `abs(<number>)`
 - `defined(<variable_name>)` – returns `true` if _<variable_name>_ is defined or `false` otherwise.
+
+## Comments
+
+Directives can contain both `//`- and `/**/`-style comments.
+
+## Predefined Variables
+
+#### \_\_LINE\_\_
+
+Line number (relative to the file in which this variable appears).
+
+Example:
+
+```
+Hi from line @{__LINE__}!
+```
+
+#### \_\_FILE\_\_
+
+Name of the file in which this variable appears.
+
+Example:
+
+```
+Hi from file @{__FILE__}!
+```
 
 # License
 
