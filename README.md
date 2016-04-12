@@ -1,15 +1,12 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 
 - [Syntax](#syntax)
   - [Directives](#directives)
-    - [@set](#@set)
-    - [@macro](#@macro)
-    - [@if – @elseif – @else](#@if-%E2%80%93-@elseif-%E2%80%93-@else)
-    - [@{...} (inline expressions)](#@-inline-expressions)
-    - [@error](#@error)
-    - [@include](#@include)
+    - [@set](#set)
+    - [@macro](#macro)
+    - [@if – elseif – @else](#if---elseif--@else)
+    - [@{...} (inline expressions)](#-inline-expressions)
+    - [@error](#error)
+    - [@include](#include)
       - [Macro](#macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
@@ -22,13 +19,12 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
-      - [\_\_LINE\_\_](#%5C_%5C_line%5C_%5C_)
-      - [\_\_FILE\_\_](#%5C_%5C_file%5C_%5C_)
+      - [\_\_LINE\_\_](#__line__)
+      - [\_\_FILE\_\_](#__file__)
     - [Functions](#functions)
   - [Comments](#comments)
 - [License](#license)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <br /><img src=docs/logo.png?1 width=280 alt=Builder><br /><br />
 
