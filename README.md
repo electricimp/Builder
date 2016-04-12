@@ -73,7 +73,7 @@ _Sets SOMEVAR to 1:_
 @endmacro
 ```
 
-_`@end` directive can be used instead of `@endmacro`._
+_`@endmacro` can be replaced with `@end`._
 
 Declares a block of code that can take parameters and can be reused with an `@include` statement. Once declared macros
 
@@ -125,7 +125,7 @@ Conditional directive.
 @endif
 ```
 
-`@endif`can be replaced with `@end`.
+_`@endif` can be replaced with `@end`._
 
 Example:
 
