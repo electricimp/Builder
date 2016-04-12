@@ -6,7 +6,7 @@
   - [Directives](#directives)
     - [@set](#@set)
     - [@macro](#@macro)
-    - [@if – <b>@elseif</b> – <b>@else</b>](#@if-%E2%80%93-b@elseifb-%E2%80%93-b@elseb)
+    - [@if – @elseif – @else](#@if-%E2%80%93-@elseif-%E2%80%93-@else)
     - [@{...} (inline expressions)](#@-inline-expressions)
     - [@error](#@error)
     - [@include](#@include)
@@ -103,7 +103,7 @@ Roses are red,
 And violets are of undefiend color.
 ```
 
-### @if – <b>@elseif</b> – <b>@else</b>
+### @if – @elseif – @else
 
 Conditional directive.
 
