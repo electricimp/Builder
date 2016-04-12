@@ -3,7 +3,7 @@
   - [Directives](#directives)
     - [@set](#set)
     - [@macro](#macro)
-    - [@if – elseif – @else](#if--elseif--@else)
+    - [@if – elseif – @else](#if--elseif--else)
     - [@{...} (inline expressions)](#-inline-expressions)
     - [@error](#error)
     - [@include](#include)
