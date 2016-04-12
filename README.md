@@ -4,7 +4,7 @@
 
 - [Syntax](#syntax)
   - [Directives](#directives)
-    - [&#64;set](#&64set)
+    - [@set](#@set)
     - [@macro](#@macro)
     - [@if – <b>@elseif</b> – <b>@else</b>](#@if-%E2%80%93-b@elseifb-%E2%80%93-b@elseb)
     - [@{...} (inline expressions)](#@-inline-expressions)
@@ -41,9 +41,9 @@ _Please note that the works is in-progress and published for preview purposes on
 
 ## Directives
 
-Directives start with `@` symbol.
+Directives start with <code><b>@</b></code> symbol.
 
-### &#64;set
+### @set
 
 <pre>
 <b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> <i>&lt;value:expression&gt;</i>
@@ -59,7 +59,7 @@ Variables are defined in a _global_ context.
 
 Example:
 
-_Sets SOMEVAR to 1:_
+_Sets `SOMEVAR` to 1:_
 
 <pre>
 <b>@set</b> SOMEVAR min(1, 2, 3)
@@ -67,69 +67,69 @@ _Sets SOMEVAR to 1:_
 
 ### @macro
 
-```
-<b>@macro</b> <name>(<arguments>)
-  <body>
+<pre>
+<b>@macro</b> <i>&lt;name&gt;</i>(<i>&lt;arguments&gt;</i>)
+  <i>&lt;body&gt;</i>
 <b>@endmacro</b>
-```
+</pre>
 
-_`<b>@endmacro</b>` can be replaced with `<b>@end</b>`._
+_<code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>._
 
-Declares a block of code that can take parameters and can be reused with an `<b>@include</b>` statement. Once declared macros
+Declares a block of code that can take parameters and can be used with an <code><b>@include</b></code> statement. Once declared, macros are available from anywhere.
 
-Variables declared as parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
+Variables declared as macro argumentys are only available within the macro scope and override global variables with the same name (but do not change them).
 
 Example:
 
-```
+<pre>
 <b>@macro</b> some_macro(a, b, c)
-  Hello, @{a}!
-  Roses are @{b},
-  And violets are @{defined(c) ? c : "of unknown color"}.
+  Hello, <b>@{a}</b>!
+  Roses are <b>@{b}</b>,
+  And violets are <b>@{defined(c) ? c : "of undefiend color"}</b>.
 <b>@end</b>
-```
+</pre>
 
-Then `some_macro` can be used as:
+Then <code>some_macro</code> can be used as:
 
-```
+<pre>
 <b>@include</b> some_macro("username", 123)
-```
+</pre>
 
 which will produce:
 
 ```
 Hello, username!
 Roses are red,
-And violets are of unknown color.
+And violets are of undefiend color.
 ```
 
 ### @if – <b>@elseif</b> – <b>@else</b>
 
 Conditional directive.
 
-```
+<pre>
 <b>@if</b> <test:expression>
 
   // consequent code
 
-<b>@elseif</b> <test:expression>
+<b>@elseif</b> <i>&lt;test:expression&gt;</i>
 
-  else if #1 code
+  // else if #1 code
 
-...more elseifs...
+// ...more elseifs...
 
 <b>@else</b>
 
   // alternate code
 
 <b>@endif</b>
-```
+</pre>
 
-_`<b>@endif</b>` can be replaced with `<b>@end</b>`._
+_<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>._
 
 Example:
 
-```
+<pre>
 <b>@if</b> __FILE__ == 'abc.ext'
   // include something
 <b>@elseif</b> __FILE__ == 'def.ext'
@@ -137,22 +137,22 @@ Example:
 <b>@else</b>
   // something completely different
 <b>@endif</b>
-```
+</pre>
 
 ### @{...} (inline expressions)
 
-```
-@{expression}
-```
+<pre>
+<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
+</pre>
 
 Inserts the value of the enclosed expression.
 
 Example:
 
-```
+<pre>
 <b>@set</b> name "Someone"
-Hello, @{name}, the result is: @{123 * 456}.
-```
+Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
+</pre>
 
 results in the following output:
 
@@ -162,15 +162,15 @@ Hello, Someone, the result is: 56088.
 
 ### @error
 
-```
-<b>@error</b> <message:expression>
-````
+<pre>
+<b>@error</b> <i>&lt;message:expression&gt;</i>
+</pre>
 
 Emits an error.
 
 Example:
 
-```
+<pre>
 <b>@if</b> PLATFORM == "platform1"
   // platform 1 code
 <b>@elseif</b> PLATFORM == "platform2"
@@ -180,69 +180,69 @@ Example:
 <b>@else</b>
   <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
 <b>@endif</b>
-```
+</pre>
 
 ### @include
 
 Includes local file, external source or a macro.
 
-```
-<b>@include</b> <source:expression>
-```
+<pre>
+<b>@include</b> <i>&lt;source:expression&gt;</i>
+</pre>
 
 #### Macro
 
-```
+<pre>
 <b>@include</b> some_macro("username", 123)
-```
+</pre>
 
 #### Local Files
 
-```
+<pre>
 <b>@include</b> "somefile.ext"
-```
+</pre>
 
 #### Remote Files
 
-```
+<pre>
 <b>@include</b> "http://example.com/file.ext"
-```
+</pre>
 
-```
+<pre>
 <b>@include</b> "https://example.com/file.ext"
-```
+</pre>
 
 #### From Git Repository
 
-```
-<b>@include</b> "<repository_url>.git/<path>/<to>/<file>@<ref>"
-```
+<pre>
+<b>@include</b> "<i>&lt;repository_url&gt;</i>.git/<i>&lt;path&gt;</i>/<i>&lt;to&gt;</i>/<i>&lt;file&gt;</i>@<i>&lt;ref&gt;</i>"
+</pre>
 
 For example, importing file from _GitHub_ looks like:
 
 - Head of the default branch
 
-  ```
+  <pre>
   <b>@include</b> "https://github.com/electricimp/Builder.git/README.md"
-  ```
+  </pre>
 
 - Head of the _master_ branch
 
-  ```
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md<b>@master</b>"
-  ```
+  <pre>
+  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md<@master"
+  </pre>
 
 - Tag _v1.2.3_:
 
-  ```
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md<b>@v1</b>.2.3"
-  ```
+  <pre>
+  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@v1.2.3"
+  </pre>
 
-- Latest existing tag
+- Latest available tag
 
-  ```
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md<b>@latest</b>"
-  ```
+  <pre>
+  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@latest"
+  </pre>
 
 ## Expressions
 
@@ -250,11 +250,11 @@ Directives that have parameters allow usage of _expression_ syntax.
 
 For example:
 
-- `<b>@include</b> <path:expression>`
-- `<b>@set</b> <variable:identifier> <value:expression>`
-- `<b>@if</b> <condition:expression>`
-- `<b>@elseif</b> <condition:expression>`
-- `@{expression}` (inline expressions)
+- <code><b>@include</b> <i>&lt;source:expression&gt;</i></code>
+- <code><b>@set</b> <i>&lt;variable:identifier&gt; &lt;value:expression&gt;</i></code>
+- <code><b>@if</b> <i>&lt;condition:expression&gt;</i></code>
+- <code><b>@elseif</b> <i>&lt;condition:expression&gt;</i></code>
+- <code><b>@{</b><i>&lt;expression&gt;</i><b>}</b></code> (inline expressions)
 
 ### Types
 
@@ -298,9 +298,9 @@ Line number (relative to the file in which this variable appears).
 
 Example:
 
-```
-Hi from line @{__LINE__}!
-```
+<pre>
+Hi from line <b>@{</b>__LINE__<b>}</b>!
+</pre>
 
 #### \_\_FILE\_\_
 
@@ -308,16 +308,16 @@ Name of the file in which this variable appears.
 
 Example:
 
-```
-Hi from file @{__FILE__}!
-```
+<pre>
+Hi from file <b>@{</b>__FILE__<b>}</b>!
+</pre>
 
 ### Functions
 
-- `min(<numbers>)`
-- `max(<numbers>)`
-- `abs(<number>)`
-- `defined(<variable_name>)` – returns `true` if _<variable_name>_ is defined or `false` otherwise.
+- <code>min(<i>&lt;numbers&gt;</i>)</code>
+- <code>max(<i>&lt;numbers&gt;</i>)</code>
+- <code>abs(<i>&lt;number&gt;</i>)</code>
+- <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
 
 ## Comments
 
