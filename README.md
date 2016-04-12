@@ -31,7 +31,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-<br /><img src=docs/logo.png width=200 alt=Builder><br /><br />
+<br /><img src=docs/logo.png width=280 alt=Builder><br /><br />
 
 _Builder_ language combines a preprocessor with an expression language and advanced imports.
 
@@ -45,9 +45,9 @@ Directives start with `@` symbol.
 
 ### @set
 
-<code>
-<font color=red>@set</font> &lt;variable:identifier&gt; &ltlvalue:expression&gt;
-</code>
+```
+@set <variable:identifier> <value:expression>
+```
 
 ```
 @set <variable:identifier> = <value:expression>
