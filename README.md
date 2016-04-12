@@ -45,9 +45,10 @@ Directives start with `@` symbol.
 
 ### @set
 
-```
-@set <variable:identifier> <value:expression>
-```
+<code>
+<font color=red>@set</font> &lt;variable:identifier&gt; &ltlvalue:expression&gt;
+</code>
+
 ```
 @set <variable:identifier> = <value:expression>
 ```
