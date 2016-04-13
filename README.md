@@ -34,7 +34,6 @@ _Please note that the works is in-progress and published for preview purposes on
 
 # Syntax
 
-
 ## Directives
 
 Directives start with <code><b>@</b></code> symbol.
@@ -317,18 +316,14 @@ Hi from file <b>@{</b>__FILE__<b>}</b>!
 
 ## Comments
 
-- Lines starting with `@` followed by space or a line break are treated as comments and not added to the output.
+Lines starting with `@` followed by space or a line break are treated as comments and not added to the output.
 
-  Example:
+Example:
 
-  <pre>
-  <i>@ something about platform #1</i>
-  <b>@set</b> PLATFORM "platform1"
-  </pre>
-
-- Directives can contain both `//`- and `/**/`-style comments.
-
-
+<pre>
+<i>@ something about platform #1</i>
+<b>@set</b> PLATFORM "platform1"
+</pre>
 
 # License
 
