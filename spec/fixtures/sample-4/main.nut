@@ -7,7 +7,7 @@
 @macro M(A)
   @{A} // 456 - local A overrides global A
   @{__FILE__} // main.nut
-@endmacro
+@end
 
 @include M(456)
 

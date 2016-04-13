@@ -13,7 +13,7 @@
     @set abc= def
   @else
     // l2 else
-  @endif
+  @end
 
 @elseif SOMEVAR2 == 0
   // should not be included
