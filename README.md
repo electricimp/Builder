@@ -328,3 +328,7 @@ Example:
 # License
 
 MIT
+
+# Author
+
+Mikhail Yurasov <mikhail@electricimp.com>
