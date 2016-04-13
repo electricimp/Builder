@@ -236,4 +236,26 @@ describe('Parser', () => {
       expect(e.message).toEqual('Unexpected @endmacro (main:1)');
     }
   });
+
+  it('should detect unexpected @end', () => {
+    try {
+      parser.parse(
+        `\n@end`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Unexpected @end (main:2)');
+    }
+  });
+
+  it('should detect incorrect @end syntax', () => {
+    try {
+      parser.parse(
+        `\n@end abc`
+      );
+      fail();
+    } catch (e) {
+      expect(e.message).toEqual('Syntax error in @end (main:2)');
+    }
+  });
 });

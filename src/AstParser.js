@@ -15,6 +15,7 @@ const STATES = {
 // token types
 const TOKENS = {
   IF: 'if',
+  END: 'end',
   SET: 'set',
   ELSE: 'else',
   MACRO: 'macro',
@@ -30,7 +31,7 @@ const TOKENS = {
 const LINES = /(.*(?:\n|\r\n)?)/g;
 
 // regex to detect if fragment is a statement
-const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro)\b(.*)$/;
+const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*)$/;
 
 class AstParser {
 
@@ -157,6 +158,15 @@ class AstParser {
             }
 
             token.type = TOKENS.ENDMACRO;
+            break;
+
+          case 'end':
+
+            if ('' !== arg) {
+              throw new Error(`Syntax error in @end (${this.file}:${token._line})`);
+            }
+
+            token.type = TOKENS.END;
             break;
 
           default:
@@ -383,6 +393,22 @@ class AstParser {
 
             default:
               throw new Error(`Unexpected @endmacro (${this.file}:${node._line})`);
+          }
+
+          break;
+
+        case TOKENS.END:
+
+          switch (state) {
+            case STATES.MACRO:
+            case STATES.IF_CONSEQUENT:
+            case STATES.IF_ALTERNATE:
+            case STATES.IF_ELSEIF:
+              // we got here through recursion, get back
+              return;
+
+            default:
+              throw new Error(`Unexpected @end (${this.file}:${node._line})`);
           }
 
           break;

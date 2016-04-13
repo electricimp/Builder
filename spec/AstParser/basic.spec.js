@@ -65,7 +65,7 @@ describe('AstParser', () => {
       ]
     );
 
-    // console.error(JSON.stringify(r, null, '  ').replace(/\"/g, '\''));
+    // console.error(JSON.stringify(r, null, '  ').replace(/\'/g, '\''));
   });
 
   it('should do something alright #2', () => {
@@ -172,5 +172,30 @@ describe('AstParser', () => {
       ]
     );
 
+  });
+
+  it('should parse alternative end directive', () => {
+    const res = p.parse
+(`@if 1
+@end
+@macro abc()
+@end`);
+
+    // console.log(JSON.stringify(res, null, '    '));
+
+    expect(res).toEqual([
+      {
+        '_line': 1,
+        'type': 'conditional',
+        'test': '1',
+        'consequent': []
+      },
+      {
+        '_line': 3,
+        'type': 'macro',
+        'declaration': 'abc()',
+        'body': []
+      }
+    ]);
   });
 });
