@@ -17,7 +17,21 @@ describe('AstParser', () => {
   });
 
   it('should handle @@-style comments', () => {
-    const r = p.parse(`line 1\n@@ comment\nline 3`);
-    console.error(JSON.stringify(r, null, '    ').replace(/\"/g, '\''));
+    const r = p.parse(`line 1\n@@ comment\n@@\nline 4`);
+    // console.error(JSON.stringify(r, null, '    ').replace(/\"/g, '\''));
+    expect(r).toEqual([
+      {
+        '_line': 1,
+        'type': 'output',
+        'value': 'line 1\n',
+        'computed': true
+      },
+      {
+        '_line': 4,
+        'type': 'output',
+        'value': 'line 4',
+        'computed': true
+      }
+    ]);
   });
 });

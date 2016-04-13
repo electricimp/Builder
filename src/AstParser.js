@@ -181,8 +181,6 @@ class AstParser {
 
       } else if (text.match(COMMENT)) {
 
-        console.log(text);
-
         // @@-style comment
         yield {
           type: TOKENS.COMMENT,
