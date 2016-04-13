@@ -317,7 +317,18 @@ Hi from file <b>@{</b>__FILE__<b>}</b>!
 
 ## Comments
 
-Directives can contain both `//`- and `/**/`-style comments.
+- Lines starting with `@` followed by space or a line break are treated as comments and not added to the output.
+
+  Example:
+
+  <pre>
+  <i>@ something about platform #1</i>
+  <b>@set</b> PLATFORM "platform1"
+  </pre>
+
+- Directives can contain both `//`- and `/**/`-style comments.
+
+
 
 # License
 
