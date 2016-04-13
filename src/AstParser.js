@@ -30,8 +30,11 @@ const TOKENS = {
 // lines gobbling regex
 const LINES = /(.*(?:\n|\r\n)?)/g;
 
-// regex to detect if fragment is a statement
-const STATEMENT = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*)$/;
+// regex to detect if fragment is a directive
+const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*?)\s*$/;
+
+// @-style comments regex
+const COMMENT = /^\s*@\s/;
 
 class AstParser {
 
@@ -62,7 +65,7 @@ class AstParser {
 
       const text = lines[i];
 
-      if (matches = text.trim().match(STATEMENT)) {
+      if (matches = text.match(DIRECTIVE)) {
 
         const token = {_line: 1 + i};
 
@@ -174,6 +177,11 @@ class AstParser {
         }
 
         yield token;
+
+      } else if (text.match(COMMENT)) {
+
+        // do nothing
+        continue;
 
       } else {
 
