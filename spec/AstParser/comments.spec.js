@@ -16,7 +16,7 @@ describe('AstParser', () => {
     p = new AstParser();
   });
 
-  it('should handle @@-style comments', () => {
+  it('should handle @-style comments', () => {
     const r = p.parse(`line\n@ comment\n@\n@noncomment\n@@\n  @\t\nline`);
     // console.error(JSON.stringify(r, null, '    ').replace(/\"/g, '\''));
     expect(r).toEqual([

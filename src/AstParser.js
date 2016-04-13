@@ -33,7 +33,7 @@ const LINES = /(.*(?:\n|\r\n)?)/g;
 // regex to detect if fragment is a directive
 const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*?)\s*$/;
 
-// @@-style comments regex
+// @-style comments regex
 const COMMENT = /^\s*@\s/;
 
 class AstParser {
