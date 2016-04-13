@@ -79,9 +79,9 @@ Example:
 
 <pre>
 <b>@macro</b> some_macro(a, b, c)
-  Hello, <b>@{a}</b>!
-  Roses are <b>@{b}</b>,
-  And violets are <b>@{defined(c) ? c : "of undefiend color"}</b>.
+  Hello, <b>@{</b>a<b>}</b>!
+  Roses are <b>@{</b>b<b>}</b>,
+  And violets are <b>@{</b>defined(c) ? c : "of undefiend color"<b>}</b>.
 <b>@end</b>
 </pre>
 
