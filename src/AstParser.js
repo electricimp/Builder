@@ -22,7 +22,6 @@ const TOKENS = {
   ENDIF: 'endif',
   ELSEIF: 'elseif',
   INCLUDE: 'include',
-  COMMENT: 'comment',
   ENDMACRO: 'endmacro',
   SOURCE_FRAGMENT: 'source_fragment',
   INLINE_EXPRESSION: 'inline_expression'
@@ -35,7 +34,7 @@ const LINES = /(.*(?:\n|\r\n)?)/g;
 const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*?)\s*$/;
 
 // @@-style comments regex
-const COMMENT = /^\s*@@(.*?)\s*$/;
+const COMMENT = /^\s*@\s/;
 
 class AstParser {
 
@@ -181,11 +180,8 @@ class AstParser {
 
       } else if (text.match(COMMENT)) {
 
-        // @@-style comment
-        yield {
-          type: TOKENS.COMMENT,
-          args: [arg]
-        };
+        // do nothing
+        continue;
 
       } else {
 
@@ -423,10 +419,6 @@ class AstParser {
               throw new Error(`Unexpected @end (${this.file}:${node._line})`);
           }
 
-          break;
-
-        case TOKENS.COMMENT:
-          // do nothing
           break;
 
         default:
