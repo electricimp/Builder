@@ -67,6 +67,9 @@ class Builder {
    */
   set logger(value) {
     this._logger = value;
+    // update loggers
+    this.machine.readers.file.logger = value;
+    this.machine.logger = value;
   }
 }
 
