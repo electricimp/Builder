@@ -25,7 +25,7 @@
 - [Usage](#usage)
 - [License](#license)
 
-<br /><img src=docs/logo.png?1 width=280 alt=Builder><br /><br />
+<br /><img src=docs/logo.png?2 width=250 alt=Builder><br /><br />
 
 _Builder_ language combines a preprocessor with an expression language and advanced imports.
 
