@@ -1,4 +1,3 @@
-
 - [Syntax](#syntax)
   - [Directives](#directives)
     - [@set](#set)
@@ -23,8 +22,8 @@
       - [\_\_FILE\_\_](#__file__)
     - [Functions](#functions)
   - [Comments](#comments)
+- [Usage](#usage)
 - [License](#license)
-
 
 <br /><img src=docs/logo.png?1 width=280 alt=Builder><br /><br />
 
@@ -283,7 +282,7 @@ The following types are supported in expressions:
 
 ### Variables
 
-- Variables defined by `<b>@set</b>` statements are available in expressions.
+- Variables defined by <code><b>@set</b></code> statements are available in expressions.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits and can start only with a non-digit.
 
@@ -325,10 +324,36 @@ Example:
 <b>@set</b> PLATFORM "platform1"
 </pre>
 
+# Usage
+
+_Please note that Builder requires Node.js 4.0 and above._
+
+- As _npm_ library:
+
+  ```sh
+  npm i --save Builder
+  ```
+
+  then
+
+  ```js
+  const builder = require('Builder');
+  const output = builder.machine.execute(`@include "${inputFile}"`);
+  ```
+
+- As CLI:
+
+  _Bullder_ provides `pleasebuild` command when installed globally:
+
+  ```sh
+  npm i -g Builder
+  pleasebuild <input_file> [-l (generate line control statements)]
+  ```
+
 # License
 
 MIT
 
-# Author
+_**Author**_
 
 Mikhail Yurasov <mikhail@electricimp.com>

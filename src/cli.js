@@ -76,13 +76,10 @@ if (!inputFile) {
 builder.machine.readers.file.searchDirs.unshift(path.dirname(path.resolve(inputFile)));
 
 try {
-  // execute
+  // go
   const res = builder.machine.execute(`@include "${inputFile.replace(/\"/g, `'`)}"`);
-
-  // here we go
   console.log(res);
 } catch (e) {
-
   console.error('\u001b[31m' + ( e.message || e) + '\u001b[39m');
   process.exit(1);
 }
