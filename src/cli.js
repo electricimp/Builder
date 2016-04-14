@@ -78,7 +78,7 @@ builder.machine.readers.file.searchDirs.unshift(path.dirname(path.resolve(inputF
 try {
   // go
   const res = builder.machine.execute(`@include "${inputFile.replace(/\"/g, `'`)}"`);
-  console.log(res);
+  process.stdout.write(res);
 } catch (e) {
   console.error('\u001b[31m' + ( e.message || e) + '\u001b[39m');
   process.exit(1);
