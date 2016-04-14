@@ -354,6 +354,8 @@ _Please note that Builder requires Node.js 4.0 and above._
 
 MIT
 
+<br />
+
 _**Author**_
 
-Mikhail Yurasov <mikhail@electricimp.com>
+_Mikhail Yurasov <mikhail@electricimp.com>_
