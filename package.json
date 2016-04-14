@@ -1,8 +1,11 @@
 {
-  "name": "imp-builder",
-  "version": "0.0.1-dev",
+  "name": "Builder",
+  "version": "0.1.0-dev3",
   "description": "Builder language implementation",
   "main": "src/index.js",
+  "bin": {
+    "pleasebuild": "src/cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
