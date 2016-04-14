@@ -157,6 +157,7 @@ class Machine {
       throw new Error('GIT sources are not supported at the moment');
     } else {
       // file
+      this.parser.file = path.basename(includePath); // provide filename for correct error messages
       reader = this.readers.file;
     }
 
