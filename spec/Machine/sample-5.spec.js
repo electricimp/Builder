@@ -36,8 +36,8 @@ describe('Machine', () => {
     try {
       machine.execute(src, {TEST: 'expression'});
     } catch (e) {
-      expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
-      expect(e.message).toBe('Function "someUndefinedFunc" is not defined');
+      expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBeTruthy();
+      expect(e.message).toBe('Function "someUndefinedFunc" is not defined (expression.inc.nut:3)');
     }
   });
 });

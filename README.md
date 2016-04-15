@@ -223,7 +223,7 @@ For example, importing file from _GitHub_ looks like:
 - Head of the _master_ branch
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md<@master"
+  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@master"
   </pre>
 
 - Tag _v1.2.3_:
