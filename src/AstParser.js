@@ -36,6 +36,11 @@ const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|e
 // @-style comments regex
 const COMMENT = /^\s*@\s/;
 
+const Errors = {
+  'SyntaxError': class SyntaxError extends Error {
+  }
+};
+
 class AstParser {
 
   /**
@@ -77,7 +82,7 @@ class AstParser {
           case 'include':
 
             if ('' === arg) {
-              throw new Error(`Syntax error in @include (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @include (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.INCLUDE;
@@ -90,7 +95,7 @@ class AstParser {
             if (matches = arg.match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
               token.args = [matches[1], matches[2]];
             } else {
-              throw new Error(`Syntax error in @set (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @set (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.SET;
@@ -99,7 +104,7 @@ class AstParser {
           case 'if':
 
             if ('' === arg) {
-              throw new Error(`Syntax error in @if (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @if (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.IF;
@@ -109,7 +114,7 @@ class AstParser {
           case 'else':
 
             if ('' !== arg) {
-              throw new Error(`Syntax error in @else (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @else (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.ELSE;
@@ -118,7 +123,7 @@ class AstParser {
           case 'elseif':
 
             if ('' === arg) {
-              throw new Error(`Syntax error in @elseif (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @elseif (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.ELSEIF;
@@ -128,7 +133,7 @@ class AstParser {
           case 'endif':
 
             if ('' !== arg) {
-              throw new Error(`Syntax error in @endif (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @endif (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.ENDIF;
@@ -137,7 +142,7 @@ class AstParser {
           case 'error':
 
             if ('' === arg) {
-              throw new Error(`Syntax error in @error (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @error (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.ERROR;
@@ -147,7 +152,7 @@ class AstParser {
           case 'macro':
 
             if ('' === arg) {
-              throw new Error(`Syntax error in @macro (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @macro (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.MACRO;
@@ -157,7 +162,7 @@ class AstParser {
           case 'endmacro':
 
             if ('' !== arg) {
-              throw new Error(`Syntax error in @endmacro (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @endmacro (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.ENDMACRO;
@@ -166,14 +171,14 @@ class AstParser {
           case 'end':
 
             if ('' !== arg) {
-              throw new Error(`Syntax error in @end (${this.file}:${token._line})`);
+              throw new Errors.SyntaxError(`Syntax error in @end (${this.file}:${token._line})`);
             }
 
             token.type = TOKENS.END;
             break;
 
           default:
-            throw new Error(`Unsupported keyword "${type}" (${this.file}:${token.line})`);
+            throw new Errors.SyntaxError(`Unsupported directive "${type}" (${this.file}:${token.line})`);
         }
 
         yield token;
@@ -494,4 +499,5 @@ class AstParser {
 }
 
 module.exports = AstParser;
+module.exports.Errors = Errors;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;

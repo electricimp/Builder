@@ -23,8 +23,11 @@ const Errors = {
   'UserDefinedError': class UserDefinedError extends Error {
   },
   'MacroIsAlreadyDeclared': class MacroIsAlreadyDeclared extends Error {
+  },
+  'ExpressionEvaluationError': class ExpressionEvaluationError extends Error {
   }
 };
+
 
 class Machine {
 
@@ -75,36 +78,48 @@ class Machine {
       // set __LINE__
       c.__LINE__ = insruction._line;
 
-      switch (insruction.type) {
+      try {
 
-        case INSTRUCTIONS.INCLUDE:
-          this._executeInclude(insruction, c);
-          break;
+        switch (insruction.type) {
 
-        case INSTRUCTIONS.OUTPUT:
-          this._executeOutput(insruction, c);
-          break;
+          case INSTRUCTIONS.INCLUDE:
+            this._executeInclude(insruction, c);
+            break;
 
-        case INSTRUCTIONS.SET:
-          this._executeSet(insruction, c);
-          break;
+          case INSTRUCTIONS.OUTPUT:
+            this._executeOutput(insruction, c);
+            break;
 
-        case INSTRUCTIONS.CONDITIONAL:
-          this._executeConditional(insruction, c);
-          break;
+          case INSTRUCTIONS.SET:
+            this._executeSet(insruction, c);
+            break;
 
-        case INSTRUCTIONS.ERROR:
-          this._executeError(insruction, c);
-          break;
+          case INSTRUCTIONS.CONDITIONAL:
+            this._executeConditional(insruction, c);
+            break;
 
-        case INSTRUCTIONS.MACRO:
-          this._executeMacro(insruction, c);
-          break;
+          case INSTRUCTIONS.ERROR:
+            this._executeError(insruction, c);
+            break;
 
-        default:
-          throw new Error(`Unsupported instruction "${insruction.type}"`);
+          case INSTRUCTIONS.MACRO:
+            this._executeMacro(insruction, c);
+            break;
+
+          default:
+            throw new Error(`Unsupported instruction "${insruction.type}"`);
+        }
+
+      } catch (e) {
+
+        // add file/line information to expression errors
+        if (e instanceof Expression.Errors.ExpressionError) {
+          throw new Errors.ExpressionEvaluationError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
+        } else {
+          throw e;
+        }
+
       }
-
     }
   }
 

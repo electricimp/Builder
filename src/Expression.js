@@ -49,14 +49,21 @@
 
 const jsep = require('jsep');
 
-const Errors = {
-  'NotMacroError': class NotMacroError extends Error {
-  },
-  'MacroDeclarationError': class MacroDeclarationError extends Error {
-  },
-  'FunctionCallError': class FunctionCallError extends Error {
-  }
+// <editor-fold desc="Errors" defaultstate="collapsed">
+const Errors = {};
+
+Errors.ExpressionError = class ExpressionError extends Error {
 };
+
+Errors.NotMacroError = class NotMacroError extends Errors.ExpressionError {
+};
+
+Errors.MacroDeclarationError = class MacroDeclarationError extends Errors.ExpressionError {
+};
+
+Errors.FunctionCallError = class FunctionCallError extends Errors.ExpressionError {
+};
+// </editor-fold>
 
 class Expression {
 
