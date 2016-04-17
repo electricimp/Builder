@@ -7,10 +7,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const AbstractReader = require('./AbstractReader');
 
-class FileReader {
+class FileReader extends AbstractReader {
 
   constructor() {
+    super();
     this.searchDirs = [
       path.resolve('.')
     ];
@@ -18,13 +20,13 @@ class FileReader {
 
   /**
    * Read local file
-   * @param {string} path
+   * @param {string} filePath
    * @return {string}
    */
-  read(path) {
+  read(filePath) {
     // iterate through the search dirs
     for (const dir of this.searchDirs) {
-      const sourcePath = dir + '/' + path;
+      const sourcePath = dir + '/' + filePath;
 
       if (fs.existsSync(sourcePath)) {
         this.logger.debug(`Reading local file "${sourcePath}"`);
@@ -32,7 +34,7 @@ class FileReader {
       }
     }
 
-    throw new Error('Local file "' + path + '" not found');
+    throw new AbstractReader.Errors.NotFoundError('Local file "' + filePath + '" not found');
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -43,25 +45,6 @@ class FileReader {
 
   set searchDirs(value) {
     this._searchDirs = value;
-  }
-
-  /**
-   * @return {{debug(),info(),warning(),error()}}
-   */
-  get logger() {
-    return this._logger || {
-        debug: console.log,
-        info: console.info,
-        warning: console.warning,
-        error: console.error
-      };
-  }
-
-  /**
-   * @param {{debug(),info(),warning(),error()}} value
-   */
-  set logger(value) {
-    this._logger = value;
   }
 
   // </editor-fold>

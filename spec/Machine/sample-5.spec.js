@@ -9,7 +9,6 @@ require('jasmine-expect');
 const fs = require('fs');
 const AstParser = require('../../src/AstParser');
 const Machine = require('../../src/Machine');
-const Expression = require('../../src/Expression');
 
 const FILE = __dirname + '/../fixtures/sample-5/main.nut';
 const init = require('./init')(FILE);

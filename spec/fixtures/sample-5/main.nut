@@ -1,4 +1,6 @@
 
+@ test error generation
+
 @if TEST == "set"
   @include "set.inc.nut"
 @elseif TEST == "expression"  || !TEST

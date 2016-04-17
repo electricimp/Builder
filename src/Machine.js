@@ -7,6 +7,7 @@
 
 const path = require('path');
 const Expression = require('./Expression');
+const AbstractReader = require('./AbstractReader');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -25,9 +26,15 @@ const Errors = {
   'MacroIsAlreadyDeclared': class MacroIsAlreadyDeclared extends Error {
   },
   'ExpressionEvaluationError': class ExpressionEvaluationError extends Error {
+  },
+  'SourceInclusionError': class SourceInclusionError extends Error {
+  },
+  'MaxIncludeDepthReachedError': class MaxIncludeDepthReachedError extends Error {
   }
 };
 
+// maximum nesting depth
+const MAX_INCLUDE_DEPTH = 256;
 
 class Machine {
 
@@ -55,6 +62,7 @@ class Machine {
     this._output = ''; // output buffer
     this._globals = {}; // global context
     this._macros = {}; // macros
+    this._depth = 0; // nesting level
 
     // file which produced the last output
     this._lastOutputFile = null;
@@ -67,6 +75,7 @@ class Machine {
    * @private
    */
   _execute(ast, context) {
+
     for (const insruction of ast) {
 
       // current context
@@ -112,9 +121,11 @@ class Machine {
 
       } catch (e) {
 
-        // add file/line information to expression errors
+        // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
           throw new Errors.ExpressionEvaluationError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
+        } else if (e instanceof AbstractReader.Errors.NotFoundError) {
+          throw new Errors.SourceInclusionError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
         } else {
           throw e;
         }
@@ -130,6 +141,16 @@ class Machine {
    * @private
    */
   _executeInclude(instruction, context) {
+
+    if (this._depth === MAX_INCLUDE_DEPTH) {
+      throw new Errors.MaxIncludeDepthReachedError(
+        `Maximum inclusion depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
+      );
+    }
+
+    // increase nesting level
+    this._depth++;
+
     try {
       const macro = this.expression.parseMacroCall(
         instruction.value, context, this._macros
@@ -147,6 +168,9 @@ class Machine {
       // source inclusion
       this._includeSource(instruction.value, context);
     }
+
+    // increase nesting level
+    this._depth--;
   }
 
   /**
@@ -440,7 +464,7 @@ class Machine {
     this._file = value;
   }
 
-// </editor-fold>
+  // </editor-fold>
 }
 
 module.exports = Machine;
