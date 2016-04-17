@@ -7,6 +7,7 @@
 
 const path = require('path');
 const Expression = require('./Expression');
+const AbstractReader = require('./AbstractReader');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -25,6 +26,8 @@ const Errors = {
   'MacroIsAlreadyDeclared': class MacroIsAlreadyDeclared extends Error {
   },
   'ExpressionEvaluationError': class ExpressionEvaluationError extends Error {
+  },
+  'SourceInclusionError': class SourceInclusionError extends Error {
   }
 };
 
@@ -112,9 +115,11 @@ class Machine {
 
       } catch (e) {
 
-        // add file/line information to expression errors
+        // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
           throw new Errors.ExpressionEvaluationError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
+        } else if (e instanceof AbstractReader.Errors.NotFoundError) {
+          throw new Errors.SourceInclusionError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
         } else {
           throw e;
         }
@@ -440,7 +445,7 @@ class Machine {
     this._file = value;
   }
 
-// </editor-fold>
+  // </editor-fold>
 }
 
 module.exports = Machine;
