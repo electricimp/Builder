@@ -1,19 +1,30 @@
 {
-  "name": "imp-bundler",
-  "version": "0.0.1-dev",
-  "description": "Bundling tool for EI/Squirrel",
+  "name": "Builder",
+  "version": "0.1.0",
+  "description": "Builder language implementation",
   "main": "src/index.js",
+  "bin": {
+    "pleasebuild": "src/cli.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/jasmine/bin/jasmine.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electricimp/imp-bundler.git"
+    "url": "git+https://github.com/electricimp/Builder.git"
   },
   "author": "Mikhail Yurasov <mikhail@electricimp.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/electricimp/imp-bundler/issues"
+    "url": "https://github.com/electricimp/Builder/issues"
   },
-  "homepage": "https://github.com/electricimp/imp-bundler#readme"
+  "homepage": "https://github.com/electricimp/Builder#readme",
+  "dependencies": {
+    "jsep": "^0.3.0"
+  },
+  "devDependencies": {
+    "log": "^1.4.0",
+    "jasmine": "^2.4.1",
+    "jasmine-expect": "^2.0.2"
+  }
 }

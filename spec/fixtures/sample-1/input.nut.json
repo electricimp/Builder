@@ -1,0 +1,178 @@
+[
+  {
+    "_line": 1,
+    "type": "include",
+    "value": "\"inc-a.nut\""
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 3,
+    "type": "set",
+    "variable": "SOMEVAR1",
+    "value": "123"
+  },
+  {
+    "_line": 4,
+    "type": "set",
+    "variable": "SOMEVAR2",
+    "value": "256"
+  },
+  {
+    "_line": 5,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 6,
+    "type": "conditional",
+    "test": "SOMEVAR1 == 123",
+    "consequent": [
+      {
+        "_line": 7,
+        "type": "output",
+        "value": "  // should be included\n",
+        "computed": true
+      },
+      {
+        "_line": 8,
+        "type": "output",
+        "value": "\n",
+        "computed": true
+      },
+      {
+        "_line": 9,
+        "type": "conditional",
+        "test": "null",
+        "consequent": [
+          {
+            "_line": 10,
+            "type": "set",
+            "variable": "abc",
+            "value": "def"
+          },
+          {
+            "_line": 11,
+            "type": "output",
+            "value": "    // alternate syntax for @set\n",
+            "computed": true
+          },
+          {
+            "_line": 12,
+            "type": "set",
+            "variable": "abc",
+            "value": "def"
+          },
+          {
+            "_line": 13,
+            "type": "set",
+            "variable": "abc",
+            "value": "def"
+          }
+        ],
+        "alternate": [
+          {
+            "_line": 15,
+            "type": "output",
+            "value": "    // l2 else\n",
+            "computed": true
+          }
+        ]
+      },
+      {
+        "_line": 17,
+        "type": "output",
+        "value": "\n",
+        "computed": true
+      }
+    ],
+    "elseifs": [
+      {
+        "_line": 18,
+        "type": "conditional",
+        "test": "SOMEVAR2 == 0",
+        "consequent": [
+          {
+            "_line": 19,
+            "type": "output",
+            "value": "  // should not be included\n",
+            "computed": true
+          }
+        ]
+      },
+      {
+        "_line": 20,
+        "type": "conditional",
+        "test": "SOMEVAR2 == 256",
+        "consequent": [
+          {
+            "_line": 21,
+            "type": "output",
+            "value": "  // should not be included\n",
+            "computed": true
+          },
+          {
+            "_line": 22,
+            "type": "output",
+            "value": "  // ",
+            "computed": true
+          },
+          {
+            "_line": 22,
+            "type": "output",
+            "value": "__FILE__",
+            "computed": false
+          },
+          {
+            "_line": 22,
+            "type": "output",
+            "value": ":",
+            "computed": true
+          },
+          {
+            "_line": 22,
+            "type": "output",
+            "value": "__LINE__",
+            "computed": false
+          },
+          {
+            "_line": 22,
+            "type": "output",
+            "value": "\n",
+            "computed": true
+          },
+          {
+            "_line": 23,
+            "type": "output",
+            "value": "  // should not be included\n",
+            "computed": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_line": 25,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 26,
+    "type": "conditional",
+    "test": "SOMEVAR2",
+    "consequent": [
+      {
+        "_line": 27,
+        "type": "output",
+        "value": "  // should be included\n",
+        "computed": true
+      }
+    ]
+  }
+]

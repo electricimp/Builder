@@ -1,27 +1,76 @@
 /**
- * Bundler
+ * Builder
  * @author Mikhail Yurasov <mikhail@electricimp.com>
  */
 
 'use strict';
 
-const fs = require('fs');
-const c = require('colors');
-const Errors = require('./Errors');
-const DebugMixin = require('./lib/DebugMixin');
+const Machine = require('./Machine');
+const AstParser = require('./AstParser');
+const Expression = require('./Expression');
+const LocalFileReader = require('./FileReader');
 
-class ImpBundler {
+class Builder {
 
   constructor() {
-    DebugMixin.call(this);
+    this._initMachine();
   }
 
-  bundle(sourceFile) {
+  /**
+   * Init machine
+   * @private
+   */
+  _initMachine() {
+    const fileReader = new LocalFileReader();
+    fileReader.logger = this.logger;
 
-    console.log("aaa");
+    const expression = new Expression();
+    const parser = new AstParser();
 
+    const machine = new Machine();
+
+    machine.readers = {
+      'file': fileReader,
+      'http': null,
+      'git': null
+    };
+
+    machine.expression = expression;
+    machine.parser = parser;
+    machine.logger = this.logger;
+    machine.generateLineControlStatements = false;
+
+    this._machine = machine;
+  }
+
+  /**
+   * @return {Machine}
+   */
+  get machine() {
+    return this._machine;
+  }
+
+  /**
+   * @return {{debug(), info(), warning(), error()}}
+   */
+  get logger() {
+    return this._logger || {
+        debug: console.log,
+        info: console.info,
+        warning: console.warning,
+        error: console.error
+      };
+  }
+
+  /**
+   * @param {{debug(), info(), warning(), error()}} value
+   */
+  set logger(value) {
+    this._logger = value;
+    // update loggers
+    this.machine.readers.file.logger = value;
+    this.machine.logger = value;
   }
 }
 
-module.exports = ImpBundler;
-module.exports.Errors = Errors;
+module.exports = Builder;

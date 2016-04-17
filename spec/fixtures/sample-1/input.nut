@@ -1,16 +1,26 @@
 @include "inc-a.nut"
 
-@define SOMEVAR1 123
-@define SOMEVAR2 256
-
-@undefine SOMEVAR1
+@set SOMEVAR1 123
+@set SOMEVAR2 256
 
 @if SOMEVAR1 == 123
-  // should not be included
+  // should be included
+
+  @if null
+    @set abc def
+    // alternate syntax for @set
+    @set abc=def
+    @set abc= def
+  @else
+    // l2 else
+  @end
+
 @elseif SOMEVAR2 == 0
   // should not be included
 @elseif SOMEVAR2 == 256
-  // should be included
+  // should not be included
+  // @{__FILE__}:@{__LINE__}
+  // should not be included
 @endif
 
 @if SOMEVAR2

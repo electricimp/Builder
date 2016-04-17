@@ -1,0 +1,77 @@
+[
+  {
+    "_line": 1,
+    "type": "include",
+    "value": "\"inc-a.nut\""
+  },
+  {
+    "_line": 2,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 3,
+    "type": "macro",
+    "declaration": "macro1(arg1, arg2)",
+    "body": [
+      {
+        "_line": 4,
+        "type": "output",
+        "value": "// macro1 line 1 # ",
+        "computed": true
+      },
+      {
+        "_line": 4,
+        "type": "output",
+        "value": "__FILE__",
+        "computed": false
+      },
+      {
+        "_line": 4,
+        "type": "output",
+        "value": "\n",
+        "computed": true
+      },
+      {
+        "_line": 5,
+        "type": "include",
+        "value": "macro2(1, 2)"
+      },
+      {
+        "_line": 6,
+        "type": "output",
+        "value": "// macro1 line 2 # ",
+        "computed": true
+      },
+      {
+        "_line": 6,
+        "type": "output",
+        "value": "__FILE__",
+        "computed": false
+      },
+      {
+        "_line": 6,
+        "type": "output",
+        "value": "\n",
+        "computed": true
+      }
+    ]
+  },
+  {
+    "_line": 8,
+    "type": "output",
+    "value": "\n",
+    "computed": true
+  },
+  {
+    "_line": 9,
+    "type": "include",
+    "value": "macro1(1, \"something1\")"
+  },
+  {
+    "_line": 10,
+    "type": "include",
+    "value": "macro2(2, \"something2\", true)"
+  }
+]
