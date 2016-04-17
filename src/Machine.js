@@ -124,7 +124,7 @@ class Machine {
         // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
           throw new Errors.ExpressionEvaluationError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
-        } else if (e instanceof AbstractReader.Errors.NotFoundError) {
+        } else if (e instanceof AbstractReader.Errors.SourceReadingError) {
           throw new Errors.SourceInclusionError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
         } else {
           throw e;
