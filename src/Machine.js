@@ -28,9 +28,13 @@ const Errors = {
   'ExpressionEvaluationError': class ExpressionEvaluationError extends Error {
   },
   'SourceInclusionError': class SourceInclusionError extends Error {
+  },
+  'MaxIncludeDepthReachedError': class MaxIncludeDepthReachedError extends Error {
   }
 };
 
+// maximum nesting depth
+const MAX_INCLUDE_DEPTH = 256;
 
 class Machine {
 
@@ -58,6 +62,7 @@ class Machine {
     this._output = ''; // output buffer
     this._globals = {}; // global context
     this._macros = {}; // macros
+    this._depth = 0; // nesting level
 
     // file which produced the last output
     this._lastOutputFile = null;
@@ -70,6 +75,7 @@ class Machine {
    * @private
    */
   _execute(ast, context) {
+
     for (const insruction of ast) {
 
       // current context
@@ -135,6 +141,16 @@ class Machine {
    * @private
    */
   _executeInclude(instruction, context) {
+
+    if (this._depth === MAX_INCLUDE_DEPTH) {
+      throw new Errors.MaxIncludeDepthReachedError(
+        `Maximum inclusion depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
+      );
+    }
+
+    // increase nesting level
+    this._depth++;
+
     try {
       const macro = this.expression.parseMacroCall(
         instruction.value, context, this._macros
@@ -152,6 +168,9 @@ class Machine {
       // source inclusion
       this._includeSource(instruction.value, context);
     }
+
+    // increase nesting level
+    this._depth--;
   }
 
   /**
