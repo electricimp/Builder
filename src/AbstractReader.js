@@ -13,6 +13,15 @@ Errors.NotFoundError = class NotFoundError extends Error {
 // </editor-fold>
 
 class AbstractReader {
+
+  /**
+   * Read source
+   * @param {string} source
+   * @return {string}
+   */
+  read(source) {
+  }
+
   /**
    * @return {{debug(),info(),warning(),error()}}
    */
