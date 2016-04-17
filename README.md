@@ -25,13 +25,11 @@
 - [Usage](#usage)
 - [License](#license)
 
-<br /><img src=docs/logo.png?2 width=250 alt=Builder><br /><br />
+<br /><img src=docs/logo.png?2 width=250 alt=Builder><br />
 
 [![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)<br />
 
 _Builder_ language combines a preprocessor with an expression language and advanced imports.
-
-_Please note that the works is in-progress and published for preview purposes only._
 
 # Syntax
 
