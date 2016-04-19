@@ -11,7 +11,7 @@ const path = require('path');
 const Machine = require('../../src/Machine');
 const AstParser = require('../../src/AstParser');
 const Expression = require('../../src/Expression');
-const LocalFileReader = require('../../src/Readers/FileReader');
+const FileReader = require('../../src/Readers/FileReader');
 
 module.exports = (sampleFile) => {
   return {
@@ -20,7 +20,7 @@ module.exports = (sampleFile) => {
       // @see https://www.npmjs.com/package/log#log-levels
       const logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
 
-      const fileReader = new LocalFileReader();
+      const fileReader = new FileReader();
       fileReader.logger = logger;
       fileReader.searchDirs.push(path.dirname(sampleFile));
 

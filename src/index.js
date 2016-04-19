@@ -8,7 +8,7 @@
 const Machine = require('./Machine');
 const AstParser = require('./AstParser');
 const Expression = require('./Expression');
-const LocalFileReader = require('./Readers/FileReader');
+const FileReader = require('./Readers/FileReader');
 
 class Builder {
 
@@ -21,7 +21,7 @@ class Builder {
    * @private
    */
   _initMachine() {
-    const fileReader = new LocalFileReader();
+    const fileReader = new FileReader();
     fileReader.logger = this.logger;
 
     const expression = new Expression();

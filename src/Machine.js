@@ -376,14 +376,14 @@ class Machine {
    * @return {{http, git, file: FileReader}}
    */
   get readers() {
-    return this._localFileReader;
+    return this._readers;
   }
 
   /**
    * @param {{http, git, file: FileReader}} value
    */
   set readers(value) {
-    this._localFileReader = value;
+    this._readers = value;
   }
 
   /**
