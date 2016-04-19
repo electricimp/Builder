@@ -14,9 +14,9 @@
 
 'use strict';
 
+const path = require('path');
 const Builder = require('./index');
 const packageJson = require('../package.json');
-const path = require('path');
 
 /**
  * Blackhole logger
