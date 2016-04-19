@@ -43,12 +43,16 @@ class HttpReader extends AbstractReader {
     if (STATUS_FETCH_FAILED === child.status || STATUS_HTTP_ERROR === child.status) {
 
       // predefined exit code errors
-      throw new AbstractReader.Errors.SourceReadingError(child.stderr.toString());
+      throw new AbstractReader.Errors.SourceReadingError(
+        child.stderr.toString()
+      );
 
     } else if (0 !== child.status) {
 
       // misc exit code errors
-      throw new AbstractReader.Errors.SourceReadingError(`Unknown error: ${child.stderr.stoString()} (exit code ${child.status})`);
+      throw new AbstractReader.Errors.SourceReadingError(
+        `Unknown error: ${child.stderr.stoString()} (exit code ${child.status})`
+      );
 
     } else {
 
@@ -58,12 +62,16 @@ class HttpReader extends AbstractReader {
         if (child.error.errno === 'ETIMEDOUT') {
 
           // timeout
-          throw new AbstractReader.Errors.SourceReadingError(`Failed to fetch url "${url}": timed out after ${TIMEOUT / 1000}s`);
+          throw new AbstractReader.Errors.SourceReadingError(
+            `Failed to fetch url "${url}": timed out after ${TIMEOUT / 1000}s`
+          );
 
         } else {
 
           // others
-          throw new AbstractReader.Errors.SourceReadingError(`Failed to fetch url "${url}": ${child.error.errno}`);
+          throw new AbstractReader.Errors.SourceReadingError(
+            `Failed to fetch url "${url}": ${child.error.errno}`
+          );
 
         }
 
