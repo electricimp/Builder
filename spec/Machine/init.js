@@ -11,7 +11,7 @@ const path = require('path');
 const Machine = require('../../src/Machine');
 const AstParser = require('../../src/AstParser');
 const Expression = require('../../src/Expression');
-const LocalFileReader = require('../../src/FileReader');
+const LocalFileReader = require('../../src/Readers/FileReader');
 
 module.exports = (sampleFile) => {
   return {

@@ -8,7 +8,7 @@
 const Machine = require('./Machine');
 const AstParser = require('./AstParser');
 const Expression = require('./Expression');
-const LocalFileReader = require('./FileReader');
+const LocalFileReader = require('./Readers/FileReader');
 
 class Builder {
 

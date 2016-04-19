@@ -7,7 +7,7 @@
 
 const path = require('path');
 const Expression = require('./Expression');
-const AbstractReader = require('./AbstractReader');
+const AbstractReader = require('./Readers/AbstractReader');
 
 // instruction types
 const INSTRUCTIONS = {
