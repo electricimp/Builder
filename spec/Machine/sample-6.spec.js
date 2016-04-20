@@ -25,8 +25,8 @@ describe('Machine', () => {
     try {
       machine.execute(src);
     } catch (e) {
-      expect(e instanceof Machine.Errors.MaxIncludeDepthReachedError).toBeTruthy();
-      expect(e.message).toBe('Maximum inclusion depth reached, possible cyclic reference? (b.nut:1)');
+      expect(e instanceof Machine.Errors.MaxExecutionDepthReachedError).toBeTruthy();
+      expect(e.message).toBe('Maximum execution depth reached, possible cyclic reference? (b.nut:1)');
     }
   });
 });
