@@ -3,7 +3,7 @@
     - [@set](#set)
     - [@macro](#macro)
     - [@if – elseif – @else](#if--elseif--else)
-    - [@{...} (inline expressions)](#-inline-expressionsmacros)
+    - [@{...} (inline expressions/macros)](#-inline-expressionsmacros)
     - [@error](#error)
     - [@include](#include)
       - [Macro](#macro)
