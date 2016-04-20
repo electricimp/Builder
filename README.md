@@ -69,24 +69,42 @@ _Sets `SOMEVAR` to 1:_
 
 _<code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>._
 
-Declares a block of code that can take parameters and can be used with an <code><b>@include</b></code> statement. Once declared, macros are available from anywhere.
+Defines a code region that can take it's own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
 
-Variables declared as macro argumentys are only available within the macro scope and override global variables with the same name (but do not change them).
+Macros can be used:
 
-Example:
+- via <code><b>@include</b></code> directive:
+	
+	<pre>
+	<b>@include</b> macro(a, b, c)
+	</pre>
+	
+- inline:
+
+	<pre>
+	<b>@{</b>macro(a, b, c)<b>}</b>
+	<pre>
+	
+	When macro are used inline:
+	
+	- no line control statements are generated for the output inside the macro scope
+	- `__FILE__`, `__LINE__` and `__PATH__` variables are bound to the scope where  inline inclusion directive appears
+	- trailing newline is trimmed from macro output
+
+Examples:
 
 <pre>
 <b>@macro</b> some_macro(a, b, c)
   Hello, <b>@{</b>a<b>}</b>!
   Roses are <b>@{</b>b<b>}</b>,
-  And violets are <b>@{</b>defined(c) ? c : "of undefiend color"<b>}</b>.
+  And violets are <b>@{</b>defined(c) ? c : "of undefined color"<b>}</b>.
 <b>@end</b>
 </pre>
 
 Then <code>some_macro</code> can be used as:
 
 <pre>
-<b>@include</b> some_macro("username", 123)
+<b>@include</b> some_macro("username", "red")
 </pre>
 
 which will produce:
@@ -94,7 +112,21 @@ which will produce:
 ```
 Hello, username!
 Roses are red,
-And violets are of undefiend color.
+And violets are of undefined color.
+```
+
+The same macro used inline:
+
+<pre>
+[[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
+</pre>
+
+will ouput:
+
+```
+[[[ Hello, username!
+Roses are red,
+And violets are blue. ]]]
 ```
 
 ### @if – @elseif – @else
@@ -133,13 +165,17 @@ Example:
 <b>@endif</b>
 </pre>
 
-### @{...} (inline expressions)
+### @{...} (inline expression/macro inclusion)
 
 <pre>
 <b>@{</b><i>&lt;expression&gt;</i><b>}</b>
 </pre>
 
-Inserts the value of the enclosed expression.
+<pre>
+<b>@{</b>macro(a, b, c)<b>}</b>
+</pre>
+
+Inserts the value of the enclosed expression or executes a macro.
 
 Example:
 
