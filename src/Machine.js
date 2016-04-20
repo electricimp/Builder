@@ -266,7 +266,11 @@ class Machine {
     if (instruction.computed) {
 
       // pre-computed output
-      this._out(instruction.value, context, buffer);
+      this._out(
+        String(instruction.value),
+        context,
+        buffer
+      );
 
     } else {
 
@@ -286,7 +290,7 @@ class Machine {
 
         // evaluate & output
         this._out(
-          this.expression.evaluate(instruction.value, context),
+          String(this.expression.evaluate(instruction.value, context)),
           context,
           buffer
         );
@@ -388,7 +392,7 @@ class Machine {
 
   /**
    * Perform outoput operation
-   * @param {string} output
+   * @param {*} output
    * @param {{}} context
    * @param {string[]} buffer
    * @private
