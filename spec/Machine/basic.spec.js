@@ -94,11 +94,21 @@ describe('Machine', () => {
 
   it('should handle errors in @include-macro expressions', () => {
     try {
-      machine.execute(`@include ###`);
+      machine.execute(`@include ~~~`);
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBe(true);
-      expect(e.message).toBe('Unexpected "#" at character 0 (main:1)');
+      expect(e.message).toBe('Unexpected "~" at character 0 (main:1)');
+    }
+  });
+
+  it('should handle errors in @macro declaration', () => {
+    try {
+      machine.execute(`@macro ~~~\n@end`);
+      fail();
+    } catch (e) {
+      expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBe(true);
+      expect(e.message).toBe('Unexpected "~" at character 0 (main:1)');
     }
   });
 });
