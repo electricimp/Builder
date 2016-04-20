@@ -47,11 +47,16 @@ class Machine {
     // reset state
     this._reset();
 
-    // parse & execute code
+    // parse
     const ast = this.parser.parse(source);
-    this._execute(ast, this._mergeContexts({__FILE__: this.file}, this._globals, context));
 
-    return this._output;
+    // execute
+    context = this._mergeContexts({__FILE__: this.file}, this._globals, context);
+    const buffer = [];
+    this._execute(ast, context, buffer);
+
+    // return output buffer contents
+    return buffer.join('');
   }
 
   /**
@@ -59,22 +64,19 @@ class Machine {
    * @private
    */
   _reset() {
-    this._output = ''; // output buffer
     this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
-
-    // file which produced the last output
-    this._lastOutputFile = null;
   }
 
   /**
    * Execute AST
    * @param {[]} ast
    * @param {{}} context
+   * @param {string[]} buffer - output buffer
    * @private
    */
-  _execute(ast, context) {
+  _execute(ast, context, buffer) {
 
     for (const insruction of ast) {
 
@@ -96,27 +98,27 @@ class Machine {
         switch (insruction.type) {
 
           case INSTRUCTIONS.INCLUDE:
-            this._executeInclude(insruction, context);
+            this._executeInclude(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.OUTPUT:
-            this._executeOutput(insruction, context);
+            this._executeOutput(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.SET:
-            this._executeSet(insruction, context);
+            this._executeSet(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.CONDITIONAL:
-            this._executeConditional(insruction, context);
+            this._executeConditional(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.ERROR:
-            this._executeError(insruction, context);
+            this._executeError(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.MACRO:
-            this._executeMacro(insruction, context);
+            this._executeMacro(insruction, context, buffer);
             break;
 
           default:
@@ -142,9 +144,10 @@ class Machine {
    * Execute "include" instruction
    * @param {{type, value}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeInclude(instruction, context) {
+  _executeInclude(instruction, context, buffer) {
 
     if (this._depth === MAX_INCLUDE_DEPTH) {
       throw new Errors.MaxIncludeDepthReachedError(
@@ -161,10 +164,10 @@ class Machine {
 
     if (macro) {
       // macro inclusion
-      this._includeMacro(macro, context);
+      this._includeMacro(macro, context, buffer);
     } else {
       // source inclusion
-      this._includeSource(instruction.value, context);
+      this._includeSource(instruction.value, context, buffer);
     }
 
     // increase nesting level
@@ -175,9 +178,10 @@ class Machine {
    * Include source
    * @param {string} source
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _includeSource(source, context) {
+  _includeSource(source, context, buffer) {
 
     // path is an expression, evaluate it
     const includePath = this.expression.evaluate(
@@ -215,16 +219,17 @@ class Machine {
     }
 
     // execute included AST
-    this._execute(ast, context);
+    this._execute(ast, context, buffer);
   }
 
   /**
    * Include macro
    * @param {{name, args: []}} macro
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _includeMacro(macro, context) {
+  _includeMacro(macro, context, buffer) {
     // context for macro
     const macroContext = {};
 
@@ -244,7 +249,8 @@ class Machine {
     // execute macro
     this._execute(
       this._macros[macro.name].body,
-      this._mergeContexts(context, macroContext)
+      this._mergeContexts(context, macroContext),
+      buffer
     );
   }
 
@@ -252,14 +258,15 @@ class Machine {
    * Execute "output" instruction
    * @param {{type, value, computed}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeOutput(instruction, context) {
+  _executeOutput(instruction, context, buffer) {
 
     if (instruction.computed) {
 
       // pre-computed output
-      this._out(instruction.value, context);
+      this._out(instruction.value, context, buffer);
 
     } else {
 
@@ -267,12 +274,23 @@ class Machine {
       const macro = this.expression.parseMacroCall(instruction.value, context, this._macros);
 
       if (macro) {
+
         // include macro in inline mode
-        this._includeMacro(macro, this._mergeContexts(context,
-          /* enable inline mode for all subsequent operations */ {__INLINE__: true}));
+        this._includeMacro(
+          macro,
+          this._mergeContexts(context, /* enable inline mode for all subsequent operations */ {__INLINE__: true}),
+          buffer
+        );
+
       } else {
+
         // evaluate & output
-        this._out(this.expression.evaluate(instruction.value, context), context);
+        this._out(
+          this.expression.evaluate(instruction.value, context),
+          context,
+          buffer
+        );
+
       }
 
     }
@@ -282,9 +300,10 @@ class Machine {
    * Execute "set" instruction
    * @param {{type, variable, value}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeSet(instruction, context) {
+  _executeSet(instruction, context, buffer) {
     this._globals[instruction.variable] =
       this.expression.evaluate(instruction.value, context);
   }
@@ -293,9 +312,10 @@ class Machine {
    * Execute "error: instruction
    * @param {{type, value}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeError(instruction, context) {
+  _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value, context)
     );
@@ -305,21 +325,22 @@ class Machine {
    * Execute "conditional" instruction
    * @param {{type, test, consequent, alternate, elseifs}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeConditional(instruction, context) {
+  _executeConditional(instruction, context, buffer) {
     const test = this.expression.evaluate(instruction.test, context);
 
     if (test) {
 
-      this._execute(instruction.consequent, context);
+      this._execute(instruction.consequent, context, buffer);
 
     } else {
 
       // elseifs
       if (instruction.elseifs) {
         for (const elseif of instruction.elseifs) {
-          if (this._executeConditional(elseif, context)) {
+          if (this._executeConditional(elseif, context, buffer)) {
             // "@elseif true" stops if-elseif...-else flow
             return;
           }
@@ -328,7 +349,7 @@ class Machine {
 
       // else
       if (instruction.alternate) {
-        this._execute(instruction.alternate, context);
+        this._execute(instruction.alternate, context, buffer);
       }
 
     }
@@ -340,17 +361,20 @@ class Machine {
    * Execute macro declaration instruction
    * @param {{type, declaration, body: []}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeMacro(instruction, context) {
+  _executeMacro(instruction, context, buffer) {
     // parse declaration of a macro
     const macro = this.expression.parseMacroDeclaration(instruction.declaration);
 
     // do not allow macro redeclaration
     if (this._macros.hasOwnProperty(macro.name)) {
-      throw new Errors.MacroIsAlreadyDeclared(`Macro "${macro.name}" is alredy declared in ` +
-                                              `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
-                                              ` (${context.__FILE__}:${context.__LINE__})`);
+      throw new Errors.MacroIsAlreadyDeclared(
+        `Macro "${macro.name}" is alredy declared in ` +
+        `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
+        ` (${context.__FILE__}:${context.__LINE__})`
+      );
     }
 
     // save macro
@@ -366,21 +390,21 @@ class Machine {
    * Perform outoput operation
    * @param {string} output
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _out(output, context) {
+  _out(output, context, buffer) {
 
     // generate line control statement
     if (this.generateLineControlStatements && !context.__INLINE__) {
-      if (this._lastOutputFile !== context.__FILE__ /* detect file switch */) {
-        this._output +=
-          `#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`;
-        this._lastOutputFile = context.__FILE__;
+      if (buffer.lastOutputFile !== context.__FILE__ /* detect file switch */) {
+        buffer.push(`#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`);
+        buffer.lastOutputFile = context.__FILE__;
       }
     }
 
     // append output
-    this._output += output;
+    buffer.push(output);
   }
 
   /**
