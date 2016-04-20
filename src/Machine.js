@@ -34,7 +34,7 @@ const Errors = {
 };
 
 // maximum nesting depth
-const MAX_INCLUDE_DEPTH = 256;
+const MAX_EXECUTION_DEPTH = 256;
 
 class Machine {
 
@@ -78,7 +78,7 @@ class Machine {
    */
   _execute(ast, context, buffer) {
 
-    if (this._depth === MAX_INCLUDE_DEPTH) {
+    if (this._depth === MAX_EXECUTION_DEPTH) {
       throw new Errors.MaxExecutionDepthReachedError(
         // Since anything greater than zero means a recurring call
         // from the entry base block, __LINE__ will be defined in context.
