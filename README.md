@@ -2,14 +2,14 @@
   - [Directives](#directives)
     - [@set](#set)
     - [@macro](#macro)
-    - [@if – elseif – @else](#if--elseif--else)
-    - [@{...} (inline expressions/macros)](#-inline-expressionsmacros)
-    - [@error](#error)
     - [@include](#include)
       - [Macro](#macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From Git Repository](#from-git-repository)
+    - [@{...} (inline includes)](#-inline-includes)
+    - [@if – elseif – @else](#if--elseif--else)
+    - [@error](#error)
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
@@ -129,89 +129,6 @@ Roses are red,
 And violets are blue. ]]]
 ```
 
-### @if – @elseif – @else
-
-Conditional directive.
-
-<pre>
-<b>@if</b> <test:expression>
-
-  // consequent code
-
-<b>@elseif</b> <i>&lt;test:expression&gt;</i>
-
-  // else if #1 code
-
-// ...more elseifs...
-
-<b>@else</b>
-
-  // alternate code
-
-<b>@endif</b>
-</pre>
-
-_<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>._
-
-Example:
-
-<pre>
-<b>@if</b> __FILE__ == 'abc.ext'
-  // include something
-<b>@elseif</b> __FILE__ == 'def.ext'
-  // include something else
-<b>@else</b>
-  // something completely different
-<b>@endif</b>
-</pre>
-
-### @{...} (inline expressions/macros)
-
-<pre>
-<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
-</pre>
-
-<pre>
-<b>@{</b>macro(a, b, c)<b>}</b>
-</pre>
-
-Inserts the value of the enclosed expression or executes a macro.
-
-Example:
-
-<pre>
-<b>@set</b> name "Someone"
-Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
-</pre>
-
-results in the following output:
-
-```
-Hello, Someone, the result is: 56088.
-```
-
-### @error
-
-<pre>
-<b>@error</b> <i>&lt;message:expression&gt;</i>
-</pre>
-
-Emits an error.
-
-Example:
-
-<pre>
-<b>@if</b> PLATFORM == "platform1"
-  // platform 1 code
-<b>@elseif</b> PLATFORM == "platform2"
-  // platform 2 code
-<b>@elseif</b> PLATFORM == "platform3"
-  // platform 3 code
-<b>@else</b>
-  <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
-<b>@endif</b>
-</pre>
-
 ### @include
 
 Includes local file, external source or a macro.
@@ -273,6 +190,89 @@ For example, importing file from _GitHub_ looks like:
   <pre>
   <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@latest"
   </pre>
+
+### @{...} (inline expressions/macros)
+
+<pre>
+<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
+</pre>
+
+<pre>
+<b>@{</b>macro(a, b, c)<b>}</b>
+</pre>
+
+Inserts the value of the enclosed expression or executes a macro.
+
+Example:
+
+<pre>
+<b>@set</b> name "Someone"
+Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
+</pre>
+
+results in the following output:
+
+```
+Hello, Someone, the result is: 56088.
+```
+
+### @if – @elseif – @else
+
+Conditional directive.
+
+<pre>
+<b>@if</b> <test:expression>
+
+  // consequent code
+
+<b>@elseif</b> <i>&lt;test:expression&gt;</i>
+
+  // else if #1 code
+
+// ...more elseifs...
+
+<b>@else</b>
+
+  // alternate code
+
+<b>@endif</b>
+</pre>
+
+_<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>._
+
+Example:
+
+<pre>
+<b>@if</b> __FILE__ == 'abc.ext'
+  // include something
+<b>@elseif</b> __FILE__ == 'def.ext'
+  // include something else
+<b>@else</b>
+  // something completely different
+<b>@endif</b>
+</pre>
+
+### @error
+
+<pre>
+<b>@error</b> <i>&lt;message:expression&gt;</i>
+</pre>
+
+Emits an error.
+
+Example:
+
+<pre>
+<b>@if</b> PLATFORM == "platform1"
+  // platform 1 code
+<b>@elseif</b> PLATFORM == "platform2"
+  // platform 2 code
+<b>@elseif</b> PLATFORM == "platform3"
+  // platform 3 code
+<b>@else</b>
+  <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
+<b>@endif</b>
+</pre>
 
 ## Expressions
 
