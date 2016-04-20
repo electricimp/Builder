@@ -85,7 +85,7 @@ Macros can be used:
 	<b>@{</b>macro(a, b, c)<b>}</b>
 	</pre>
 	
-	When macro are used inline:
+	When macros are used inline:
 	
 	- no line control statements are generated for the output inside the macro scope
 	- `__FILE__`, `__LINE__` and `__PATH__` variables are bound to the scope where  inline inclusion directive appears
