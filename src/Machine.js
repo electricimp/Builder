@@ -255,10 +255,27 @@ class Machine {
    * @private
    */
   _executeOutput(instruction, context) {
-    const output = instruction.computed
-      ? instruction.value
-      : this.expression.evaluate(instruction.value, context);
-    this._out(output, context);
+
+    if (instruction.computed) {
+
+      // pre-computed output
+      this._out(instruction.value, context);
+
+    } else {
+
+      // detect if it's a macro
+      const macro = this.expression.parseMacroCall(instruction.value, context, this._macros);
+
+      if (macro) {
+        // include macro in inline mode
+        this._includeMacro(macro, this._mergeContexts(context,
+          /* enable inline mode for all subsequent operations */ {__INLINE__: true}));
+      } else {
+        // evaluate & output
+        this._out(this.expression.evaluate(instruction.value, context), context);
+      }
+
+    }
   }
 
   /**
