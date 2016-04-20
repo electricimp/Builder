@@ -6,7 +6,7 @@
 'use strict';
 
 const fs = require('fs');
-const Log = require('Log');
+const Log = require('log');
 const HttpReader = require('../src/Readers/HttpReader');
 const jasmineDiffMatchers = require('jasmine-diff-matchers');
 const AbstractReader = require('../src/Readers/AbstractReader');
