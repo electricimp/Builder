@@ -55,9 +55,6 @@ const Errors = {};
 Errors.ExpressionError = class ExpressionError extends Error {
 };
 
-Errors.NotMacroError = class NotMacroError extends Errors.ExpressionError {
-};
-
 Errors.MacroDeclarationError = class MacroDeclarationError extends Errors.ExpressionError {
 };
 
@@ -114,7 +111,7 @@ class Expression {
    * @param {string} text - expression text
    * @param {{}} context - context
    * @param {{}} macros - defined macroses
-   * @return {{name, args: []}}
+   * @return {{name, args: []}|null}
    */
   parseMacroCall(text, context, definedMacroses) {
     const root = this._jsep(text);
@@ -122,7 +119,7 @@ class Expression {
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
         || !definedMacroses.hasOwnProperty(root.callee.name)) {
       // not a macro
-      throw new Errors.NotMacroError();
+      return null;
     }
 
     return {

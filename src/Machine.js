@@ -151,20 +151,14 @@ class Machine {
     // increase nesting level
     this._depth++;
 
-    try {
-      const macro = this.expression.parseMacroCall(
-        instruction.value, context, this._macros
-      );
+    const macro = this.expression.parseMacroCall(
+      instruction.value, context, this._macros
+    );
 
+    if (macro) {
       // macro inclusion
       this._includeMacro(macro, context);
-
-    } catch (e) {
-      // retrow non-expected errors
-      if (!(e instanceof Expression.Errors.NotMacroError)) {
-        throw e;
-      }
-
+    } else {
       // source inclusion
       this._includeSource(instruction.value, context);
     }
