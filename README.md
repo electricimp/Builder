@@ -3,7 +3,7 @@
     - [@set](#set)
     - [@macro](#macro)
     - [@if – elseif – @else](#if--elseif--else)
-    - [@{...} (inline expressions)](#-inline-expressions)
+    - [@{...} (inline expressions)](#-inline-expressionsmacros)
     - [@error](#error)
     - [@include](#include)
       - [Macro](#macro)
@@ -165,7 +165,7 @@ Example:
 <b>@endif</b>
 </pre>
 
-### @{...} (inline expression/macro inclusion)
+### @{...} (inline expressions/macros)
 
 <pre>
 <b>@{</b><i>&lt;expression&gt;</i><b>}</b>
