@@ -24,11 +24,13 @@ class HttpReader extends AbstractReader {
 
   constructor() {
     super();
+    this.timeout = TIMEOUT;
   }
 
   /**
    * Read file over HTTP/HTTPs
    * @param {string} url
+   * @param {number=TIMEOUT} timeout - timeout (ms)
    * @return {string}
    */
   read(url) {
@@ -37,7 +39,7 @@ class HttpReader extends AbstractReader {
     const child = childProcess.spawnSync(
       /* node */ process.argv[0],
       /* self */ [__filename, WORKER_MARKER, url],
-      {timeout: TIMEOUT}
+      {timeout: this.timeout}
     );
 
     if (STATUS_FETCH_FAILED === child.status || STATUS_HTTP_ERROR === child.status) {
@@ -63,7 +65,7 @@ class HttpReader extends AbstractReader {
 
           // timeout
           throw new AbstractReader.Errors.SourceReadingError(
-            `Failed to fetch url "${url}": timed out after ${TIMEOUT / 1000}s`
+            `Failed to fetch url "${url}": timed out after ${this.timeout / 1000}s`
           );
 
         } else {
@@ -99,6 +101,14 @@ class HttpReader extends AbstractReader {
         process.stdout.write(body);
       }
     });
+  }
+
+  get timeout() {
+    return this._timeout;
+  }
+
+  set timeout(value) {
+    this._timeout = value;
   }
 }
 
