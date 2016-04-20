@@ -20,6 +20,7 @@
     - [Variables](#variables)
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
+      - [\_\_PATH\_\_](#__path__)
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
@@ -160,6 +161,8 @@ Includes local file, external source or a macro.
 </pre>
 
 #### From Git Repository
+
+_Not yet implemented._
 
 <pre>
 <b>@include</b> "<i>&lt;repository_url&gt;</i>.git/<i>&lt;path&gt;</i>/<i>&lt;to&gt;</i>/<i>&lt;file&gt;</i>@<i>&lt;ref&gt;</i>"
@@ -340,6 +343,17 @@ Example:
 
 <pre>
 Hi from file <b>@{</b>__FILE__<b>}</b>!
+</pre>
+
+#### \_\_PATH\_\_
+
+Absolute path (not including file name) to the file where this variable appears.
+Contains url for remote includes.
+
+Example:
+
+<pre>
+Hi from file <b>@{</b>__PATH__<b>}</b>!
 </pre>
 
 ### Functions
