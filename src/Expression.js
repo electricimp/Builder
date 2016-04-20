@@ -114,7 +114,6 @@ class Expression {
    * @return {{name, args: []}|null}
    */
   parseMacroCall(text, context, definedMacroses) {
-
     let root;
 
     try {
@@ -139,9 +138,17 @@ class Expression {
    * Parse macro declartion
    * @param text - declaration text
    * @return {{name, args: []}}
+   * @throws {Errors.MacroDeclarationError}
    */
   parseMacroDeclaration(text) {
-    const root = this._jsep(text);
+    let root;
+
+    try {
+      root = this._jsep(text);
+    } catch (e) {
+      // rethrow as custom error type
+      throw new Errors.ExpressionError(e.message);
+    }
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
       throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);
