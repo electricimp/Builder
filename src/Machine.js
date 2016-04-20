@@ -79,40 +79,44 @@ class Machine {
     for (const insruction of ast) {
 
       // current context
-      const c = this._mergeContexts(
+      context = this._mergeContexts(
         this._globals,
         context
       );
 
-      // set __LINE__
-      c.__LINE__ = insruction._line;
+      // if called from inline directive (@{...}),
+      // __LINE__ should not be updated
+      if (!context.__INLINE__) {
+        // set __LINE__
+        context.__LINE__ = insruction._line;
+      }
 
       try {
 
         switch (insruction.type) {
 
           case INSTRUCTIONS.INCLUDE:
-            this._executeInclude(insruction, c);
+            this._executeInclude(insruction, context);
             break;
 
           case INSTRUCTIONS.OUTPUT:
-            this._executeOutput(insruction, c);
+            this._executeOutput(insruction, context);
             break;
 
           case INSTRUCTIONS.SET:
-            this._executeSet(insruction, c);
+            this._executeSet(insruction, context);
             break;
 
           case INSTRUCTIONS.CONDITIONAL:
-            this._executeConditional(insruction, c);
+            this._executeConditional(insruction, context);
             break;
 
           case INSTRUCTIONS.ERROR:
-            this._executeError(insruction, c);
+            this._executeError(insruction, context);
             break;
 
           case INSTRUCTIONS.MACRO:
-            this._executeMacro(insruction, c);
+            this._executeMacro(insruction, context);
             break;
 
           default:
@@ -123,9 +127,9 @@ class Machine {
 
         // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
-          throw new Errors.ExpressionEvaluationError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
+          throw new Errors.ExpressionEvaluationError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
         } else if (e instanceof AbstractReader.Errors.SourceReadingError) {
-          throw new Errors.SourceInclusionError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
+          throw new Errors.SourceInclusionError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
         } else {
           throw e;
         }
@@ -202,10 +206,16 @@ class Machine {
     // parse
     const ast = this.parser.parse(content);
 
+    // update context
+    if (!context.__INLINE__) {
+      // __FILE__
+      context = this._mergeContexts(context, {
+        __FILE__: path.basename(includePath)
+      });
+    }
+
     // execute included AST
-    this._execute(ast, this._mergeContexts(context, {
-      __FILE__: path.basename(includePath)
-    }));
+    this._execute(ast, context);
   }
 
   /**
@@ -225,11 +235,17 @@ class Machine {
       macroContext[this._macros[macro.name].args[i]] = macro.args[i];
     }
 
-    // file macro was defined in
-    macroContext.__FILE__ = this._macros[macro.name].file;
+    // update context
+    if (!context.__INLINE__) {
+      // __FILE__ (file macro is defined in)
+      macroContext.__FILE__ = this._macros[macro.name].file;
+    }
 
-    // execute it
-    this._execute(this._macros[macro.name].body, this._mergeContexts(context, macroContext));
+    // execute macro
+    this._execute(
+      this._macros[macro.name].body,
+      this._mergeContexts(context, macroContext)
+    );
   }
 
   /**
