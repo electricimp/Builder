@@ -29,7 +29,7 @@ const Errors = {
   },
   'SourceInclusionError': class SourceInclusionError extends Error {
   },
-  'MaxIncludeDepthReachedError': class MaxIncludeDepthReachedError extends Error {
+  'MaxExecutionDepthReachedError': class MaxExecutionDepthReachedError extends Error {
   }
 };
 
@@ -77,6 +77,17 @@ class Machine {
    * @private
    */
   _execute(ast, context, buffer) {
+
+    if (this._depth === MAX_INCLUDE_DEPTH) {
+      throw new Errors.MaxExecutionDepthReachedError(
+        // Since anything greater than zero means a recurring call
+        // from the entry base block, __LINE__ will be defined in context.
+        // MAX_INCLUDE_DEPTH == 0 doesn't allow execution at all.
+        `Maximum execution depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
+      );
+    }
+
+    this._depth++;
 
     for (const insruction of ast) {
 
@@ -138,6 +149,8 @@ class Machine {
 
       }
     }
+
+    this._depth--;
   }
 
   /**
@@ -148,15 +161,6 @@ class Machine {
    * @private
    */
   _executeInclude(instruction, context, buffer) {
-
-    if (this._depth === MAX_INCLUDE_DEPTH) {
-      throw new Errors.MaxIncludeDepthReachedError(
-        `Maximum inclusion depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
-      );
-    }
-
-    // increase nesting level
-    this._depth++;
 
     const macro = this.expression.parseMacroCall(
       instruction.value, context, this._macros
@@ -169,9 +173,6 @@ class Machine {
       // source inclusion
       this._includeSource(instruction.value, context, buffer);
     }
-
-    // increase nesting level
-    this._depth--;
   }
 
   /**
