@@ -32,7 +32,7 @@ describe('Machine', () => {
     expect(result).diffChars(init.getResult());
   });
 
-  it('should run sample #7 wil line control', () => {
+  it('should run sample #7 with line control', () => {
     machine.generateLineControlStatements = true;
     const result = machine.execute(src);
     expect(result).toEqual(init.getResultWithLineControl());

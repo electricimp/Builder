@@ -55,9 +55,6 @@ const Errors = {};
 Errors.ExpressionError = class ExpressionError extends Error {
 };
 
-Errors.NotMacroError = class NotMacroError extends Errors.ExpressionError {
-};
-
 Errors.MacroDeclarationError = class MacroDeclarationError extends Errors.ExpressionError {
 };
 
@@ -114,15 +111,21 @@ class Expression {
    * @param {string} text - expression text
    * @param {{}} context - context
    * @param {{}} macros - defined macroses
-   * @return {{name, args: []}}
+   * @return {{name, args: []}|null}
    */
   parseMacroCall(text, context, definedMacroses) {
-    const root = this._jsep(text);
+    let root;
+
+    try {
+      root = this._jsep(text);
+    } catch (e) {
+      return null;
+    }
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
         || !definedMacroses.hasOwnProperty(root.callee.name)) {
       // not a macro
-      throw new Errors.NotMacroError();
+      return null;
     }
 
     return {
@@ -135,9 +138,17 @@ class Expression {
    * Parse macro declartion
    * @param text - declaration text
    * @return {{name, args: []}}
+   * @throws {Errors.MacroDeclarationError}
    */
   parseMacroDeclaration(text) {
-    const root = this._jsep(text);
+    let root;
+
+    try {
+      root = this._jsep(text);
+    } catch (e) {
+      // rethrow as custom error type
+      throw new Errors.ExpressionError(e.message);
+    }
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
       throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);

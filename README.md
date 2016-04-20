@@ -2,14 +2,14 @@
   - [Directives](#directives)
     - [@set](#set)
     - [@macro](#macro)
-    - [@if – elseif – @else](#if--elseif--else)
-    - [@{...} (inline expressions)](#-inline-expressions)
-    - [@error](#error)
     - [@include](#include)
       - [Macro](#macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From Git Repository](#from-git-repository)
+    - [@{...} (inline includes)](#-inline-includes)
+    - [@if – elseif – @else](#if--elseif--else)
+    - [@error](#error)
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
@@ -69,17 +69,35 @@ _Sets `SOMEVAR` to 1:_
 
 _<code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>._
 
-Declares a block of code that can take parameters and can be used with an <code><b>@include</b></code> statement. Once declared, macros are available from anywhere.
+Defines a code region that can take it's own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
 
-Variables declared as macro argumentys are only available within the macro scope and override global variables with the same name (but do not change them).
+Macros can be used:
 
-Example:
+- via <code><b>@include</b></code> directive:
+	
+	<pre>
+	<b>@include</b> macro(a, b, c)
+	</pre>
+	
+- inline:
+
+	<pre>
+	<b>@{</b>macro(a, b, c)<b>}</b>
+	</pre>
+	
+	When macros are used inline:
+	
+	- no line control statements are generated for the output inside the macro scope
+	- `__FILE__`, `__LINE__` and `__PATH__` variables are bound to the scope where  inline inclusion directive appears
+	- trailing newline is trimmed from macro output
+
+Examples:
 
 <pre>
 <b>@macro</b> some_macro(a, b, c)
   Hello, <b>@{</b>a<b>}</b>!
   Roses are <b>@{</b>b<b>}</b>,
-  And violets are <b>@{</b>defined(c) ? c : "of undefiend color"<b>}</b>.
+  And violets are <b>@{</b>defined(c) ? c : "of undefined color"<b>}</b>.
 <b>@end</b>
 </pre>
 
@@ -94,87 +112,22 @@ which will produce:
 ```
 Hello, username!
 Roses are red,
-And violets are of undefiend color.
+And violets are of undefined color.
 ```
 
-### @if – @elseif – @else
-
-Conditional directive.
+The same macro used inline:
 
 <pre>
-<b>@if</b> <test:expression>
-
-  // consequent code
-
-<b>@elseif</b> <i>&lt;test:expression&gt;</i>
-
-  // else if #1 code
-
-// ...more elseifs...
-
-<b>@else</b>
-
-  // alternate code
-
-<b>@endif</b>
+[[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
 </pre>
 
-_<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>._
-
-Example:
-
-<pre>
-<b>@if</b> __FILE__ == 'abc.ext'
-  // include something
-<b>@elseif</b> __FILE__ == 'def.ext'
-  // include something else
-<b>@else</b>
-  // something completely different
-<b>@endif</b>
-</pre>
-
-### @{...} (inline expressions)
-
-<pre>
-<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
-</pre>
-
-Inserts the value of the enclosed expression.
-
-Example:
-
-<pre>
-<b>@set</b> name "Someone"
-Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
-</pre>
-
-results in the following output:
+will ouput:
 
 ```
-Hello, Someone, the result is: 56088.
+[[[ Hello, username!
+Roses are red,
+And violets are blue. ]]]
 ```
-
-### @error
-
-<pre>
-<b>@error</b> <i>&lt;message:expression&gt;</i>
-</pre>
-
-Emits an error.
-
-Example:
-
-<pre>
-<b>@if</b> PLATFORM == "platform1"
-  // platform 1 code
-<b>@elseif</b> PLATFORM == "platform2"
-  // platform 2 code
-<b>@elseif</b> PLATFORM == "platform3"
-  // platform 3 code
-<b>@else</b>
-  <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
-<b>@endif</b>
-</pre>
 
 ### @include
 
@@ -237,6 +190,89 @@ For example, importing file from _GitHub_ looks like:
   <pre>
   <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@latest"
   </pre>
+
+### @{...} (inline expressions/macros)
+
+<pre>
+<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
+</pre>
+
+<pre>
+<b>@{</b>macro(a, b, c)<b>}</b>
+</pre>
+
+Inserts the value of the enclosed expression or executes a macro.
+
+Example:
+
+<pre>
+<b>@set</b> name "Someone"
+Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
+</pre>
+
+results in the following output:
+
+```
+Hello, Someone, the result is: 56088.
+```
+
+### @if – @elseif – @else
+
+Conditional directive.
+
+<pre>
+<b>@if</b> <test:expression>
+
+  // consequent code
+
+<b>@elseif</b> <i>&lt;test:expression&gt;</i>
+
+  // else if #1 code
+
+// ...more elseifs...
+
+<b>@else</b>
+
+  // alternate code
+
+<b>@endif</b>
+</pre>
+
+_<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>._
+
+Example:
+
+<pre>
+<b>@if</b> __FILE__ == 'abc.ext'
+  // include something
+<b>@elseif</b> __FILE__ == 'def.ext'
+  // include something else
+<b>@else</b>
+  // something completely different
+<b>@endif</b>
+</pre>
+
+### @error
+
+<pre>
+<b>@error</b> <i>&lt;message:expression&gt;</i>
+</pre>
+
+Emits an error.
+
+Example:
+
+<pre>
+<b>@if</b> PLATFORM == "platform1"
+  // platform 1 code
+<b>@elseif</b> PLATFORM == "platform2"
+  // platform 2 code
+<b>@elseif</b> PLATFORM == "platform3"
+  // platform 3 code
+<b>@else</b>
+  <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
+<b>@endif</b>
+</pre>
 
 ## Expressions
 
