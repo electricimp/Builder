@@ -7,7 +7,7 @@
 
 const path = require('path');
 const Expression = require('./Expression');
-const AbstractReader = require('./AbstractReader');
+const AbstractReader = require('./Readers/AbstractReader');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -190,7 +190,8 @@ class Machine {
 
     if (/^https?:/i.test(includePath)) {
       // http
-      throw new Error('HTTP sources are not supported at the moment');
+      this.parser.file = path.basename(includePath); // provide filename for correct error messages
+      reader = this.readers.http;
     } else if (/\.git\b/i.test(includePath)) {
       // git
       throw new Error('GIT sources are not supported at the moment');
@@ -376,14 +377,14 @@ class Machine {
    * @return {{http, git, file: FileReader}}
    */
   get readers() {
-    return this._localFileReader;
+    return this._readers;
   }
 
   /**
    * @param {{http, git, file: FileReader}} value
    */
   set readers(value) {
-    this._localFileReader = value;
+    this._readers = value;
   }
 
   /**
@@ -417,6 +418,8 @@ class Machine {
    */
   set logger(value) {
     this._logger = value;
+    if (this.readers.file) this.readers.file.logger = value;
+    if (this.readers.http) this.readers.http.logger = value;
   }
 
   /**

@@ -92,12 +92,13 @@ class AstParser {
           case 'set':
 
             // split arg
-            if (matches = arg.match(/^([_$A-Za-z][_A-Za-z0-9]*)(?:\s+|\s*=\s*)(.*)$/)) {
-              token.args = [matches[1], matches[2]];
-            } else {
+            matches = arg.match(/^([_$A-Za-z][_A-Za-z0-9]*)\s*(?:=\s*)?(.*?)$/);
+
+            if (!matches || '' === matches[2]) {
               throw new Errors.SyntaxError(`Syntax error in @set (${this.file}:${token._line})`);
             }
 
+            token.args = [matches[1], matches[2]];
             token.type = TOKENS.SET;
             break;
 
