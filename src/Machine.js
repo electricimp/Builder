@@ -418,6 +418,8 @@ class Machine {
    */
   set logger(value) {
     this._logger = value;
+    if (this.readers.file) this.readers.file.logger = value;
+    if (this.readers.http) this.readers.http.logger = value;
   }
 
   /**

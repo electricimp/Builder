@@ -22,8 +22,6 @@ class Builder {
    */
   _initMachine() {
     const fileReader = new FileReader();
-    fileReader.logger = this.logger;
-
     const expression = new Expression();
     const parser = new AstParser();
 
@@ -68,7 +66,6 @@ class Builder {
   set logger(value) {
     this._logger = value;
     // update loggers
-    this.machine.readers.file.logger = value;
     this.machine.logger = value;
   }
 }
