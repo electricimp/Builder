@@ -289,6 +289,13 @@ class Machine {
           macroBuffer
         );
 
+        // trim trailing newline in inline macro mode
+        if (macroBuffer.length > 0) {
+          macroBuffer[macroBuffer.length - 1] =
+            macroBuffer[macroBuffer.length - 1]
+              .replace(/(\r\n|\n)$/, '');
+        }
+
         // append to current buffer
         this._out(macroBuffer, context, buffer);
 
