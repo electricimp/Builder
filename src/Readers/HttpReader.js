@@ -35,6 +35,9 @@ class HttpReader extends AbstractReader {
    */
   read(url) {
 
+    // [debug]
+    this.logger.debug(`Reading url "${url}"...`);
+
     // spawn child process
     const child = childProcess.spawnSync(
       /* node */ process.argv[0],
