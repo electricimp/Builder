@@ -6,6 +6,7 @@
 'use strict';
 
 const fs = require('fs');
+const Log = require('Log');
 const HttpReader = require('../src/Readers/HttpReader');
 const jasmineDiffMatchers = require('jasmine-diff-matchers');
 const AbstractReader = require('../src/Readers/AbstractReader');
@@ -17,6 +18,10 @@ describe('HttpReader', () => {
   beforeEach(function () {
     reader = new HttpReader();
     reader.timeout = 30000; // 30s
+
+    // @see https://www.npmjs.com/package/log#log-levels
+    reader.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
+
     // show string diffs
     jasmine.addMatchers(jasmineDiffMatchers.diffChars);
   });
