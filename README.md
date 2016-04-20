@@ -83,7 +83,7 @@ Macros can be used:
 
 	<pre>
 	<b>@{</b>macro(a, b, c)<b>}</b>
-	<pre>
+	</pre>
 	
 	When macro are used inline:
 	
