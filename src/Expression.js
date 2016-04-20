@@ -114,7 +114,14 @@ class Expression {
    * @return {{name, args: []}|null}
    */
   parseMacroCall(text, context, definedMacroses) {
-    const root = this._jsep(text);
+
+    let root;
+
+    try {
+      root = this._jsep(text);
+    } catch (e) {
+      return null;
+    }
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
         || !definedMacroses.hasOwnProperty(root.callee.name)) {
