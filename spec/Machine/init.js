@@ -11,6 +11,7 @@ const path = require('path');
 const Machine = require('../../src/Machine');
 const AstParser = require('../../src/AstParser');
 const Expression = require('../../src/Expression');
+const HttpReader = require('../../src/Readers/HttpReader');
 const FileReader = require('../../src/Readers/FileReader');
 
 module.exports = (sampleFile) => {
@@ -24,6 +25,9 @@ module.exports = (sampleFile) => {
       fileReader.logger = logger;
       fileReader.searchDirs.push(path.dirname(sampleFile));
 
+      const httpReader = new HttpReader();
+      httpReader.logger = logger;
+
       const expression = new Expression();
       const parser = new AstParser();
 
@@ -31,7 +35,7 @@ module.exports = (sampleFile) => {
 
       machine.readers = {
         'file': fileReader,
-        'http': null,
+        'http': httpReader,
         'git': null
       };
 
