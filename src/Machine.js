@@ -190,7 +190,8 @@ class Machine {
 
     if (/^https?:/i.test(includePath)) {
       // http
-      throw new Error('HTTP sources are not supported at the moment');
+      this.parser.file = path.basename(includePath); // provide filename for correct error messages
+      reader = this.readers.http;
     } else if (/\.git\b/i.test(includePath)) {
       // git
       throw new Error('GIT sources are not supported at the moment');
