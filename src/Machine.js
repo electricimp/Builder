@@ -369,8 +369,9 @@ class Machine {
    * @private
    */
   _out(output, context) {
+
     // generate line control statement
-    if (this.generateLineControlStatements) {
+    if (this.generateLineControlStatements && !context.__INLINE__) {
       if (this._lastOutputFile !== context.__FILE__ /* detect file switch */) {
         this._output +=
           `#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`;
