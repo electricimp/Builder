@@ -86,7 +86,7 @@ Example:
 Then <code>some_macro</code> can be used as:
 
 <pre>
-<b>@include</b> some_macro("username", 123)
+<b>@include</b> some_macro("username", "red")
 </pre>
 
 which will produce:
