@@ -41,7 +41,7 @@ class HttpReader extends AbstractReader {
     // spawn child process
     const child = childProcess.spawnSync(
       /* node */ process.argv[0],
-      /* self */ [__filename, WORKER_MARKER, url],
+      [/* self */ __filename, WORKER_MARKER, url],
       {timeout: this.timeout}
     );
 
