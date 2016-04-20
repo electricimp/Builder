@@ -279,12 +279,18 @@ class Machine {
 
       if (macro) {
 
+        const macroBuffer = [];
+
         // include macro in inline mode
         this._includeMacro(
           macro,
-          this._mergeContexts(context, /* enable inline mode for all subsequent operations */ {__INLINE__: true}),
-          buffer
+          /* enable inline mode for all subsequent operations */
+          this._mergeContexts(context, {__INLINE__: true}),
+          macroBuffer
         );
+
+        // append to current buffer
+        this._out(macroBuffer, context, buffer);
 
       } else {
 
@@ -392,13 +398,12 @@ class Machine {
 
   /**
    * Perform outoput operation
-   * @param {*} output
+   * @param {string|string[]} output
    * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
   _out(output, context, buffer) {
-
     // generate line control statement
     if (this.generateLineControlStatements && !context.__INLINE__) {
       if (buffer.lastOutputFile !== context.__FILE__ /* detect file switch */) {
@@ -407,8 +412,14 @@ class Machine {
       }
     }
 
-    // append output
-    buffer.push(output);
+    // append output to buffer
+    if (Array.isArray(output)) {
+      for (const chunk of output) {
+        buffer.push(chunk);
+      }
+    } else {
+      buffer.push(output);
+    }
   }
 
   /**
