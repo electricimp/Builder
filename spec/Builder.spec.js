@@ -8,7 +8,7 @@
 const Builder = require('../src');
 const Machine = require('../src/Machine');
 
-describe('Expression', () => {
+describe('Builder', () => {
 
   const builder = new Builder();
   builder.machine.generateLineControlStatements = true;

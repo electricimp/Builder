@@ -38,6 +38,11 @@ const MAX_EXECUTION_DEPTH = 256;
 
 class Machine {
 
+  constructor() {
+    // default source path
+    this.file = 'main';
+  }
+
   /**
    * Execute some code
    * @param {string} source
@@ -51,7 +56,12 @@ class Machine {
     const ast = this.parser.parse(source);
 
     // execute
-    context = this._mergeContexts({__FILE__: this.file}, this._globals, context);
+    context = this._mergeContexts(
+      this._parsePath(this.file),
+      this._globals,
+      context
+    );
+
     const buffer = [];
     this._execute(ast, context, buffer);
 
@@ -191,17 +201,22 @@ class Machine {
 
     let reader;
 
-    if (/^https?:/i.test(includePath)) {
-      // http
-      this.parser.file = path.basename(includePath); // provide filename for correct error messages
+    if (/^https?:/i.test(includePath)) { // http
+
+      // provide filename for correct error messages
+      this.parser.file = this._parsePath(includePath).__FILE__;
       reader = this.readers.http;
-    } else if (/\.git\b/i.test(includePath)) {
-      // git
+
+    } else if (/\.git\b/i.test(includePath)) { // git
+
       throw new Error('GIT sources are not supported at the moment');
-    } else {
-      // file
-      this.parser.file = path.basename(includePath); // provide filename for correct error messages
+
+    } else { // file
+
+      // provide filename for correct error messages
+      this.parser.file = this._parsePath(includePath).__FILE__;
       reader = this.readers.file;
+
     }
 
     // read
@@ -213,10 +228,11 @@ class Machine {
 
     // update context
     if (!context.__INLINE__) {
-      // __FILE__
-      context = this._mergeContexts(context, {
-        __FILE__: path.basename(includePath)
-      });
+      // __FILE__/__PATH__
+      context = this._mergeContexts(
+        context,
+        this._parsePath(includePath)
+      );
     }
 
     // execute included AST
@@ -243,8 +259,9 @@ class Machine {
 
     // update context
     if (!context.__INLINE__) {
-      // __FILE__ (file macro is defined in)
+      // __FILE__/__PATH__ (file macro is defined in)
       macroContext.__FILE__ = this._macros[macro.name].file;
+      macroContext.__PATH__ = this._macros[macro.name].path;
     }
 
     // execute macro
@@ -397,7 +414,8 @@ class Machine {
 
     // save macro
     this._macros[macro.name] = {
-      file: context.__FILE__, // file of declaration
+      file: context.__FILE__, // file at declaration
+      path: context.__PATH__, // path at declaration
       line: context.__LINE__, // line of eclaration
       args: macro.args,
       body: instruction.body
@@ -444,6 +462,20 @@ class Machine {
     args.unshift(target);
 
     return Object.assign.apply(this, args);
+  }
+
+  /**
+   * Parse source path into __FILE__/__PATH__
+   * @param {string} source
+   * @private
+   * @return {{__FILE__, __PATH__}}
+   */
+  _parsePath(source) {
+    const __FILE__ = path.basename(source);
+    let __PATH__ = path.dirname(source);
+    __PATH__ = path.normalize(__PATH__);
+    if (__PATH__ === '.') __PATH__ = '';
+    return {__FILE__, __PATH__};
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -532,7 +564,7 @@ class Machine {
    * @return {string}
    */
   get file() {
-    return this._file || 'main';
+    return this._file;
   }
 
   /**
