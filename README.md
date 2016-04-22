@@ -397,7 +397,7 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   <pre>
   npm i -g Builder
-  pleasebuild &lt;input_file&gt; [-D<i>&lt;variable&gt; &lt;value&gt;...]
+  pleasebuild [-D<i>&lt;variable&gt; &lt;value&gt;...] [-l] &lt;input_file&gt;
   </pre>
   
   where:
