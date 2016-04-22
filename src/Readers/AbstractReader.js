@@ -8,11 +8,20 @@
 // <editor-fold desc="Errors" defaultstate="collapsed">
 const Errors = {};
 
-Errors.NotFoundError = class NotFoundError extends Error {
+Errors.SourceReadingError = class SourceReadingError extends Error {
 };
 // </editor-fold>
 
 class AbstractReader {
+
+  /**
+   * Read source
+   * @param {string} source
+   * @return {string}
+   */
+  read(source) {
+  }
+
   /**
    * @return {{debug(),info(),warning(),error()}}
    */

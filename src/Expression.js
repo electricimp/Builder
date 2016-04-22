@@ -55,9 +55,6 @@ const Errors = {};
 Errors.ExpressionError = class ExpressionError extends Error {
 };
 
-Errors.NotMacroError = class NotMacroError extends Errors.ExpressionError {
-};
-
 Errors.MacroDeclarationError = class MacroDeclarationError extends Errors.ExpressionError {
 };
 
@@ -96,7 +93,17 @@ class Expression {
    * @return {*}
    */
   evaluate(expression, context) {
-    return this._evaluate(this._jsep(expression), context || {});
+    try {
+      return this._evaluate(this._jsep(expression), context || {});
+    } catch (e) {
+
+      // rethrow errors with a custom type
+      if (!(e instanceof Errors.ExpressionError)) {
+        throw new Errors.ExpressionError(e.message);
+      }
+
+      throw e;
+    }
   }
 
   /**
@@ -104,15 +111,21 @@ class Expression {
    * @param {string} text - expression text
    * @param {{}} context - context
    * @param {{}} macros - defined macroses
-   * @return {{name, args: []}}
+   * @return {{name, args: []}|null}
    */
   parseMacroCall(text, context, definedMacroses) {
-    const root = this._jsep(text);
+    let root;
+
+    try {
+      root = this._jsep(text);
+    } catch (e) {
+      return null;
+    }
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
         || !definedMacroses.hasOwnProperty(root.callee.name)) {
       // not a macro
-      throw new Errors.NotMacroError();
+      return null;
     }
 
     return {
@@ -125,9 +138,17 @@ class Expression {
    * Parse macro declartion
    * @param text - declaration text
    * @return {{name, args: []}}
+   * @throws {Errors.MacroDeclarationError}
    */
   parseMacroDeclaration(text) {
-    const root = this._jsep(text);
+    let root;
+
+    try {
+      root = this._jsep(text);
+    } catch (e) {
+      // rethrow as custom error type
+      throw new Errors.ExpressionError(e.message);
+    }
 
     if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier') {
       throw new Errors.MacroDeclarationError(`Syntax error in macro declaration`);
@@ -181,7 +202,7 @@ class Expression {
           case '/':
 
             if (0 === right) {
-              throw new Error('Division by zero');
+              throw new Errors.ExpressionError('Division by zero');
             }
 
             res = left / right;
@@ -190,7 +211,7 @@ class Expression {
           case '%':
 
             if (0 === right) {
-              throw new Error('Division by zero');
+              throw new Errors.ExpressionError('Division by zero');
             }
 
             res = left % right;
@@ -266,13 +287,13 @@ class Expression {
             break;
 
           default:
-            throw new Error('Unknown unary operator: ' + node.operator);
+            throw new Errors.ExpressionError('Unknown unary operator: ' + node.operator);
         }
 
         break;
 
       case 'Compound':
-        throw new Error('Syntax error');
+        throw new Errors.ExpressionError('Syntax error');
 
       case 'MemberExpression':
 
@@ -280,7 +301,7 @@ class Expression {
         const property = node.computed ? this._evaluate(node.property, context) : node.property.name;
 
         if (!object.hasOwnProperty(property)) {
-          throw new Error(`Property "${property} is not defined`);
+          throw new Errors.ExpressionError(`Property "${property} is not defined`);
         }
 
         res = object[property];
@@ -288,7 +309,7 @@ class Expression {
         break;
 
       case 'ThisExpression':
-        throw new Error('`this` keyword is not supported');
+        throw new Errors.ExpressionError('`this` keyword is not supported');
 
       case 'ConditionalExpression':
         const test = this._evaluate(node.test, context);
@@ -314,7 +335,7 @@ class Expression {
 
           // defined(varName) should not evaluate variable
           if ('Identifier' !== node.arguments[0].type) {
-            throw new Error('defined() can only be called with an identifier as an argument');
+            throw new Errors.ExpressionError('defined() can only be called with an identifier as an argument');
           }
 
           res = context.hasOwnProperty(node.arguments[0].name);
@@ -329,7 +350,7 @@ class Expression {
             case 'min':
 
               if (args.length < 1) {
-                throw new Error('Wrong number of arguments for ' + callee + '()');
+                throw new Errors.ExpressionError('Wrong number of arguments for ' + callee + '()');
               }
 
               res = Math[callee].apply(this, args);
@@ -351,7 +372,7 @@ class Expression {
         break;
 
       default:
-        throw new Error('Unknown node type: "' + node.type + '"');
+        throw new Errors.ExpressionError('Unknown node type: "' + node.type + '"');
     }
 
     return res;

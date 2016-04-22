@@ -211,21 +211,13 @@ describe('Expression', () => {
   });
 
   it('should fail on call on undefined macro #1', () => {
-    try {
-      expression.parseMacroCall('macro1()', {}, {});
-      fail();
-    } catch (e) {
-      expect(e instanceof Expression.Errors.NotMacroError).toBeTruthy();
-    }
+    const res = expression.parseMacroCall('macro1()', {}, {});
+    expect(res).toBe(null);
   });
 
   it('should fail to parse non-macro call expression', () => {
-    try {
-      expression.parseMacroCall('macro1', {}, {'macro1': {}});
-      fail();
-    } catch (e) {
-      expect(e instanceof Expression.Errors.NotMacroError).toBeTruthy();
-    }
+    const res = expression.parseMacroCall('macro1', {}, {'macro1': {}});
+    expect(res).toBe(null);
   });
 
   it('should fail to call undefined function #1', ()=> {

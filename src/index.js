@@ -8,7 +8,8 @@
 const Machine = require('./Machine');
 const AstParser = require('./AstParser');
 const Expression = require('./Expression');
-const LocalFileReader = require('./FileReader');
+const FileReader = require('./Readers/FileReader');
+const HttpReader = require('./Readers/HttpReader');
 
 class Builder {
 
@@ -21,17 +22,15 @@ class Builder {
    * @private
    */
   _initMachine() {
-    const fileReader = new LocalFileReader();
-    fileReader.logger = this.logger;
-
+    const fileReader = new FileReader();
+    const httpReader = new HttpReader();
     const expression = new Expression();
     const parser = new AstParser();
-
     const machine = new Machine();
 
     machine.readers = {
       'file': fileReader,
-      'http': null,
+      'http': httpReader,
       'git': null
     };
 
@@ -68,7 +67,6 @@ class Builder {
   set logger(value) {
     this._logger = value;
     // update loggers
-    this.machine.readers.file.logger = value;
     this.machine.logger = value;
   }
 }

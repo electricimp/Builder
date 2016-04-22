@@ -7,7 +7,7 @@
 
 const path = require('path');
 const Expression = require('./Expression');
-const AbstractReader = require('./AbstractReader');
+const AbstractReader = require('./Readers/AbstractReader');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -29,14 +29,19 @@ const Errors = {
   },
   'SourceInclusionError': class SourceInclusionError extends Error {
   },
-  'MaxIncludeDepthReachedError': class MaxIncludeDepthReachedError extends Error {
+  'MaxExecutionDepthReachedError': class MaxExecutionDepthReachedError extends Error {
   }
 };
 
 // maximum nesting depth
-const MAX_INCLUDE_DEPTH = 256;
+const MAX_EXECUTION_DEPTH = 256;
 
 class Machine {
+
+  constructor() {
+    // default source path
+    this.file = 'main';
+  }
 
   /**
    * Execute some code
@@ -47,11 +52,21 @@ class Machine {
     // reset state
     this._reset();
 
-    // parse & execute code
+    // parse
     const ast = this.parser.parse(source);
-    this._execute(ast, this._mergeContexts({__FILE__: this.file}, this._globals, context));
 
-    return this._output;
+    // execute
+    context = this._mergeContexts(
+      this._parsePath(this.file),
+      this._globals,
+      context
+    );
+
+    const buffer = [];
+    this._execute(ast, context, buffer);
+
+    // return output buffer contents
+    return buffer.join('');
   }
 
   /**
@@ -59,60 +74,72 @@ class Machine {
    * @private
    */
   _reset() {
-    this._output = ''; // output buffer
     this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
-
-    // file which produced the last output
-    this._lastOutputFile = null;
   }
 
   /**
    * Execute AST
    * @param {[]} ast
    * @param {{}} context
+   * @param {string[]} buffer - output buffer
    * @private
    */
-  _execute(ast, context) {
+  _execute(ast, context, buffer) {
+
+    if (this._depth === MAX_EXECUTION_DEPTH) {
+      throw new Errors.MaxExecutionDepthReachedError(
+        // Since anything greater than zero means a recurring call
+        // from the entry base block, __LINE__ will be defined in context.
+        // MAX_INCLUDE_DEPTH == 0 doesn't allow execution at all.
+        `Maximum execution depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
+      );
+    }
+
+    this._depth++;
 
     for (const insruction of ast) {
 
       // current context
-      const c = this._mergeContexts(
+      context = this._mergeContexts(
         this._globals,
         context
       );
 
-      // set __LINE__
-      c.__LINE__ = insruction._line;
+      // if called from inline directive (@{...}),
+      // __LINE__ should not be updated
+      if (!context.__INLINE__) {
+        // set __LINE__
+        context.__LINE__ = insruction._line;
+      }
 
       try {
 
         switch (insruction.type) {
 
           case INSTRUCTIONS.INCLUDE:
-            this._executeInclude(insruction, c);
+            this._executeInclude(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.OUTPUT:
-            this._executeOutput(insruction, c);
+            this._executeOutput(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.SET:
-            this._executeSet(insruction, c);
+            this._executeSet(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.CONDITIONAL:
-            this._executeConditional(insruction, c);
+            this._executeConditional(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.ERROR:
-            this._executeError(insruction, c);
+            this._executeError(insruction, context, buffer);
             break;
 
           case INSTRUCTIONS.MACRO:
-            this._executeMacro(insruction, c);
+            this._executeMacro(insruction, context, buffer);
             break;
 
           default:
@@ -123,63 +150,49 @@ class Machine {
 
         // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
-          throw new Errors.ExpressionEvaluationError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
-        } else if (e instanceof AbstractReader.Errors.NotFoundError) {
-          throw new Errors.SourceInclusionError(`${e.message} (${c.__FILE__}:${c.__LINE__})`);
+          throw new Errors.ExpressionEvaluationError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
+        } else if (e instanceof AbstractReader.Errors.SourceReadingError) {
+          throw new Errors.SourceInclusionError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
         } else {
           throw e;
         }
 
       }
     }
+
+    this._depth--;
   }
 
   /**
    * Execute "include" instruction
    * @param {{type, value}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeInclude(instruction, context) {
+  _executeInclude(instruction, context, buffer) {
 
-    if (this._depth === MAX_INCLUDE_DEPTH) {
-      throw new Errors.MaxIncludeDepthReachedError(
-        `Maximum inclusion depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
-      );
-    }
+    const macro = this.expression.parseMacroCall(
+      instruction.value, context, this._macros
+    );
 
-    // increase nesting level
-    this._depth++;
-
-    try {
-      const macro = this.expression.parseMacroCall(
-        instruction.value, context, this._macros
-      );
-
+    if (macro) {
       // macro inclusion
-      this._includeMacro(macro, context);
-
-    } catch (e) {
-      // retrow non-expected errors
-      if (!(e instanceof Expression.Errors.NotMacroError)) {
-        throw e;
-      }
-
+      this._includeMacro(macro, context, buffer);
+    } else {
       // source inclusion
-      this._includeSource(instruction.value, context);
+      this._includeSource(instruction.value, context, buffer);
     }
-
-    // increase nesting level
-    this._depth--;
   }
 
   /**
    * Include source
    * @param {string} source
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _includeSource(source, context) {
+  _includeSource(source, context, buffer) {
 
     // path is an expression, evaluate it
     const includePath = this.expression.evaluate(
@@ -188,16 +201,22 @@ class Machine {
 
     let reader;
 
-    if (/^https?:/i.test(includePath)) {
-      // http
-      throw new Error('HTTP sources are not supported at the moment');
-    } else if (/\.git\b/i.test(includePath)) {
-      // git
+    if (/^https?:/i.test(includePath)) { // http
+
+      // provide filename for correct error messages
+      this.parser.file = this._parsePath(includePath).__FILE__;
+      reader = this.readers.http;
+
+    } else if (/\.git\b/i.test(includePath)) { // git
+
       throw new Error('GIT sources are not supported at the moment');
-    } else {
-      // file
-      this.parser.file = path.basename(includePath); // provide filename for correct error messages
+
+    } else { // file
+
+      // provide filename for correct error messages
+      this.parser.file = this._parsePath(includePath).__FILE__;
       reader = this.readers.file;
+
     }
 
     // read
@@ -207,19 +226,27 @@ class Machine {
     // parse
     const ast = this.parser.parse(content);
 
+    // update context
+    if (!context.__INLINE__) {
+      // __FILE__/__PATH__
+      context = this._mergeContexts(
+        context,
+        this._parsePath(includePath)
+      );
+    }
+
     // execute included AST
-    this._execute(ast, this._mergeContexts(context, {
-      __FILE__: path.basename(includePath)
-    }));
+    this._execute(ast, context, buffer);
   }
 
   /**
    * Include macro
    * @param {{name, args: []}} macro
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _includeMacro(macro, context) {
+  _includeMacro(macro, context, buffer) {
     // context for macro
     const macroContext = {};
 
@@ -230,33 +257,88 @@ class Machine {
       macroContext[this._macros[macro.name].args[i]] = macro.args[i];
     }
 
-    // file macro was defined in
-    macroContext.__FILE__ = this._macros[macro.name].file;
+    // update context
+    if (!context.__INLINE__) {
+      // __FILE__/__PATH__ (file macro is defined in)
+      macroContext.__FILE__ = this._macros[macro.name].file;
+      macroContext.__PATH__ = this._macros[macro.name].path;
+    }
 
-    // execute it
-    this._execute(this._macros[macro.name].body, this._mergeContexts(context, macroContext));
+    // execute macro
+    this._execute(
+      this._macros[macro.name].body,
+      this._mergeContexts(context, macroContext),
+      buffer
+    );
   }
 
   /**
    * Execute "output" instruction
    * @param {{type, value, computed}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeOutput(instruction, context) {
-    const output = instruction.computed
-      ? instruction.value
-      : this.expression.evaluate(instruction.value, context);
-    this._out(output, context);
+  _executeOutput(instruction, context, buffer) {
+
+    if (instruction.computed) {
+
+      // pre-computed output
+      this._out(
+        String(instruction.value),
+        context,
+        buffer
+      );
+
+    } else {
+
+      // detect if it's a macro
+      const macro = this.expression.parseMacroCall(instruction.value, context, this._macros);
+
+      if (macro) {
+
+        const macroBuffer = [];
+
+        // include macro in inline mode
+        this._includeMacro(
+          macro,
+          /* enable inline mode for all subsequent operations */
+          this._mergeContexts(context, {__INLINE__: true}),
+          macroBuffer
+        );
+
+        // trim trailing newline in inline macro mode
+        if (macroBuffer.length > 0) {
+          macroBuffer[macroBuffer.length - 1] =
+            macroBuffer[macroBuffer.length - 1]
+              .replace(/(\r\n|\n)$/, '');
+        }
+
+        // append to current buffer
+        this._out(macroBuffer, context, buffer);
+
+      } else {
+
+        // evaluate & output
+        this._out(
+          String(this.expression.evaluate(instruction.value, context)),
+          context,
+          buffer
+        );
+
+      }
+
+    }
   }
 
   /**
    * Execute "set" instruction
    * @param {{type, variable, value}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeSet(instruction, context) {
+  _executeSet(instruction, context, buffer) {
     this._globals[instruction.variable] =
       this.expression.evaluate(instruction.value, context);
   }
@@ -265,9 +347,10 @@ class Machine {
    * Execute "error: instruction
    * @param {{type, value}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeError(instruction, context) {
+  _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value, context)
     );
@@ -277,21 +360,22 @@ class Machine {
    * Execute "conditional" instruction
    * @param {{type, test, consequent, alternate, elseifs}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeConditional(instruction, context) {
+  _executeConditional(instruction, context, buffer) {
     const test = this.expression.evaluate(instruction.test, context);
 
     if (test) {
 
-      this._execute(instruction.consequent, context);
+      this._execute(instruction.consequent, context, buffer);
 
     } else {
 
       // elseifs
       if (instruction.elseifs) {
         for (const elseif of instruction.elseifs) {
-          if (this._executeConditional(elseif, context)) {
+          if (this._executeConditional(elseif, context, buffer)) {
             // "@elseif true" stops if-elseif...-else flow
             return;
           }
@@ -300,7 +384,7 @@ class Machine {
 
       // else
       if (instruction.alternate) {
-        this._execute(instruction.alternate, context);
+        this._execute(instruction.alternate, context, buffer);
       }
 
     }
@@ -312,22 +396,26 @@ class Machine {
    * Execute macro declaration instruction
    * @param {{type, declaration, body: []}} instruction
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _executeMacro(instruction, context) {
+  _executeMacro(instruction, context, buffer) {
     // parse declaration of a macro
     const macro = this.expression.parseMacroDeclaration(instruction.declaration);
 
     // do not allow macro redeclaration
     if (this._macros.hasOwnProperty(macro.name)) {
-      throw new Errors.MacroIsAlreadyDeclared(`Macro "${macro.name}" is alredy declared in ` +
-                                              `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
-                                              ` (${context.__FILE__}:${context.__LINE__})`);
+      throw new Errors.MacroIsAlreadyDeclared(
+        `Macro "${macro.name}" is alredy declared in ` +
+        `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
+        ` (${context.__FILE__}:${context.__LINE__})`
+      );
     }
 
     // save macro
     this._macros[macro.name] = {
-      file: context.__FILE__, // file of declaration
+      file: context.__FILE__, // file at declaration
+      path: context.__PATH__, // path at declaration
       line: context.__LINE__, // line of eclaration
       args: macro.args,
       body: instruction.body
@@ -336,22 +424,28 @@ class Machine {
 
   /**
    * Perform outoput operation
-   * @param {string} output
+   * @param {string|string[]} output
    * @param {{}} context
+   * @param {string[]} buffer
    * @private
    */
-  _out(output, context) {
+  _out(output, context, buffer) {
     // generate line control statement
-    if (this.generateLineControlStatements) {
-      if (this._lastOutputFile !== context.__FILE__ /* detect file switch */) {
-        this._output +=
-          `#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`;
-        this._lastOutputFile = context.__FILE__;
+    if (this.generateLineControlStatements && !context.__INLINE__) {
+      if (buffer.lastOutputFile !== context.__FILE__ /* detect file switch */) {
+        buffer.push(`#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`);
+        buffer.lastOutputFile = context.__FILE__;
       }
     }
 
-    // append output
-    this._output += output;
+    // append output to buffer
+    if (Array.isArray(output)) {
+      for (const chunk of output) {
+        buffer.push(chunk);
+      }
+    } else {
+      buffer.push(output);
+    }
   }
 
   /**
@@ -370,20 +464,34 @@ class Machine {
     return Object.assign.apply(this, args);
   }
 
+  /**
+   * Parse source path into __FILE__/__PATH__
+   * @param {string} source
+   * @private
+   * @return {{__FILE__, __PATH__}}
+   */
+  _parsePath(source) {
+    const __FILE__ = path.basename(source);
+    let __PATH__ = path.dirname(source);
+    __PATH__ = path.normalize(__PATH__);
+    if (__PATH__ === '.') __PATH__ = '';
+    return {__FILE__, __PATH__};
+  }
+
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
    * @return {{http, git, file: FileReader}}
    */
   get readers() {
-    return this._localFileReader;
+    return this._readers;
   }
 
   /**
    * @param {{http, git, file: FileReader}} value
    */
   set readers(value) {
-    this._localFileReader = value;
+    this._readers = value;
   }
 
   /**
@@ -417,6 +525,8 @@ class Machine {
    */
   set logger(value) {
     this._logger = value;
+    if (this.readers.file) this.readers.file.logger = value;
+    if (this.readers.http) this.readers.http.logger = value;
   }
 
   /**
@@ -454,7 +564,7 @@ class Machine {
    * @return {string}
    */
   get file() {
-    return this._file || 'main';
+    return this._file;
   }
 
   /**

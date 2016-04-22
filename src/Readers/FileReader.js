@@ -25,8 +25,8 @@ class FileReader extends AbstractReader {
    */
   read(filePath) {
     // iterate through the search dirs
-    for (const dir of this.searchDirs) {
-      const sourcePath = dir + '/' + filePath;
+    for (const dir of this.searchDirs.concat('' /* to try as absolute path */)) {
+      const sourcePath = path.join(dir, filePath);
 
       if (fs.existsSync(sourcePath)) {
         this.logger.debug(`Reading local file "${sourcePath}"`);
@@ -34,7 +34,7 @@ class FileReader extends AbstractReader {
       }
     }
 
-    throw new AbstractReader.Errors.NotFoundError('Local file "' + filePath + '" not found');
+    throw new AbstractReader.Errors.SourceReadingError('Local file "' + filePath + '" not found');
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
