@@ -395,10 +395,15 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   _Bullder_ provides `pleasebuild` command when installed globally:
 
-  ```sh
+  <pre>
   npm i -g Builder
-  pleasebuild <input_file> [-l (generate line control statements)]
-  ```
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] <i>&lt;input_file&gt;</i>
+  </pre>
+  
+  where:
+  
+  * `-l` – generate line control statements
+  * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> – define a variable
 
 # License
 
