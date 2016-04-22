@@ -472,7 +472,7 @@ class Machine {
    */
   _parsePath(source) {
     const __FILE__ = path.basename(source);
-    let __PATH__ = path.basename(source);
+    let __PATH__ = path.dirname(source);
     if (__PATH__ === '.') __PATH__ = '';
     return {__FILE__, __PATH__};
   }
