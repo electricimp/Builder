@@ -397,13 +397,13 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt; &lt;value&gt;...] [-l] &lt;input_file&gt;
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] &lt;input_file&gt;
   </pre>
   
   where:
   
   * `-l` – generate line control statements
-  * <code>-D<i>&lt;variable&gt; &lt;value&gt;</code> – define a variable
+  * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> – define a variable
 
 # License
 
