@@ -38,6 +38,11 @@ const MAX_EXECUTION_DEPTH = 256;
 
 class Machine {
 
+  constructor() {
+    // default source path
+    this.file = 'main';
+  }
+
   /**
    * Execute some code
    * @param {string} source
@@ -558,7 +563,7 @@ class Machine {
    * @return {string}
    */
   get file() {
-    return this._file || 'main';
+    return this._file;
   }
 
   /**
