@@ -211,7 +211,8 @@ Apart from GitHub _username_ you need to provide either a _[personal access toke
 <b>@include once</b> <i>&lt;source:expression&gt;</i>
 </pre>
 
-Act the same as <code><b>@include</b></code> but has no effect is _source_ has already been included. Macros are always included.
+Acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. 
+Macros are always included.
 
 ### @{...} (inline expressions/macros)
 
