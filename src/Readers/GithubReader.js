@@ -28,7 +28,7 @@ class GithubReader extends AbstractReader {
   }
 
   supports(source) {
-    return false !== this._parse(source);
+    return false !== GithubReader._parse(source);
   }
 
   /**
