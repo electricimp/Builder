@@ -90,7 +90,7 @@ class AstParser {
 
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.INCLUDE;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'set':
@@ -102,7 +102,8 @@ class AstParser {
               throw new Errors.SyntaxError(`Syntax error in @set (${this.file}:${token._line})`);
             }
 
-            token.args = [matches[1], matches[2]];
+            token.args.push(matches[1]);
+            token.args.push(matches[2]);
             token.type = TOKENS.SET;
             break;
 
