@@ -6,8 +6,8 @@
       - [Macro](#macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
-      - [From Git Repository](#from-git-repository)
-    - [@{...} (inline includes)](#-inline-includes)
+      - [From GitHub](#from-github)
+    - [@{...} – inlines](#-inline-expressions-macros)
     - [@if – elseif – @else](#if--elseif--else)
     - [@error](#error)
   - [Expressions](#expressions)
@@ -160,39 +160,39 @@ Includes local file, external source or a macro.
 <b>@include</b> "https://example.com/file.ext"
 </pre>
 
-#### From Git Repository
-
-_Not yet implemented._
+#### From GitHub
 
 <pre>
-<b>@include</b> "<i>&lt;repository_url&gt;</i>.git/<i>&lt;path&gt;</i>/<i>&lt;to&gt;</i>/<i>&lt;file&gt;</i>@<i>&lt;ref&gt;</i>"
+<b>@include</b> "github:<i>&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
 </pre>
 
-For example, importing file from _GitHub_ looks like:
+Where:
+
+- `user` – user/organization name
+- `repo` – repository name
+- `ref` – git reference (branch name or tag, defaults to _master_)
+
+
+Examples:
 
 - Head of the default branch
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md"
+  <b>@include</b> "github:electricimp/Promise/Promise.class.nut"
   </pre>
 
-- Head of the _master_ branch
+- Head of the _develop_ branch
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@master"
+  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@develop"
   </pre>
 
-- Tag _v1.2.3_:
+- Tag _v2.0.0_:
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@v1.2.3"
+  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
   </pre>
-
-- Latest available tag
-
-  <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@latest"
-  </pre>
+  
 
 ### @{...} (inline expressions/macros)
 
