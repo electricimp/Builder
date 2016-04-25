@@ -12,6 +12,8 @@ describe('Builder', () => {
 
   const builder = new Builder();
   builder.machine.generateLineControlStatements = true;
+  builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
+  builder.machine.readers.github.password = process.env.SPEC_GITHUB_PASSWORD;
 
   it('should build something', () => {
     expect(builder.machine instanceof Machine).toBeTruthy();

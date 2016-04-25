@@ -31,15 +31,17 @@ module.exports = (sampleFile) => {
 
       const githubReader = new GithubReader();
       githubReader.logger = logger;
+      githubReader.username = process.env.SPEC_GITHUB_USERNAME;
+      githubReader.password = process.env.SPEC_GITHUB_PASSWORD;
 
       const expression = new Expression();
       const parser = new AstParser();
 
       const machine = new Machine();
 
-      machine.readers.push(githubReader);
-      machine.readers.push(httpReader);
-      machine.readers.push(fileReader);
+      machine.readers.github = githubReader;
+      machine.readers.http = httpReader;
+      machine.readers.file = fileReader;
 
       machine.expression = expression;
       machine.parser = parser;

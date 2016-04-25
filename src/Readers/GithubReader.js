@@ -129,7 +129,7 @@ class GithubReader extends AbstractReader {
 
           // detect rate limit hit
           if (err.message.indexOf('API rate limit exceeded') !== -1) {
-            process.stderr.write('API rate limit exceeded');
+            process.stderr.write('GitHub API rate limit exceeded');
             process.exit(STATUS_API_RATE_LIMIT);
           }
 
