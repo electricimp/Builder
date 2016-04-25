@@ -10,6 +10,7 @@ const AstParser = require('./AstParser');
 const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
+const GithubReader = require('./Readers/GithubReader');
 
 class Builder {
 
