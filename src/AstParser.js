@@ -347,7 +347,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               if (parent.alternate) {
-                throw new Error(`Multiple @else statements are not allowed (${this.file}:${node._line})`);
+                throw new Errors.SyntaxError(`Multiple @else statements are not allowed (${this.file}:${node._line})`);
               }
 
               parent.alternate = [];
@@ -355,7 +355,7 @@ class AstParser {
               break;
 
             default:
-              throw new Error(`Unexpected @else (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @else (${this.file}:${node._line})`);
           }
 
           break;
@@ -381,10 +381,10 @@ class AstParser {
               break;
 
             case STATES.IF_ALTERNATE:
-              throw new Error(`@elseif after @else is not allowed (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`@elseif after @else is not allowed (${this.file}:${node._line})`);
 
             default:
-              throw new Error(`Unexpected @elseif (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @elseif (${this.file}:${node._line})`);
           }
 
           break;
@@ -399,7 +399,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @endif (${this.file}:${node._line})`);
           }
 
           break;
@@ -444,7 +444,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endmacro (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @endmacro (${this.file}:${node._line})`);
           }
 
           break;
@@ -469,7 +469,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endwhile (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @endwhile (${this.file}:${node._line})`);
           }
 
           break;
@@ -494,7 +494,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endrepeat (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @endrepeat (${this.file}:${node._line})`);
           }
 
           break;
@@ -512,13 +512,13 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @end (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @end (${this.file}:${node._line})`);
           }
 
           break;
 
         default:
-          throw new Error(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
+          throw new Errors.SyntaxError(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
       }
     }
 
@@ -530,19 +530,19 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Error(`Unclosed @if statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @if statement (${this.file}:${token ? token._line : parent._line})`);
 
       case STATES.MACRO:
-        throw new Error(`Unclosed @macro statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @macro statement (${this.file}:${token ? token._line : parent._line})`);
 
       case STATES.WHILE:
-        throw new Error(`Unclosed @while statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @while statement (${this.file}:${token ? token._line : parent._line})`);
 
       case STATES.REPEAT:
-        throw new Error(`Unclosed @repeat statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @repeat statement (${this.file}:${token ? token._line : parent._line})`);
 
       default:
-        throw new Error(`Syntax error (${parent.file})`);
+        throw new Errors.SyntaxError(`Syntax error (${parent.file})`);
     }
 
     return parent;
@@ -581,7 +581,7 @@ class AstParser {
         break;
 
       default:
-        throw new Error(`Unsupported state "${state}"`);
+        throw new Errors.SyntaxError(`Unsupported state "${state}"`);
     }
   }
 
