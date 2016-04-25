@@ -23,6 +23,15 @@ class AbstractReader {
   }
 
   /**
+   * Determine if the reader supports the source
+   * @param source
+   * @return {boolean}
+   */
+  supports(source) {
+    return false;
+  }
+
+  /**
    * @return {{debug(),info(),warning(),error()}}
    */
   get logger() {

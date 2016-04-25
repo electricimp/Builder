@@ -27,6 +27,11 @@ class HttpReader extends AbstractReader {
     this.timeout = TIMEOUT;
   }
 
+  supports(source) {
+    // support http sources but not GIT repos
+    return /^https?:/i.test(source) && !/\.git\b/i.test(source);
+  }
+
   /**
    * Read file over HTTP/HTTPs
    * @param {string} url

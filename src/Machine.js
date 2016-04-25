@@ -39,8 +39,8 @@ const MAX_EXECUTION_DEPTH = 256;
 class Machine {
 
   constructor() {
-    // default source path
-    this.file = 'main';
+    this.file = 'main'; // default source path
+    this.readers = [];
   }
 
   /**
@@ -199,25 +199,10 @@ class Machine {
       source, context
     );
 
-    let reader;
+    const reader = this._getReader(includePath);
 
-    if (/^https?:/i.test(includePath)) { // http
-
-      // provide filename for correct error messages
-      this.parser.file = this._parsePath(includePath).__FILE__;
-      reader = this.readers.http;
-
-    } else if (/\.git\b/i.test(includePath)) { // git
-
-      throw new Error('GIT sources are not supported at the moment');
-
-    } else { // file
-
-      // provide filename for correct error messages
-      this.parser.file = this._parsePath(includePath).__FILE__;
-      reader = this.readers.file;
-
-    }
+    // provide filename for correct error messages
+    this.parser.file = this._parsePath(includePath).__FILE__;
 
     // read
     this.logger.info(`Including local file "${includePath}"`);
@@ -478,17 +463,34 @@ class Machine {
     return {__FILE__, __PATH__};
   }
 
+  /**
+   * Find reader
+   *
+   * @param source
+   * @return {AbstractReader}
+   * @private
+   */
+  _getReader(source) {
+    for (const reader of this.readers) {
+      if (reader.supports(source)) {
+        return reader;
+      }
+    }
+
+    throw new Error(`Source "${source}" is not supported`);
+  }
+
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
-   * @return {{http, git, file: FileReader}}
+   * @return {AbstractReader[]} value
    */
   get readers() {
     return this._readers;
   }
 
   /**
-   * @param {{http, git, file: FileReader}} value
+   * @param {AbstractReader[]} value
    */
   set readers(value) {
     this._readers = value;

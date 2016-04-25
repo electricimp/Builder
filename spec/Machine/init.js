@@ -33,11 +33,8 @@ module.exports = (sampleFile) => {
 
       const machine = new Machine();
 
-      machine.readers = {
-        'file': fileReader,
-        'http': httpReader,
-        'git': null
-      };
+      machine.readers.push(httpReader);
+      machine.readers.push(fileReader);
 
       machine.expression = expression;
       machine.parser = parser;
