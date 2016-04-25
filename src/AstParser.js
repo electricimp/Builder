@@ -7,6 +7,8 @@ const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 const STATES = {
   OK: 'ok',
   MACRO: 'macro',
+  WHILE: 'while',
+  REPEAT: 'repeat',
   IF_ELSEIF: 'if_elseif',
   IF_ALTERNATE: 'if_alternate',
   IF_CONSEQUENT: 'if_consequent'
@@ -447,13 +449,40 @@ class AstParser {
 
           break;
 
+        // while declaration start
+        case TOKENS.WHILE:
+
+          node.type = INSTRUCTIONS.LOOP;
+          node.test = token.args[0];
+          node.body = [];
+          this._append(parent, node, state);
+          this._parse(tokens, node, STATES.WHILE);
+
+          break;
+
+        // end of macro declaration
+        case TOKENS.ENDWHILE:
+
+          switch (state) {
+            case STATES.WHILE:
+              // we got here through recursion, get back
+              return;
+
+            default:
+              throw new Error(`Unexpected @endwhile (${this.file}:${node._line})`);
+          }
+
+          break;
+
         case TOKENS.END:
 
           switch (state) {
             case STATES.MACRO:
-            case STATES.IF_CONSEQUENT:
-            case STATES.IF_ALTERNATE:
+            case STATES.WHILE:
+            case STATES.REPEAT:
             case STATES.IF_ELSEIF:
+            case STATES.IF_ALTERNATE:
+            case STATES.IF_CONSEQUENT:
               // we got here through recursion, get back
               return;
 
@@ -480,6 +509,12 @@ class AstParser {
 
       case STATES.MACRO:
         throw new Error(`Unclosed @macro statement (${this.file}:${token ? token._line : parent._line})`);
+
+      case STATES.WHILE:
+        throw new Error(`Unclosed @while statement (${this.file}:${token ? token._line : parent._line})`);
+
+      case STATES.REPEAT:
+        throw new Error(`Unclosed @repeat statement (${this.file}:${token ? token._line : parent._line})`);
 
       default:
         throw new Error(`Syntax error (${parent.file})`);
@@ -515,6 +550,8 @@ class AstParser {
         break;
 
       case STATES.MACRO:
+      case STATES.WHILE:
+      case STATES.REPEAT:
         parent.body.push(node);
         break;
 

@@ -12,6 +12,7 @@ const AbstractReader = require('./Readers/AbstractReader');
 // instruction types
 const INSTRUCTIONS = {
   SET: 'set',
+  LOOP: 'loop',
   ERROR: 'error',
   MACRO: 'macro',
   OUTPUT: 'output',
