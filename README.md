@@ -24,6 +24,7 @@
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
+- [Testing](#testing)
 - [License](#license)
 
 <br /><img src=docs/logo.png?2 width=250 alt=Builder><br />
@@ -404,6 +405,15 @@ _Please note that Builder requires Node.js 4.0 and above._
   
   * `-l` – generate line control statements
   * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> – define a variable
+  
+# Testing
+
+```
+SPEC_LOGLEVEL=<debug|info|warning|error> \
+SPEC_GITHUB_USERNAME=<GitHub username> \
+SPEC_GITHUB_PASSWORD=<GitHub password/access token> \
+npm test
+```
 
 # License
 
