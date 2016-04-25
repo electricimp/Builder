@@ -244,7 +244,7 @@ Hello, Someone, the result is: 56088.
 
 ### @while
 
-While-loop. Self-incrementing [\_\_INDEX\_\_](#index) variable is available in the loop.
+While-loop. Self-incrementing [\_\_INDEX\_\_](#__index__) variable is available in the loop.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
@@ -256,9 +256,11 @@ While-loop. Self-incrementing [\_\_INDEX\_\_](#index) variable is available in t
 
 _<code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>._
 
+[Example](#__index__)
+
 ### @repeat
 
-Loop that runs a certain number of iterations. Self-incrementing [\_\_INDEX\_\_](#index) variable is available in the loop.
+Loop that runs a certain number of iterations. Self-incrementing [\_\_INDEX\_\_](#__index__) variable is available in the loop.
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
@@ -269,6 +271,22 @@ Loop that runs a certain number of iterations. Self-incrementing [\_\_INDEX\_\_]
 </pre>
 
 _<code><b>@endrepeat</b></code> can be replaced with <code><b>@end</b></code>._
+
+Example:
+
+<pre>
+<b>@repeat</b> 3 
+  __INDEX__: @{__INDEX__}
+<b>@end</b>
+</pre>
+
+outputs:
+
+```
+  __INDEX__: 0
+  __INDEX__: 1
+  __INDEX__: 2
+```
 
 ### @if – @elseif – @else
 
