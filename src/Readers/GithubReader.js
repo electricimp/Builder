@@ -5,6 +5,7 @@
 
 'use strict';
 
+const path = require('path');
 const GitHubApi = require('github');
 const childProcess = require('child_process');
 const packageJson = require('../../package.json');
@@ -94,6 +95,19 @@ class GithubReader extends AbstractReader {
   }
 
   /**
+   * Parse path
+   * @param {string} source
+   * @return {{__FILE__, __PATH__}}
+   */
+  parsePath(source) {
+    const parsed = GithubReader._parse(source);
+    return {
+      __FILE__: path.basename(parsed.path),
+      __PATH__: `github:${parsed.user}/${parsed.repo}/${path.dirname(parsed.path)}`
+    };
+  }
+
+  /**
    * Fethces the source ref and outputs it to STDOUT
    * @param {string} source
    */
@@ -118,7 +132,8 @@ class GithubReader extends AbstractReader {
         username,
         password
       });
-    };
+    }
+    ;
 
     // @see http://mikedeboer.github.io/node-github/#repos.prototype.getContent
     github.repos.getContent(this._parse(source), (err, res) => {

@@ -2,7 +2,8 @@
   {
     "_line": 1,
     "type": "include",
-    "value": "\"inc-a.nut\""
+    "value": "\"inc-a.nut\"",
+    "once": false
   },
   {
     "_line": 2,
@@ -36,7 +37,8 @@
       {
         "_line": 5,
         "type": "include",
-        "value": "macro2(1, 2)"
+        "value": "macro2(1, 2)",
+        "once": false
       },
       {
         "_line": 6,
@@ -67,11 +69,13 @@
   {
     "_line": 9,
     "type": "include",
-    "value": "macro1(1, \"something1\")"
+    "value": "macro1(1, \"something1\")",
+    "once": false
   },
   {
     "_line": 10,
     "type": "include",
-    "value": "macro2(2, \"something2\", true)"
+    "value": "macro2(2, \"something2\", true)",
+    "once": false
   }
 ]

@@ -2,7 +2,8 @@
   {
     "_line": 1,
     "type": "include",
-    "value": "\"inc-a.nut\""
+    "value": "\"inc-a.nut\"",
+    "once": false
   },
   {
     "_line": 2,
