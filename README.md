@@ -10,6 +10,8 @@
         - [Authentication](#authentication)
     - [@include once](#include-once)
     - [@{...} – inlines](#-inline-expressions-macros)
+    - [@while](#while)
+    - [@repeat](#repeat)
     - [@if – elseif – @else](#if--elseif--else)
     - [@error](#error)
   - [Expressions](#expressions)
@@ -23,6 +25,7 @@
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
+      - [\_\_INDEX\_\_](#__index__)
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
@@ -239,6 +242,34 @@ results in the following output:
 Hello, Someone, the result is: 56088.
 ```
 
+### @while
+
+While-loop. Self-incrementing [\_\_INDEX\_\_](#index) variable is available in the loop.
+
+<pre>
+<b>@while</b> <i>&lt;test:expression&gt;</i>
+  // ...
+  // __INDEX__ is available
+  // ...
+<b>@endwhile</b>
+</pre>
+
+_<code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>._
+
+### @repeat
+
+Loop that runs a certain number of iterations. Self-incrementing [\_\_INDEX\_\_](#index) variable is available in the loop.
+
+<pre>
+<b>@repeat</b> <i>&lt;times:expression&gt;</i>
+  // ...
+  // __INDEX__ is available
+  // ...
+<b>@endrepeat</b>
+</pre>
+
+_<code><b>@endrepeat</b></code> can be replaced with <code><b>@end</b></code>._
+
 ### @if – @elseif – @else
 
 Conditional directive.
@@ -375,6 +406,33 @@ Example:
 <pre>
 Hi from file <b>@{</b>__PATH__<b>}</b>!
 </pre>
+
+#### \_\_INDEX\_\_
+
+Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops and incremented _after_ every iteration, starts with 0.
+
+Example:
+
+<pre>
+<b>@set</b> VAR = 12
+
+<b>@while</b> VAR > 9
+  <b>@set</b> VAR = VAR - 1
+  VAR: @{VAR}
+  __INDEX__: @{__INDEX__}
+<b>@end</b>
+</pre>
+
+outputs:
+
+```
+VAR: 11
+__INDEX__: 0
+VAR: 10
+__INDEX__: 1
+VAR: 9
+__INDEX__: 2
+```
 
 ### Functions
 
