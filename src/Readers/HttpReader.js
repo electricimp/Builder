@@ -61,7 +61,7 @@ class HttpReader extends AbstractReader {
 
       // misc exit code errors
       throw new AbstractReader.Errors.SourceReadingError(
-        `Unknown error: ${child.stderr.stoString()} (exit code ${child.status})`
+        `Unknown error: ${child.stderr.toString()} (exit code ${child.status})`
       );
 
     } else {
