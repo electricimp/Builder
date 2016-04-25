@@ -76,6 +76,7 @@ class AstParser {
 
         type = matches[1];
         arg = matches[2].trim();
+        token.args = [];
 
         switch (type) {
 
@@ -83,10 +84,8 @@ class AstParser {
 
             // detect "once" flag
             if (/^once\b/.test(arg)) {
-              token.once = true;
+              token.args.push('once');
               arg = arg.substr(5).trim();
-            } else {
-              token.once = false;
             }
 
             this._checkArgumentIsNonempty(type, arg, token._line);
@@ -111,7 +110,7 @@ class AstParser {
 
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.IF;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'else':
@@ -124,7 +123,7 @@ class AstParser {
 
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ELSEIF;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'endif':
@@ -137,14 +136,14 @@ class AstParser {
 
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ERROR;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'macro':
 
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.MACRO;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'endmacro':
@@ -272,8 +271,8 @@ class AstParser {
         case TOKENS.INCLUDE:
 
           node.type = INSTRUCTIONS.INCLUDE;
-          node.value = token.args[0];
-          node.once = token.once;
+          node.once = token.args.length > 1 && 'once' === token.args.shift();
+          node.value = token.args.shift();
           this._append(parent, node, state);
 
           break;
