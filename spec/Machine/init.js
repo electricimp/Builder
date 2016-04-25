@@ -32,7 +32,7 @@ module.exports = (sampleFile) => {
       const githubReader = new GithubReader();
       githubReader.logger = logger;
       githubReader.username = process.env.SPEC_GITHUB_USERNAME;
-      githubReader.password = process.env.SPEC_GITHUB_PASSWORD;
+      githubReader.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
 
       const expression = new Expression();
       const parser = new AstParser();

@@ -30,7 +30,7 @@ describe('GithubReader', () => {
     const local = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
 
     reader.username = process.env.SPEC_GITHUB_USERNAME;
-    reader.password = process.env.SPEC_GITHUB_PASSWORD;
+    reader.password = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
 
     remote = reader.read('github:electricimp/Builder/spec/fixtures/sample-1/input.nut@master');
     expect(remote).toEqual(local);

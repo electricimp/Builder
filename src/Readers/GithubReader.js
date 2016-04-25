@@ -46,7 +46,7 @@ class GithubReader extends AbstractReader {
     // spawn child process
     const child = childProcess.spawnSync(
       /* node */ process.argv[0],
-      [/* self */ __filename, WORKER_MARKER, source, this.username, this.password],
+      [/* self */ __filename, WORKER_MARKER, source, this.username, this.token],
       {timeout: this.timeout}
     );
 
@@ -192,12 +192,20 @@ class GithubReader extends AbstractReader {
     this._username = value;
   }
 
+  get token() {
+    return this._token || '';
+  }
+
+  set token(value) {
+    this._token = value;
+  }
+
   get password() {
-    return this._password || '';
+    return this._token || '';
   }
 
   set password(value) {
-    this._password = value;
+    this._token = value;
   }
 }
 
