@@ -205,7 +205,7 @@ class Machine {
     this.parser.file = this._parsePath(includePath).__FILE__;
 
     // read
-    this.logger.info(`Including local file "${includePath}"`);
+    this.logger.info(`Including source "${includePath}"`);
     const content = reader.read(includePath);
 
     // parse
