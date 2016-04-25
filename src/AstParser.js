@@ -81,6 +81,14 @@ class AstParser {
 
           case 'include':
 
+            // detect "once" flag
+            if (/^once\b/.test(arg)) {
+              token.once = true;
+              arg = arg.substr(5).trim();
+            } else {
+              token.once = false;
+            }
+
             if ('' === arg) {
               throw new Errors.SyntaxError(`Syntax error in @include (${this.file}:${token._line})`);
             }
@@ -266,6 +274,7 @@ class AstParser {
 
           node.type = INSTRUCTIONS.INCLUDE;
           node.value = token.args[0];
+          node.once = token.once;
           this._append(parent, node, state);
 
           break;
