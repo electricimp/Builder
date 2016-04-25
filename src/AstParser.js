@@ -19,10 +19,14 @@ const TOKENS = {
   SET: 'set',
   ELSE: 'else',
   MACRO: 'macro',
+  WHILE: 'while',
   ENDIF: 'endif',
+  REPEAT: 'repeat',
   ELSEIF: 'elseif',
   INCLUDE: 'include',
+  ENDWHILE: 'endwhile',
   ENDMACRO: 'endmacro',
+  ENDREPEAT: 'endrepeat',
   SOURCE_FRAGMENT: 'source_fragment',
   INLINE_EXPRESSION: 'inline_expression'
 };
@@ -31,7 +35,7 @@ const TOKENS = {
 const LINES = /(.*(?:\n|\r\n)?)/g;
 
 // regex to detect if fragment is a directive
-const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*?)\s*$/;
+const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end|while|endwhile|repeat|endrepeat)\b(.*?)\s*$/;
 
 // @-style comments regex
 const COMMENT = /^\s*@\s/;
@@ -157,6 +161,30 @@ class AstParser {
 
             this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.END;
+            break;
+
+          case 'while':
+
+            this._checkArgumentIsNonempty(type, arg, token._line);
+            token.type = TOKENS.WHILE;
+            token.args.push(arg);
+            break;
+
+          case 'endwhile':
+            this._checkArgumentIsEmpty(type, arg, token._line);
+            token.type = TOKENS.ENDWHILE;
+            break;
+
+          case 'repeat':
+
+            this._checkArgumentIsNonempty(type, arg, token._line);
+            token.type = TOKENS.REPEAT;
+            token.args.push(arg);
+            break;
+
+          case 'endrepeat':
+            this._checkArgumentIsEmpty(type, arg, token._line);
+            token.type = TOKENS.ENDREPEAT;
             break;
 
           default:
