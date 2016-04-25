@@ -1,0 +1,10 @@
+#line 2 "input.nut"
+
+#line 1 "inc-a.nut"
+// inc-a.nut:1 # inc-a.nut:1
+#line 1 "inc-b.nut"
+// inc-b.nut:1 # inc-b.nut:1
+#line 3 "inc-a.nut"
+// inc-a.nut:3 # inc-b.nut:3
+#line 4 "input.nut"
+// input.nut:4 # input.nut:2

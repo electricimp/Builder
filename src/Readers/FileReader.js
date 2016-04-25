@@ -18,6 +18,11 @@ class FileReader extends AbstractReader {
     ];
   }
 
+  supports(source) {
+    // support only local files and not GIT repos
+    return !/^https?:/i.test(source) && !/\.git\b/i.test(source);
+  }
+
   /**
    * Read local file
    * @param {string} filePath
