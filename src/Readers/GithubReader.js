@@ -5,41 +5,168 @@
 
 'use strict';
 
-const HttpReader = require('./HttpReader');
+const GitHubApi = require('github');
+const childProcess = require('child_process');
+const AbstractReader = require('./AbstractReader');
+const packageJson = require('../../package.json');
 
-class GithubReader extends HttpReader {
+// child process timeout
+const TIMEOUT = 30000;
+
+// return codes
+const STATUS_FETCH_FAILED = 2;
+
+// marker presense on the command line
+// tells that we're in the woker thread
+const WORKER_MARKER = '__github_reader_worker___';
+
+class GithubReader extends AbstractReader {
+
+  constructor() {
+    super();
+    this.timeout = TIMEOUT;
+  }
 
   supports(source) {
     return false !== this._parse(source);
   }
 
-  read(url) {
-    return super.read();
+  /**
+   * Read file over HTTP/HTTPs
+   * @param {string} source
+   * @param {number=TIMEOUT} timeout - timeout (ms)
+   * @return {string}
+   */
+  read(source) {
+
+    // [debug]
+    this.logger.debug(`Reading GitHub source "${source}"...`);
+
+    // spawn child process
+    const child = childProcess.spawnSync(
+      /* node */ process.argv[0],
+      [/* self */ __filename, WORKER_MARKER, source],
+      {timeout: this.timeout}
+    );
+
+    if (STATUS_FETCH_FAILED === child.status) {
+
+      // predefined exit code errors
+      throw new AbstractReader.Errors.SourceReadingError(
+        child.stderr.toString()
+      );
+
+    } else if (0 !== child.status) {
+
+      // misc exit code errors
+      throw new AbstractReader.Errors.SourceReadingError(
+        `Unknown error: ${child.stderr.toString()} (exit code ${child.status})`
+      );
+
+    } else {
+
+      // errors that do not set erroneous exit code
+      if (child.error) {
+
+        if (child.error.errno === 'ETIMEDOUT') {
+
+          // timeout
+          throw new AbstractReader.Errors.SourceReadingError(
+            `Failed to fetch url "${source}": timed out after ${this.timeout / 1000}s`
+          );
+
+        } else {
+
+          // others
+          throw new AbstractReader.Errors.SourceReadingError(
+            `Failed to fetch url "${source}": ${child.error.errno}`
+          );
+
+        }
+
+      } else {
+        // s'all good
+        return child.output[1].toString();
+      }
+
+    }
+  }
+
+  /**
+   * Fethces the source ref and outputs it to STDOUT
+   * @param {string} source
+   */
+  static fetch(source) {
+    var github = new GitHubApi({
+      version: '3.0.0',
+      debug: false,
+      protocol: 'https',
+      host: 'api.github.com',
+      timeout: 5000,
+      headers: {
+        'user-agent': packageJson.name + '/' + packageJson.version,
+        'accept': 'application/vnd.github.VERSION.raw'
+      }
+    });
+
+    // @see http://mikedeboer.github.io/node-github/#repos.prototype.getContent
+    github.repos.getContent(this._parse(source), (err, res) => {
+      if (err) {
+        try {
+          err = JSON.parse(err.message);
+          process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
+        } catch (e) {
+          process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
+        }
+        process.exit(STATUS_FETCH_FAILED);
+      } else {
+        process.stdout.write(res);
+      }
+    });
   }
 
   /**
    * Parse Github reference into parts
    * @param source
-   * @return {false|{user, repository, path, tag}}
+   * @return {false|{user, repo, path, ref}}
    * @private
    */
-  _parse(source) {
+  static _parse(source) {
     // parse url
     const m = source.match(
-      /github(?:\.com)(?:\/|\:)([a-z0-9\-]+)\/([a-z0-9\-]+)\/(.*?)(?:@([^@]*))?$/i
+      /github(?:\.com)?(?:\/|\:)([a-z0-9\-]+)\/([a-z0-9\-]+)\/(.*?)(?:@([^@]*))?$/i
     );
 
     if (m) {
-      return {
+      const res = {
         'user': m[1],
-        'repository': m[2],
-        'path': m[3],
-        'tag': m[4] || 'master'
+        'repo': m[2],
+        'path': m[3]
       };
+
+      if (undefined !== m[4]) {
+        res.ref = m[4];
+      }
+
+      return res;
     }
 
     return false;
   }
+
+  get timeout() {
+    return this._timeout;
+  }
+
+  set timeout(value) {
+    this._timeout = value;
+  }
 }
 
-module.exports = GithubReader;
+if (process.argv.indexOf(WORKER_MARKER) !== -1) {
+  // launch worker
+  GithubReader.fetch(process.argv[3]);
+} else {
+  // acto as module
+  module.exports = GithubReader;
+}
