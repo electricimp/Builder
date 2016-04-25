@@ -281,6 +281,7 @@ class AstParser {
   /**
    * Parse source into AST
    *
+   * @param {[]} tokens
    * @param {*} parent
    * @param {string} state
    * @return {*}
@@ -295,6 +296,9 @@ class AstParser {
       const node = {
         _line: token._line
       };
+
+      // keep track of the last processed line to generate the correct error message
+      this._lastLine = token._line;
 
       switch (token.type) {
 
@@ -530,16 +534,16 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Errors.SyntaxError(`Unclosed @if statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @if statement (${this.file}:${this._lastLine})`);
 
       case STATES.MACRO:
-        throw new Errors.SyntaxError(`Unclosed @macro statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @macro statement (${this.file}:${this._lastLine})`);
 
       case STATES.WHILE:
-        throw new Errors.SyntaxError(`Unclosed @while statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @while statement (${this.file}:${this._lastLine})`);
 
       case STATES.REPEAT:
-        throw new Errors.SyntaxError(`Unclosed @repeat statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @repeat statement (${this.file}:${this._lastLine})`);
 
       default:
         throw new Errors.SyntaxError(`Syntax error (${parent.file})`);
