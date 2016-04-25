@@ -17,7 +17,8 @@ describe('Machine', () => {
   });
 
   it('should generate correct __FILE__/__PATH__ #1', () => {
-    machine.file = 'some/path/to/file.ext';
+    machine.path = 'some/path/to';
+    machine.file = 'file.ext';
 
     const res = machine.execute(
 `@macro A()
