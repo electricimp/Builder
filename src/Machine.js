@@ -40,7 +40,7 @@ class Machine {
 
   constructor() {
     this.file = 'main'; // default source path
-    this.readers = [];
+    this.readers = {};
   }
 
   /**
@@ -471,7 +471,8 @@ class Machine {
    * @private
    */
   _getReader(source) {
-    for (const reader of this.readers) {
+    for (const type in this.readers) {
+      const reader = this.readers[type];
       if (reader.supports(source)) {
         return reader;
       }
@@ -483,14 +484,14 @@ class Machine {
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
-   * @return {AbstractReader[]} value
+   * @return {*} value
    */
   get readers() {
     return this._readers;
   }
 
   /**
-   * @param {AbstractReader[]} value
+   * @param {*} value
    */
   set readers(value) {
     this._readers = value;
