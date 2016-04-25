@@ -8,6 +8,7 @@
       - [Remote Files](#remote-files)
       - [From GitHub](#from-github)
         - [Authentication](#authentication)
+    - [@include once](#include-once)
     - [@{...} – inlines](#-inline-expressions-macros)
     - [@if – elseif – @else](#if--elseif--else)
     - [@error](#error)
@@ -203,6 +204,14 @@ When using GitHub includes, authentication is optional, however:
 - to access private repositories authentication is required
  
 Apart from GitHub _username_ you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More info on how to provide those parameters is in [usage](#usage) section.
+
+### @include once
+
+<pre>
+<b>@include once</b> <i>&lt;source:expression&gt;</i>
+</pre>
+
+Same as <code><b>@include</b></code> but has no effect is _source_ has already been included. 
 
 ### @{...} (inline expressions/macros)
 
