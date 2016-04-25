@@ -389,6 +389,11 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   ```js
   const builder = require('Builder');
+  
+  // provide GitHub credentials (optional)
+  builder.machine.readers.github.username = "<usename>";
+  builder.machine.readers.github.token = "<personal access token>";
+  
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
@@ -398,20 +403,22 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] <i>&lt;input_file&gt;</i> [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l]
   </pre>
   
   where:
   
   * `-l` – generate line control statements
   * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> – define a variable
-  
+  * <code>--github-user</code> – GitHub username
+  * <code>--github-token</code> – GitHub [personal access token](https://github.com/settings/tokens) (recommended) or password (not recommended) - optional
+    
 # Testing
 
 ```
 SPEC_LOGLEVEL=<debug|info|warning|error> \
 SPEC_GITHUB_USERNAME=<GitHub username> \
-SPEC_GITHUB_PASSWORD=<GitHub password/access token> \
+SPEC_GITHUB_TOKEN=<GitHub password/access token> \
 npm test
 ```
 
