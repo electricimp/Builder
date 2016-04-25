@@ -42,8 +42,14 @@ function usageInfo() {
   // print usage info
   console.log(
     `
-\u001b[36m${packageJson.name}\u001b[39m v${packageJson.version} CLI
-usage: ${Object.getOwnPropertyNames((packageJson.bin))[0]} <input_file> [-l (generate line control statements)] [-Dvarname value ...]
+\u001b[36m${packageJson.name} v${packageJson.version} CLI\u001b[39m
+
+usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<varname> <value> ...] [--github-user <usename> --github-token <token>] <input_file>\u001b[39m
+where:
+\t\u001b[34m-l\u001b[39m - generate line control statements
+\t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
+\t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
+\t\u001b[34m--github-token <username>\u001b[39m - personal access token or password for GitHub
     `.trim());
 }
 
