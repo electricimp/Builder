@@ -21,7 +21,7 @@ describe('AstParser', () => {
       {
         '_line': 1,
         'type': 'loop',
-        'test': 'something',
+        'while': 'something',
         'body': [
           {
             '_line': 2,
@@ -48,7 +48,7 @@ describe('AstParser', () => {
       {
         '_line': 1,
         'type': 'loop',
-        'test': 'something',
+        'repeat': '15',
         'body': [
           {
             '_line': 2,
@@ -65,20 +65,10 @@ describe('AstParser', () => {
     r = p.parse(
 `@repeat 15
 ...
-@endwhile`
+@endrepeat`
 );
-    // expect(r).toEqual(e);
-    console.error(JSON.stringify(r, null, '  ').replace(/\'/g, '\''));
+    expect(r).toEqual(e);
+    // console.error(JSON.stringify(r, null, '  ').replace(/\'/g, '\''));
   });
-
-  // it('should fail on incorrect include-once syntax', () => {
-  //   try {
-  //     p.parse(`@include "source"\n@include once`);
-  //     fail();
-  //   } catch (e) {
-  //     expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
-  //     expect(e.message).toEqual('Syntax error in @include (main:2)');
-  //   }
-  // });
 
 });

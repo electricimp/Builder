@@ -453,14 +453,14 @@ class AstParser {
         case TOKENS.WHILE:
 
           node.type = INSTRUCTIONS.LOOP;
-          node.test = token.args[0];
+          node.while = token.args[0];
           node.body = [];
           this._append(parent, node, state);
           this._parse(tokens, node, STATES.WHILE);
 
           break;
 
-        // end of macro declaration
+        // end of while declaration
         case TOKENS.ENDWHILE:
 
           switch (state) {
@@ -470,6 +470,31 @@ class AstParser {
 
             default:
               throw new Error(`Unexpected @endwhile (${this.file}:${node._line})`);
+          }
+
+          break;
+
+        // repeat declaration start
+        case TOKENS.REPEAT:
+
+          node.type = INSTRUCTIONS.LOOP;
+          node.repeat = token.args[0];
+          node.body = [];
+          this._append(parent, node, state);
+          this._parse(tokens, node, STATES.REPEAT);
+
+          break;
+
+        // end of repeat declaration
+        case TOKENS.ENDREPEAT:
+
+          switch (state) {
+            case STATES.REPEAT:
+              // we got here through recursion, get back
+              return;
+
+            default:
+              throw new Error(`Unexpected @endrepeat (${this.file}:${node._line})`);
           }
 
           break;
