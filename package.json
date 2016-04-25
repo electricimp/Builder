@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "0.2.0",
+  "version": "1.0.0-preview1",
   "description": "Builder language implementation",
   "main": "src/index.js",
   "bin": {
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
+    "github": "^0.2.4",
     "jsep": "^0.3.0",
     "request": "^2.71.0"
   },

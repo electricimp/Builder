@@ -13,6 +13,7 @@ const AstParser = require('../../src/AstParser');
 const Expression = require('../../src/Expression');
 const HttpReader = require('../../src/Readers/HttpReader');
 const FileReader = require('../../src/Readers/FileReader');
+const GithubReader = require('../../src/Readers/GithubReader');
 
 module.exports = (sampleFile) => {
   return {
@@ -28,16 +29,19 @@ module.exports = (sampleFile) => {
       const httpReader = new HttpReader();
       httpReader.logger = logger;
 
+      const githubReader = new GithubReader();
+      githubReader.logger = logger;
+      githubReader.username = process.env.SPEC_GITHUB_USERNAME;
+      githubReader.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+
       const expression = new Expression();
       const parser = new AstParser();
 
       const machine = new Machine();
 
-      machine.readers = {
-        'file': fileReader,
-        'http': httpReader,
-        'git': null
-      };
+      machine.readers.github = githubReader;
+      machine.readers.http = httpReader;
+      machine.readers.file = fileReader;
 
       machine.expression = expression;
       machine.parser = parser;

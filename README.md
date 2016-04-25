@@ -6,8 +6,10 @@
       - [Macro](#macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
-      - [From Git Repository](#from-git-repository)
-    - [@{...} (inline includes)](#-inline-includes)
+      - [From GitHub](#from-github)
+        - [Authentication](#authentication)
+    - [@include once](#include-once)
+    - [@{...} – inlines](#-inline-expressions-macros)
     - [@if – elseif – @else](#if--elseif--else)
     - [@error](#error)
   - [Expressions](#expressions)
@@ -24,6 +26,7 @@
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
+- [Testing](#testing)
 - [License](#license)
 
 <br /><img src=docs/logo.png?2 width=250 alt=Builder><br />
@@ -160,39 +163,56 @@ Includes local file, external source or a macro.
 <b>@include</b> "https://example.com/file.ext"
 </pre>
 
-#### From Git Repository
-
-_Not yet implemented._
+#### From GitHub
 
 <pre>
-<b>@include</b> "<i>&lt;repository_url&gt;</i>.git/<i>&lt;path&gt;</i>/<i>&lt;to&gt;</i>/<i>&lt;file&gt;</i>@<i>&lt;ref&gt;</i>"
+<b>@include</b> "github:<i>&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
 </pre>
 
-For example, importing file from _GitHub_ looks like:
+Where:
+
+- `user` – user/organization name
+- `repo` – repository name
+- `ref` – git reference (branch name or tag, defaults to _master_)
+
+
+Examples:
 
 - Head of the default branch
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md"
+  <b>@include</b> "github:electricimp/Promise/Promise.class.nut"
   </pre>
 
-- Head of the _master_ branch
+- Head of the _develop_ branch
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@master"
+  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@develop"
   </pre>
 
-- Tag _v1.2.3_:
+- Tag _v2.0.0_:
 
   <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@v1.2.3"
+  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
   </pre>
+  
+#### Authentication
+  
+When using GitHub includes, authentication is optional, however:
 
-- Latest available tag
+- with authentication GitHub API provides much higher rate limits
+- to access private repositories authentication is required
+ 
+Apart from GitHub _username_ you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More info on how to provide those parameters is in [usage](#usage) section.
 
-  <pre>
-  <b>@include</b> "https://github.com/electricimp/Builder.git/README.md@latest"
-  </pre>
+### @include once
+
+<pre>
+<b>@include once</b> <i>&lt;source:expression&gt;</i>
+</pre>
+
+Acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. 
+Macros are always included.
 
 ### @{...} (inline expressions/macros)
 
@@ -388,6 +408,11 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   ```js
   const builder = require('Builder');
+  
+  // provide GitHub credentials (optional)
+  builder.machine.readers.github.username = "<usename>";
+  builder.machine.readers.github.token = "<personal access token>";
+  
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
@@ -397,13 +422,24 @@ _Please note that Builder requires Node.js 4.0 and above._
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
   </pre>
   
   where:
   
   * `-l` – generate line control statements
   * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> – define a variable
+  * <code>--github-user</code> – GitHub username
+  * <code>--github-token</code> – GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended)
+    
+# Testing
+
+```
+SPEC_LOGLEVEL=<debug|info|warning|error> \
+SPEC_GITHUB_USERNAME=<GitHub username> \
+SPEC_GITHUB_TOKEN=<GitHub password/access token> \
+npm test
+```
 
 # License
 

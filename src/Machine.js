@@ -39,8 +39,9 @@ const MAX_EXECUTION_DEPTH = 256;
 class Machine {
 
   constructor() {
-    // default source path
-    this.file = 'main';
+    this.file = 'main'; // default source filename
+    this.path = ''; // default source path
+    this.readers = {};
   }
 
   /**
@@ -57,7 +58,7 @@ class Machine {
 
     // execute
     context = this._mergeContexts(
-      this._parsePath(this.file),
+      {__FILE__: this.file, __PATH__: this.path},
       this._globals,
       context
     );
@@ -77,6 +78,7 @@ class Machine {
     this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
+    this._includedSources = new Set(); // all include sources
   }
 
   /**
@@ -181,7 +183,7 @@ class Machine {
       this._includeMacro(macro, context, buffer);
     } else {
       // source inclusion
-      this._includeSource(instruction.value, context, buffer);
+      this._includeSource(instruction.value, context, buffer, instruction.once);
     }
   }
 
@@ -190,37 +192,30 @@ class Machine {
    * @param {string} source
    * @param {{}} context
    * @param {string[]} buffer
+   * @param {boolean} once
    * @private
    */
-  _includeSource(source, context, buffer) {
+  _includeSource(source, context, buffer, once) {
 
     // path is an expression, evaluate it
     const includePath = this.expression.evaluate(
       source, context
     );
 
-    let reader;
-
-    if (/^https?:/i.test(includePath)) { // http
-
-      // provide filename for correct error messages
-      this.parser.file = this._parsePath(includePath).__FILE__;
-      reader = this.readers.http;
-
-    } else if (/\.git\b/i.test(includePath)) { // git
-
-      throw new Error('GIT sources are not supported at the moment');
-
-    } else { // file
-
-      // provide filename for correct error messages
-      this.parser.file = this._parsePath(includePath).__FILE__;
-      reader = this.readers.file;
-
+    // if once flag is set, then check if source has alredy been included
+    if (once && this._includedSources.has(includePath)) {
+      this.logger.debug(`Skipping source "${includePath}": has already been included`);
+      return;
     }
 
+    const reader = this._getReader(includePath);
+    const includePathParsed = reader.parsePath(includePath);
+
+    // provide filename for correct error messages
+    this.parser.file = includePathParsed.__FILE__;
+
     // read
-    this.logger.info(`Including local file "${includePath}"`);
+    this.logger.info(`Including source "${includePath}"`);
     const content = reader.read(includePath);
 
     // parse
@@ -231,9 +226,12 @@ class Machine {
       // __FILE__/__PATH__
       context = this._mergeContexts(
         context,
-        this._parsePath(includePath)
+        includePathParsed
       );
     }
+
+    // store included source
+    this._includedSources.add(includePath);
 
     // execute included AST
     this._execute(ast, context, buffer);
@@ -465,30 +463,34 @@ class Machine {
   }
 
   /**
-   * Parse source path into __FILE__/__PATH__
-   * @param {string} source
+   * Find reader
+   *
+   * @param source
+   * @return {AbstractReader}
    * @private
-   * @return {{__FILE__, __PATH__}}
    */
-  _parsePath(source) {
-    const __FILE__ = path.basename(source);
-    let __PATH__ = path.dirname(source);
-    __PATH__ = path.normalize(__PATH__);
-    if (__PATH__ === '.') __PATH__ = '';
-    return {__FILE__, __PATH__};
+  _getReader(source) {
+    for (const type in this.readers) {
+      const reader = this.readers[type];
+      if (reader.supports(source)) {
+        return reader;
+      }
+    }
+
+    throw new Error(`Source "${source}" is not supported`);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
-   * @return {{http, git, file: FileReader}}
+   * @return {*} value
    */
   get readers() {
     return this._readers;
   }
 
   /**
-   * @param {{http, git, file: FileReader}} value
+   * @param {*} value
    */
   set readers(value) {
     this._readers = value;
@@ -525,8 +527,10 @@ class Machine {
    */
   set logger(value) {
     this._logger = value;
-    if (this.readers.file) this.readers.file.logger = value;
-    if (this.readers.http) this.readers.http.logger = value;
+
+    for (const readerType in this.readers) {
+      this.readers[readerType].logger = value;
+    }
   }
 
   /**
@@ -574,7 +578,15 @@ class Machine {
     this._file = value;
   }
 
-  // </editor-fold>
+  get path() {
+    return this._path;
+  }
+
+  set path(value) {
+    this._path = value;
+  }
+
+// </editor-fold>
 }
 
 module.exports = Machine;

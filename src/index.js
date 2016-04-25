@@ -10,6 +10,7 @@ const AstParser = require('./AstParser');
 const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
+const GithubReader = require('./Readers/GithubReader');
 
 class Builder {
 
@@ -24,15 +25,15 @@ class Builder {
   _initMachine() {
     const fileReader = new FileReader();
     const httpReader = new HttpReader();
+    const githubReader = new GithubReader();
+
     const expression = new Expression();
     const parser = new AstParser();
     const machine = new Machine();
 
-    machine.readers = {
-      'file': fileReader,
-      'http': httpReader,
-      'git': null
-    };
+    machine.readers.github = githubReader;
+    machine.readers.http = httpReader;
+    machine.readers.file = fileReader;
 
     machine.expression = expression;
     machine.parser = parser;
