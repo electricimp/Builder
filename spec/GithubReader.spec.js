@@ -9,7 +9,6 @@ const fs = require('fs');
 const Log = require('log');
 const GithubReader = require('../src/Readers/GithubReader');
 const jasmineDiffMatchers = require('jasmine-diff-matchers');
-const AbstractReader = require('../src/Readers/AbstractReader');
 
 describe('GithubReader', () => {
 
@@ -27,8 +26,17 @@ describe('GithubReader', () => {
   });
 
   it('should read sample#1 from GH', () => {
-    const remote = reader.read('github.com/electricimp/Promise/Promise.class.nut');
-    console.log(remote);
+    let remote;
+    const local = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
+
+    remote = reader.read('github:electricimp/Builder/spec/fixtures/sample-1/input.nut@master');
+    expect(remote).toEqual(local);
+
+    remote = reader.read('github.com:electricimp/Builder/spec/fixtures/sample-1/input.nut');
+    expect(remote).toEqual(local);
+
+    remote = reader.read('github.com/electricimp/Builder/spec/fixtures/sample-1/input.nut');
+    expect(remote).toEqual(local);
   });
 
 });
