@@ -7,6 +7,7 @@
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From GitHub](#from-github)
+        - [Authorization](#Authorization)
     - [@{...} – inlines](#-inline-expressions-macros)
     - [@if – elseif – @else](#if--elseif--else)
     - [@error](#error)
@@ -194,6 +195,14 @@ Examples:
   <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
   </pre>
   
+#### Authorization
+  
+When using GitHub includes, authorization is optional, however:
+
+- with authorization GitHub API provides much higher rate limits
+- to access private repositories authorization is required
+ 
+Apart from GitHub _username_ you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More info on how to provide those parameters is in [usage](#usage) section.
 
 ### @{...} (inline expressions/macros)
 
