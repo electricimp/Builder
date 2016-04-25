@@ -89,10 +89,7 @@ class AstParser {
               token.once = false;
             }
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @include (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.INCLUDE;
             token.args = [arg];
             break;
@@ -112,77 +109,53 @@ class AstParser {
 
           case 'if':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @if (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.IF;
             token.args = [arg];
             break;
 
           case 'else':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @else (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ELSE;
             break;
 
           case 'elseif':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @elseif (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ELSEIF;
             token.args = [arg];
             break;
 
           case 'endif':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @endif (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ENDIF;
             break;
 
           case 'error':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @error (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ERROR;
             token.args = [arg];
             break;
 
           case 'macro':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @macro (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.MACRO;
             token.args = [arg];
             break;
 
           case 'endmacro':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @endmacro (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ENDMACRO;
             break;
 
           case 'end':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @end (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.END;
             break;
 
@@ -246,6 +219,32 @@ class AstParser {
         type: TOKENS.SOURCE_FRAGMENT,
         args: [fragment]
       };
+    }
+  }
+
+  /**
+   *  Check that argument is not empty
+   * @param {string} keyword
+   * @param {string} arg
+   * @param {{}} token
+   * @private
+   */
+  _checkArgumentIsNonempty(keyword, arg, line) {
+    if ('' === arg) {
+      throw new Errors.SyntaxError(`Syntax error in @${keyword} (${this.file}:${line})`);
+    }
+  }
+
+  /**
+   *  Check that argument is not empty
+   * @param {string} keyword
+   * @param {string} arg
+   * @param {{}} token
+   * @private
+   */
+  _checkArgumentIsEmpty(keyword, arg, line) {
+    if ('' !== arg) {
+      throw new Errors.SyntaxError(`Syntax error in @${keyword} (${this.file}:${line})`);
     }
   }
 
