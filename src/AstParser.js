@@ -7,6 +7,8 @@ const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 const STATES = {
   OK: 'ok',
   MACRO: 'macro',
+  WHILE: 'while',
+  REPEAT: 'repeat',
   IF_ELSEIF: 'if_elseif',
   IF_ALTERNATE: 'if_alternate',
   IF_CONSEQUENT: 'if_consequent'
@@ -19,10 +21,14 @@ const TOKENS = {
   SET: 'set',
   ELSE: 'else',
   MACRO: 'macro',
+  WHILE: 'while',
   ENDIF: 'endif',
+  REPEAT: 'repeat',
   ELSEIF: 'elseif',
   INCLUDE: 'include',
+  ENDWHILE: 'endwhile',
   ENDMACRO: 'endmacro',
+  ENDREPEAT: 'endrepeat',
   SOURCE_FRAGMENT: 'source_fragment',
   INLINE_EXPRESSION: 'inline_expression'
 };
@@ -31,7 +37,7 @@ const TOKENS = {
 const LINES = /(.*(?:\n|\r\n)?)/g;
 
 // regex to detect if fragment is a directive
-const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end)\b(.*?)\s*$/;
+const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end|while|endwhile|repeat|endrepeat)\b(.*?)\s*$/;
 
 // @-style comments regex
 const COMMENT = /^\s*@\s/;
@@ -76,6 +82,7 @@ class AstParser {
 
         type = matches[1];
         arg = matches[2].trim();
+        token.args = [];
 
         switch (type) {
 
@@ -83,18 +90,13 @@ class AstParser {
 
             // detect "once" flag
             if (/^once\b/.test(arg)) {
-              token.once = true;
+              token.args.push('once');
               arg = arg.substr(5).trim();
-            } else {
-              token.once = false;
             }
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @include (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.INCLUDE;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'set':
@@ -106,84 +108,85 @@ class AstParser {
               throw new Errors.SyntaxError(`Syntax error in @set (${this.file}:${token._line})`);
             }
 
-            token.args = [matches[1], matches[2]];
+            token.args.push(matches[1]);
+            token.args.push(matches[2]);
             token.type = TOKENS.SET;
             break;
 
           case 'if':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @if (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.IF;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'else':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @else (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ELSE;
             break;
 
           case 'elseif':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @elseif (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ELSEIF;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'endif':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @endif (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ENDIF;
             break;
 
           case 'error':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @error (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ERROR;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'macro':
 
-            if ('' === arg) {
-              throw new Errors.SyntaxError(`Syntax error in @macro (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.MACRO;
-            token.args = [arg];
+            token.args.push(arg);
             break;
 
           case 'endmacro':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @endmacro (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ENDMACRO;
             break;
 
           case 'end':
 
-            if ('' !== arg) {
-              throw new Errors.SyntaxError(`Syntax error in @end (${this.file}:${token._line})`);
-            }
-
+            this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.END;
+            break;
+
+          case 'while':
+
+            this._checkArgumentIsNonempty(type, arg, token._line);
+            token.type = TOKENS.WHILE;
+            token.args.push(arg);
+            break;
+
+          case 'endwhile':
+            this._checkArgumentIsEmpty(type, arg, token._line);
+            token.type = TOKENS.ENDWHILE;
+            break;
+
+          case 'repeat':
+
+            this._checkArgumentIsNonempty(type, arg, token._line);
+            token.type = TOKENS.REPEAT;
+            token.args.push(arg);
+            break;
+
+          case 'endrepeat':
+            this._checkArgumentIsEmpty(type, arg, token._line);
+            token.type = TOKENS.ENDREPEAT;
             break;
 
           default:
@@ -250,8 +253,35 @@ class AstParser {
   }
 
   /**
+   *  Check that argument is not empty
+   * @param {string} keyword
+   * @param {string} arg
+   * @param {{}} token
+   * @private
+   */
+  _checkArgumentIsNonempty(keyword, arg, line) {
+    if ('' === arg) {
+      throw new Errors.SyntaxError(`Syntax error in @${keyword} (${this.file}:${line})`);
+    }
+  }
+
+  /**
+   *  Check that argument is not empty
+   * @param {string} keyword
+   * @param {string} arg
+   * @param {{}} token
+   * @private
+   */
+  _checkArgumentIsEmpty(keyword, arg, line) {
+    if ('' !== arg) {
+      throw new Errors.SyntaxError(`Syntax error in @${keyword} (${this.file}:${line})`);
+    }
+  }
+
+  /**
    * Parse source into AST
    *
+   * @param {[]} tokens
    * @param {*} parent
    * @param {string} state
    * @return {*}
@@ -267,14 +297,17 @@ class AstParser {
         _line: token._line
       };
 
+      // keep track of the last processed line to generate the correct error message
+      this._lastLine = token._line;
+
       switch (token.type) {
 
         // @include <path:expression>
         case TOKENS.INCLUDE:
 
           node.type = INSTRUCTIONS.INCLUDE;
-          node.value = token.args[0];
-          node.once = token.once;
+          node.once = token.args.length > 1 && 'once' === token.args.shift();
+          node.value = token.args.shift();
           this._append(parent, node, state);
 
           break;
@@ -318,7 +351,7 @@ class AstParser {
             case STATES.IF_ELSEIF:
 
               if (parent.alternate) {
-                throw new Error(`Multiple @else statements are not allowed (${this.file}:${node._line})`);
+                throw new Errors.SyntaxError(`Multiple @else statements are not allowed (${this.file}:${node._line})`);
               }
 
               parent.alternate = [];
@@ -326,7 +359,7 @@ class AstParser {
               break;
 
             default:
-              throw new Error(`Unexpected @else (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @else (${this.file}:${node._line})`);
           }
 
           break;
@@ -352,10 +385,10 @@ class AstParser {
               break;
 
             case STATES.IF_ALTERNATE:
-              throw new Error(`@elseif after @else is not allowed (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`@elseif after @else is not allowed (${this.file}:${node._line})`);
 
             default:
-              throw new Error(`Unexpected @elseif (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @elseif (${this.file}:${node._line})`);
           }
 
           break;
@@ -370,7 +403,7 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endif (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @endif (${this.file}:${node._line})`);
           }
 
           break;
@@ -415,7 +448,57 @@ class AstParser {
               return;
 
             default:
-              throw new Error(`Unexpected @endmacro (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @endmacro (${this.file}:${node._line})`);
+          }
+
+          break;
+
+        // while declaration start
+        case TOKENS.WHILE:
+
+          node.type = INSTRUCTIONS.LOOP;
+          node.while = token.args[0];
+          node.body = [];
+          this._append(parent, node, state);
+          this._parse(tokens, node, STATES.WHILE);
+
+          break;
+
+        // end of while declaration
+        case TOKENS.ENDWHILE:
+
+          switch (state) {
+            case STATES.WHILE:
+              // we got here through recursion, get back
+              return;
+
+            default:
+              throw new Errors.SyntaxError(`Unexpected @endwhile (${this.file}:${node._line})`);
+          }
+
+          break;
+
+        // repeat declaration start
+        case TOKENS.REPEAT:
+
+          node.type = INSTRUCTIONS.LOOP;
+          node.repeat = token.args[0];
+          node.body = [];
+          this._append(parent, node, state);
+          this._parse(tokens, node, STATES.REPEAT);
+
+          break;
+
+        // end of repeat declaration
+        case TOKENS.ENDREPEAT:
+
+          switch (state) {
+            case STATES.REPEAT:
+              // we got here through recursion, get back
+              return;
+
+            default:
+              throw new Errors.SyntaxError(`Unexpected @endrepeat (${this.file}:${node._line})`);
           }
 
           break;
@@ -424,20 +507,22 @@ class AstParser {
 
           switch (state) {
             case STATES.MACRO:
-            case STATES.IF_CONSEQUENT:
-            case STATES.IF_ALTERNATE:
+            case STATES.WHILE:
+            case STATES.REPEAT:
             case STATES.IF_ELSEIF:
+            case STATES.IF_ALTERNATE:
+            case STATES.IF_CONSEQUENT:
               // we got here through recursion, get back
               return;
 
             default:
-              throw new Error(`Unexpected @end (${this.file}:${node._line})`);
+              throw new Errors.SyntaxError(`Unexpected @end (${this.file}:${node._line})`);
           }
 
           break;
 
         default:
-          throw new Error(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
+          throw new Errors.SyntaxError(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
       }
     }
 
@@ -449,13 +534,19 @@ class AstParser {
       case STATES.IF_ALTERNATE:
       case STATES.IF_CONSEQUENT:
       case STATES.IF_ELSEIF:
-        throw new Error(`Unclosed @if statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @if statement (${this.file}:${this._lastLine})`);
 
       case STATES.MACRO:
-        throw new Error(`Unclosed @macro statement (${this.file}:${token ? token._line : parent._line})`);
+        throw new Errors.SyntaxError(`Unclosed @macro statement (${this.file}:${this._lastLine})`);
+
+      case STATES.WHILE:
+        throw new Errors.SyntaxError(`Unclosed @while statement (${this.file}:${this._lastLine})`);
+
+      case STATES.REPEAT:
+        throw new Errors.SyntaxError(`Unclosed @repeat statement (${this.file}:${this._lastLine})`);
 
       default:
-        throw new Error(`Syntax error (${parent.file})`);
+        throw new Errors.SyntaxError(`Syntax error (${parent.file})`);
     }
 
     return parent;
@@ -488,11 +579,13 @@ class AstParser {
         break;
 
       case STATES.MACRO:
+      case STATES.WHILE:
+      case STATES.REPEAT:
         parent.body.push(node);
         break;
 
       default:
-        throw new Error(`Unsupported state "${state}"`);
+        throw new Errors.SyntaxError(`Unsupported state "${state}"`);
     }
   }
 

@@ -5,13 +5,13 @@
 
 'use strict';
 
-const path = require('path');
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 
 // instruction types
 const INSTRUCTIONS = {
   SET: 'set',
+  LOOP: 'loop',
   ERROR: 'error',
   MACRO: 'macro',
   OUTPUT: 'output',
@@ -78,7 +78,7 @@ class Machine {
     this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
-    this._includedSources = new Set(); // all include sources
+    this._includedSources = new Set(); // all included sources
   }
 
   /**
@@ -103,17 +103,14 @@ class Machine {
 
     for (const insruction of ast) {
 
-      // current context
-      context = this._mergeContexts(
-        this._globals,
-        context
-      );
-
       // if called from inline directive (@{...}),
       // __LINE__ should not be updated
       if (!context.__INLINE__) {
         // set __LINE__
-        context.__LINE__ = insruction._line;
+        context = this._mergeContexts(
+          context,
+          {__LINE__: insruction._line}
+        );
       }
 
       try {
@@ -142,6 +139,10 @@ class Machine {
 
           case INSTRUCTIONS.MACRO:
             this._executeMacro(insruction, context, buffer);
+            break;
+
+          case INSTRUCTIONS.LOOP:
+            this._executeLoop(insruction, context, buffer);
             break;
 
           default:
@@ -175,7 +176,9 @@ class Machine {
   _executeInclude(instruction, context, buffer) {
 
     const macro = this.expression.parseMacroCall(
-      instruction.value, context, this._macros
+      instruction.value,
+      this._mergeContexts(this._globals, context),
+      this._macros
     );
 
     if (macro) {
@@ -199,7 +202,7 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = this.expression.evaluate(
-      source, context
+      source, this._mergeContexts(this._globals, context)
     );
 
     // if once flag is set, then check if source has alredy been included
@@ -291,7 +294,11 @@ class Machine {
     } else {
 
       // detect if it's a macro
-      const macro = this.expression.parseMacroCall(instruction.value, context, this._macros);
+      const macro = this.expression.parseMacroCall(
+        instruction.value,
+        this._mergeContexts(this._globals, context),
+        this._macros
+      );
 
       if (macro) {
 
@@ -319,7 +326,10 @@ class Machine {
 
         // evaluate & output
         this._out(
-          String(this.expression.evaluate(instruction.value, context)),
+          String(this.expression.evaluate(
+            instruction.value,
+            this._mergeContexts(this._globals, context)
+          )),
           context,
           buffer
         );
@@ -338,7 +348,8 @@ class Machine {
    */
   _executeSet(instruction, context, buffer) {
     this._globals[instruction.variable] =
-      this.expression.evaluate(instruction.value, context);
+      this.expression.evaluate(instruction.value,
+        this._mergeContexts(this._globals, context));
   }
 
   /**
@@ -350,7 +361,8 @@ class Machine {
    */
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
-      this.expression.evaluate(instruction.value, context)
+      this.expression.evaluate(instruction.value,
+        this._mergeContexts(this._globals, context))
     );
   }
 
@@ -362,7 +374,11 @@ class Machine {
    * @private
    */
   _executeConditional(instruction, context, buffer) {
-    const test = this.expression.evaluate(instruction.test, context);
+
+    const test = this.expression.evaluate(
+      instruction.test,
+      this._mergeContexts(this._globals, context)
+    );
 
     if (test) {
 
@@ -418,6 +434,47 @@ class Machine {
       args: macro.args,
       body: instruction.body
     };
+  }
+
+  /**
+   * Execute loop instruction
+   * @param {{type, while, rereat, body: []}} instruction
+   * @param {{}} context
+   * @param {string[]} buffer
+   * @private
+   */
+  _executeLoop(insruction, context, buffer) {
+
+    let index = 0;
+
+    while (true) {
+      // evaluate test expression
+      const test = this._expression.evaluate(
+        insruction.while || insruction.repeat,
+        this._mergeContexts(this._globals, context)
+      );
+
+      // check break condition
+      if (insruction.while && !test) {
+        break;
+      } else if (insruction.repeat && test === index) {
+        break;
+      }
+
+      // execute body
+      this._execute(
+        insruction.body,
+        this._mergeContexts(
+          context,
+          {loop: {index, iteration: index + 1}}
+        ),
+        buffer
+      );
+
+      // increment index
+      index++;
+    }
+
   }
 
   /**
@@ -586,7 +643,7 @@ class Machine {
     this._path = value;
   }
 
-// </editor-fold>
+  // </editor-fold>
 }
 
 module.exports = Machine;
