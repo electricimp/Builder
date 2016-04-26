@@ -1,4 +1,4 @@
-<img src=docs/logo.png?2 width=200 alt=Builder><br />
+<img src=docs/logo.png?2 width=180 alt=Builder><br />
 
 - [Syntax](#syntax)
   - [Directives](#directives)
