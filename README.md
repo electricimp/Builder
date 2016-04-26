@@ -1,4 +1,8 @@
-<img src=docs/logo.png?2 width=250 alt=Builder><br />
+<img src=docs/logo.png?2 width=200 alt=Builder><br />
+
+[![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)<br />
+
+_Builder_ language combines a preprocessor with an expression language and advanced imports.
 
 - [Syntax](#syntax)
   - [Directives](#directives)
@@ -33,10 +37,6 @@
 - [Usage](#usage)
 - [Testing](#testing)
 - [License](#license)
-
-[![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)<br />
-
-_Builder_ language combines a preprocessor with an expression language and advanced imports.
 
 # Syntax
 
