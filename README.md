@@ -25,7 +25,7 @@
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
-      - [\_\_INDEX\_\_](#__index__)
+      - [loop](#loop)
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
@@ -244,29 +244,27 @@ Hello, Someone, the result is: 56088.
 
 ### @while
 
-While-loop. Self-incrementing [\_\_INDEX\_\_](#__index__) variable is available in the loop.
+While-loop. [loop](#loop) variable is available in `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
-  // ...
-  // __INDEX__ is available
-  // ...
+  // 0-based iteration counter: @{loop.index}
+  // 1-based iteration counter: @{loop.iteration}
 <b>@endwhile</b>
 </pre>
 
 _<code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>._
 
-[Example](#__index__)
+[Example](#loop)
 
 ### @repeat
 
-Loop that runs a certain number of iterations. Self-incrementing [\_\_INDEX\_\_](#__index__) variable is available in the loop.
+Loop that repeats a certain number of iterations. [loop](#loop) variable is available in `@repeat` loops.
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
-  // ...
-  // __INDEX__ is available
-  // ...
+  // 0-based iteration counter: @{loop.index}
+  // 1-based iteration counter: @{loop.iteration}
 <b>@endrepeat</b>
 </pre>
 
@@ -276,16 +274,16 @@ Example:
 
 <pre>
 <b>@repeat</b> 3 
-  __INDEX__: @{__INDEX__}
+  loop.iteration: @{loop.iteration}
 <b>@end</b>
 </pre>
 
 outputs:
 
 ```
-  __INDEX__: 0
-  __INDEX__: 1
-  __INDEX__: 2
+  loop.iteration: 1
+  loop.iteration: 2
+  loop.iteration: 3
 ```
 
 ### @if – @elseif – @else
@@ -425,18 +423,23 @@ Example:
 Hi from file <b>@{</b>__PATH__<b>}</b>!
 </pre>
 
-#### \_\_INDEX\_\_
+#### loop
 
-Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops and incremented _after_ every iteration, starts with 0.
+Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops.
+ 
+ Contains information about the current loop:
+ 
+ - `loop.index` – 0-indexed iteration counter
+ - `loop.iteration` – 1-indexed iteration counter
 
 Example:
 
 <pre>
-<b>@set</b> VAR = 12
+<b>@set</b> var = 12
 
-<b>@while</b> VAR > 9
-  <b>@set</b> VAR = VAR - 1
-  VAR: @{VAR}
+<b>@while</b> var > 9
+  <b>@set</b> var = var - 1
+  var: @{var}
   __INDEX__: @{__INDEX__}
 <b>@end</b>
 </pre>
@@ -444,11 +447,11 @@ Example:
 outputs:
 
 ```
-VAR: 11
+var: 11
 __INDEX__: 0
-VAR: 10
+var: 10
 __INDEX__: 1
-VAR: 9
+var: 9
 __INDEX__: 2
 ```
 
