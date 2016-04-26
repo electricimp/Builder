@@ -141,6 +141,10 @@ class Machine {
             this._executeMacro(insruction, context, buffer);
             break;
 
+          case INSTRUCTIONS.LOOP:
+            this._executeLoop(insruction, context, buffer);
+            break;
+
           default:
             throw new Error(`Unsupported instruction "${insruction.type}"`);
         }
@@ -430,6 +434,35 @@ class Machine {
       args: macro.args,
       body: instruction.body
     };
+  }
+
+  /**
+   * Execute loop instruction
+   * @param {{type, while, rereat, body: []}} instruction
+   * @param {{}} context
+   * @param {string[]} buffer
+   * @private
+   */
+  _executeLoop(insruction, context, buffer) {
+
+    if (insruction.while) {
+      let index = 0;
+
+      while (this._expression.evaluate(
+        insruction.while,
+        this._mergeContexts(this._globals, context)
+      )) {
+
+        this._execute(
+          insruction.body,
+          this._mergeContexts(context, {__INDEX__: index}),
+          buffer
+        );
+
+        index++;
+      }
+    }
+
   }
 
   /**
