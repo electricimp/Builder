@@ -14,7 +14,7 @@
     - [@{...} – inlines](#-inline-expressions-macros)
     - [@while](#while)
     - [@repeat](#repeat)
-    - [@if – elseif – @else](#if--elseif--else)
+    - [@if – @elseif – @else](#if--elseif--else)
     - [@error](#error)
   - [Expressions](#expressions)
     - [Types](#types)
