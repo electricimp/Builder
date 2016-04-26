@@ -104,17 +104,14 @@ class Machine {
 
     for (const insruction of ast) {
 
-      // current context
-      context = this._mergeContexts(
-        this._globals,
-        context
-      );
-
       // if called from inline directive (@{...}),
       // __LINE__ should not be updated
       if (!context.__INLINE__) {
         // set __LINE__
-        context.__LINE__ = insruction._line;
+        context = this._mergeContexts(
+          context,
+          {__LINE__: insruction._line}
+        );
       }
 
       try {
@@ -176,7 +173,9 @@ class Machine {
   _executeInclude(instruction, context, buffer) {
 
     const macro = this.expression.parseMacroCall(
-      instruction.value, context, this._macros
+      instruction.value,
+      this._mergeContexts(this._globals, context),
+      this._macros
     );
 
     if (macro) {
@@ -200,7 +199,7 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = this.expression.evaluate(
-      source, context
+      source, this._mergeContexts(this._globals, context)
     );
 
     // if once flag is set, then check if source has alredy been included
@@ -292,7 +291,11 @@ class Machine {
     } else {
 
       // detect if it's a macro
-      const macro = this.expression.parseMacroCall(instruction.value, context, this._macros);
+      const macro = this.expression.parseMacroCall(
+        instruction.value,
+        this._mergeContexts(this._globals, context),
+        this._macros
+      );
 
       if (macro) {
 
@@ -320,7 +323,10 @@ class Machine {
 
         // evaluate & output
         this._out(
-          String(this.expression.evaluate(instruction.value, context)),
+          String(this.expression.evaluate(
+            instruction.value,
+            this._mergeContexts(this._globals, context)
+          )),
           context,
           buffer
         );
@@ -339,7 +345,8 @@ class Machine {
    */
   _executeSet(instruction, context, buffer) {
     this._globals[instruction.variable] =
-      this.expression.evaluate(instruction.value, context);
+      this.expression.evaluate(instruction.value,
+        this._mergeContexts(this._globals, context));
   }
 
   /**
@@ -351,7 +358,8 @@ class Machine {
    */
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
-      this.expression.evaluate(instruction.value, context)
+      this.expression.evaluate(instruction.value,
+        this._mergeContexts(this._globals, context))
     );
   }
 
@@ -363,7 +371,11 @@ class Machine {
    * @private
    */
   _executeConditional(instruction, context, buffer) {
-    const test = this.expression.evaluate(instruction.test, context);
+
+    const test = this.expression.evaluate(
+      instruction.test,
+      this._mergeContexts(this._globals, context)
+    );
 
     if (test) {
 
