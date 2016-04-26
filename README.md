@@ -437,24 +437,24 @@ Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops.
 Example:
 
 <pre>
-<b>@set</b> var = 12
+<b>@set</b> myvar = 12
 
-<b>@while</b> var > 9
-  <b>@set</b> var = var - 1
-  var: @{var}
-  __INDEX__: @{__INDEX__}
+<b>@while</b> myvar > 9
+  <b>@set</b> myvar = myvar - 1
+  var: @{myvar}
+  loop.index: @{loop.index}
 <b>@end</b>
 </pre>
 
 outputs:
 
 ```
-var: 11
-__INDEX__: 0
-var: 10
-__INDEX__: 1
-var: 9
-__INDEX__: 2
+myvar: 11
+loop.index: 0
+myvar: 10
+loop.index: 1
+myvar: 9
+loop.index: 2
 ```
 
 ### Functions
