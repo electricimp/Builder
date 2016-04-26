@@ -5,7 +5,6 @@
 
 'use strict';
 
-const path = require('path');
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 
@@ -79,7 +78,7 @@ class Machine {
     this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
-    this._includedSources = new Set(); // all include sources
+    this._includedSources = new Set(); // all included sources
   }
 
   /**
@@ -599,7 +598,7 @@ class Machine {
     this._path = value;
   }
 
-// </editor-fold>
+  // </editor-fold>
 }
 
 module.exports = Machine;
