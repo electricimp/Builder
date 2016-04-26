@@ -445,22 +445,34 @@ class Machine {
    */
   _executeLoop(insruction, context, buffer) {
 
-    if (insruction.while) {
-      let index = 0;
+    let index = 0;
 
-      while (this._expression.evaluate(
-        insruction.while,
+    while (true) {
+      // evaluate test expression
+      const test = this._expression.evaluate(
+        insruction.while || insruction.repeat,
         this._mergeContexts(this._globals, context)
-      )) {
+      );
 
-        this._execute(
-          insruction.body,
-          this._mergeContexts(context, {__INDEX__: index}),
-          buffer
-        );
-
-        index++;
+      // check break condition
+      if (insruction.while && !test) {
+        break;
+      } else if (insruction.repeat && test === index) {
+        break;
       }
+
+      // execute body
+      this._execute(
+        insruction.body,
+        this._mergeContexts(
+          context,
+          {__INDEX__: index}
+        ),
+        buffer
+      );
+
+      // increment index
+      index++;
     }
 
   }
