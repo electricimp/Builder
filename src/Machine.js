@@ -466,7 +466,7 @@ class Machine {
         insruction.body,
         this._mergeContexts(
           context,
-          {__INDEX__: index}
+          {loop: {index, iteration: index + 1}}
         ),
         buffer
       );

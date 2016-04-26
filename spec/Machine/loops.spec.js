@@ -23,7 +23,7 @@ describe('Machine', () => {
       `
 @set a = 3
 @while a > 0
-__INDEX___ == @{__INDEX__}
+loop.index == @{loop.index}
 a == @{a}
 @set a = a - 1
 @end
@@ -32,11 +32,11 @@ a == @{a}
 
     expect(res).diffChars(
       `
-__INDEX___ == 0
+loop.index == 0
 a == 3
-__INDEX___ == 1
+loop.index == 1
 a == 2
-__INDEX___ == 2
+loop.index == 2
 a == 1
 `
     );
@@ -47,16 +47,20 @@ a == 1
     const res = machine.execute(
       `
 @repeat 3
-__INDEX___ == @{__INDEX__}
+loop.index == @{loop.index}
+loop.iteration == @{loop.iteration}
 @end
 `
     );
 
     expect(res).diffChars(
       `
-__INDEX___ == 0
-__INDEX___ == 1
-__INDEX___ == 2
+loop.index == 0
+loop.iteration == 1
+loop.index == 1
+loop.iteration == 2
+loop.index == 2
+loop.iteration == 3
 `
     );
 
