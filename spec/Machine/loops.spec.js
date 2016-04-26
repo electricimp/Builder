@@ -65,4 +65,29 @@ loop.iteration == 3
     );
 
   });
+
+  it('should handle @while within @repeat corectly #1', () => {
+    const res = machine.execute(
+      `
+@repeat 3
+@set a = loop.iteration
+@while a > 0
+loop.iteration == @{loop.iteration}
+@set a = a - 1
+@end
+@end
+`
+    );
+
+    expect(res).diffChars(
+`
+loop.iteration == 1
+loop.iteration == 1
+loop.iteration == 2
+loop.iteration == 1
+loop.iteration == 2
+loop.iteration == 3
+`
+    );
+  });
 });
