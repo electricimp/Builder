@@ -46,14 +46,4 @@ describe('AstParser', () => {
     // console.error(JSON.stringify(r, null, '  ').replace(/\'/g, '\''));
   });
 
-  it('should fail on incorrect include-once syntax', () => {
-    try {
-      p.parse(`@include "source"\n@include once`);
-      fail();
-    } catch (e) {
-      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
-      expect(e.message).toEqual('Syntax error in @include (main:2)');
-    }
-  });
-
 });

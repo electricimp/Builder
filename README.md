@@ -1,3 +1,5 @@
+<img src=docs/logo.png?2 width=180 alt=Builder><br />
+
 - [Syntax](#syntax)
   - [Directives](#directives)
     - [@set](#set)
@@ -10,6 +12,8 @@
         - [Authentication](#authentication)
     - [@include once](#include-once)
     - [@{...} – inlines](#-inline-expressions-macros)
+    - [@while](#while)
+    - [@repeat](#repeat)
     - [@if – elseif – @else](#if--elseif--else)
     - [@error](#error)
   - [Expressions](#expressions)
@@ -23,17 +27,18 @@
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
+      - [loop](#loop)
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
 - [Testing](#testing)
 - [License](#license)
 
-<br /><img src=docs/logo.png?2 width=250 alt=Builder><br />
-
+<br /> 
 [![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)<br />
 
 _Builder_ language combines a preprocessor with an expression language and advanced imports.
+
 
 # Syntax
 
@@ -239,6 +244,50 @@ results in the following output:
 Hello, Someone, the result is: 56088.
 ```
 
+### @while
+
+While-loop. [loop](#loop) variable is available in `@while` loops.
+
+<pre>
+<b>@while</b> <i>&lt;test:expression&gt;</i>
+  // 0-based iteration counter: @{loop.index}
+  // 1-based iteration counter: @{loop.iteration}
+<b>@endwhile</b>
+</pre>
+
+_<code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>._
+
+[Example](#loop)
+
+### @repeat
+
+Loop that repeats a certain number of iterations. [loop](#loop) variable is available in `@repeat` loops.
+
+<pre>
+<b>@repeat</b> <i>&lt;times:expression&gt;</i>
+  // 0-based iteration counter: @{loop.index}
+  // 1-based iteration counter: @{loop.iteration}
+<b>@endrepeat</b>
+</pre>
+
+_<code><b>@endrepeat</b></code> can be replaced with <code><b>@end</b></code>._
+
+Example:
+
+<pre>
+<b>@repeat</b> 3 
+  loop.iteration: @{loop.iteration}
+<b>@end</b>
+</pre>
+
+outputs:
+
+```
+  loop.iteration: 1
+  loop.iteration: 2
+  loop.iteration: 3
+```
+
 ### @if – @elseif – @else
 
 Conditional directive.
@@ -375,6 +424,38 @@ Example:
 <pre>
 Hi from file <b>@{</b>__PATH__<b>}</b>!
 </pre>
+
+#### loop
+
+Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops.
+ 
+ Contains information about the current loop:
+ 
+ - `loop.index` – 0-indexed iteration counter
+ - `loop.iteration` – 1-indexed iteration counter
+
+Example:
+
+<pre>
+<b>@set</b> myvar = 12
+
+<b>@while</b> myvar > 9
+  <b>@set</b> myvar = myvar - 1
+  var: @{myvar}
+  loop.index: @{loop.index}
+<b>@end</b>
+</pre>
+
+outputs:
+
+```
+myvar: 11
+loop.index: 0
+myvar: 10
+loop.index: 1
+myvar: 9
+loop.index: 2
+```
 
 ### Functions
 

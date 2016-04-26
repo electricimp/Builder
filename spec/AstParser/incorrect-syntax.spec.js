@@ -258,4 +258,64 @@ describe('Parser', () => {
       expect(e.message).toEqual('Syntax error in @end (main:2)');
     }
   });
+
+  it('should fail on incorrect include-once syntax', () => {
+    try {
+      parser.parse(`@include "source"\n@include once`);
+      fail();
+    } catch (e) {
+      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
+      expect(e.message).toEqual('Syntax error in @include (main:2)');
+    }
+  });
+
+  it('should fail on incorrect @while syntax #1', () => {
+    try {
+      parser.parse(`@while`);
+      fail();
+    } catch (e) {
+      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
+      expect(e.message).toEqual('Syntax error in @while (main:1)');
+    }
+  });
+
+  it('should fail on incorrect @while syntax #2', () => {
+    try {
+      parser.parse(`@while abc\n`);
+      fail();
+    } catch (e) {
+      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
+      expect(e.message).toEqual('Unclosed @while statement (main:1)');
+    }
+  });
+
+  it('should fail on incorrect @repeat syntax #1', () => {
+    try {
+      parser.parse(`@repeat`);
+      fail();
+    } catch (e) {
+      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
+      expect(e.message).toEqual('Syntax error in @repeat (main:1)');
+    }
+  });
+
+  it('should fail on incorrect @repeat syntax #2', () => {
+    try {
+      parser.parse(`@repeat abc\n`);
+      fail();
+    } catch (e) {
+      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
+      expect(e.message).toEqual('Unclosed @repeat statement (main:1)');
+    }
+  });
+
+  it('should fail on incorrect @repeat syntax #3', () => {
+    try {
+      parser.parse(`@while abc\n@repeat 10\n@endrepeat\n`);
+      fail();
+    } catch (e) {
+      expect(e instanceof AstParser.Errors.SyntaxError).toBeTruthy();
+      expect(e.message).toEqual('Unclosed @while statement (main:3)');
+    }
+  });
 });
