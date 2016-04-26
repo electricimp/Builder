@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "0.2.0",
+  "version": "1.0.0-preview1",
   "description": "Builder language implementation",
   "main": "src/index.js",
   "bin": {
