@@ -1,3 +1,5 @@
+<img src=docs/logo.png?2 width=250 alt=Builder><br />
+
 - [Syntax](#syntax)
   - [Directives](#directives)
     - [@set](#set)
@@ -31,8 +33,6 @@
 - [Usage](#usage)
 - [Testing](#testing)
 - [License](#license)
-
-<br /><img src=docs/logo.png?2 width=250 alt=Builder><br />
 
 [![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)<br />
 
