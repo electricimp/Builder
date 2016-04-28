@@ -349,7 +349,7 @@ Example:
 
 ## Filters
 
-<code><b>@include</b></code> and inline directive <code><b>@include</b></code> output can go through _filters_:
+<code><b>@include</b></code> and inline directive <code><b>@{</b>...<b>}</b></code> output can go through _filters_:
 
 <pre>
 <b>@include</b> <i>&lt;source&gt;</i> | <i>&lt;filter&gt;</i>
