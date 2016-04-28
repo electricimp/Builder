@@ -16,6 +16,7 @@
     - [@repeat](#repeat)
     - [@if – @elseif – @else](#if--elseif--else)
     - [@error](#error)
+  - [Filters](#filters)
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
@@ -345,6 +346,19 @@ Example:
   <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
 <b>@endif</b>
 </pre>
+
+## Filters
+
+<code><b>@include</b></code> and inline directive <code><b>@include</b></code> output can go through _filters_:
+
+<pre>
+<b>@include</b> <i>&lt;source&gt;</i> | <i>&lt;filter&gt;</i>
+<b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
+</pre>
+
+Built-in filters:
+- `escape`
+- `base64`
 
 ## Expressions
 
