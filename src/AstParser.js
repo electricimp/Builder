@@ -1,3 +1,9 @@
+/**
+ * AST parser
+ * Converts source into AST that can be interpreted by Builder VM
+ * @author Mikhail Yurasov <me@yurasov.me>
+ */
+
 'use strict';
 
 // instruction types
