@@ -7,7 +7,7 @@
 
 require('jasmine-expect');
 
-const Expression = require('../src/Expression');
+const Expression = require('../../src/Expression');
 
 describe('Expression', () => {
 
