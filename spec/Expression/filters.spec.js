@@ -8,7 +8,6 @@
 require('jasmine-expect');
 
 const Expression = require('../../src/Expression');
-const EscapeFilter = require('../../src/Filters/EscapeFilter');
 
 describe('Expression', () => {
 
@@ -16,12 +15,11 @@ describe('Expression', () => {
 
   beforeEach(() => {
     expression = new Expression();
-    expression.filters['escape'] = new EscapeFilter();
   });
 
-  it('apply filter #1', () => {
-    const res = expression.evaluate('"something"|escape');
-    expect(res).toBe(null);
-  });
+  // it('should fail to parse non-macro call expression', () => {
+  //   const res = expression.parseFiltersCall('expression|filters', {}, {'macro1': {}});
+  //   expect(res).toBe(null);
+  // });
 
 });
