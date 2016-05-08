@@ -91,9 +91,11 @@ class Expression {
    * @private
    */
   _initBuiltinFunctions() {
+    this.functions = {};
+
     // create Math.* function
-    const mathFunction = (name) => {
-      return (args) => {
+    const mathFunction = function (name) {
+      return function (args) {
         if (args.length < 1) {
           throw new Errors.ExpressionError('Wrong number of arguments for ' + name + '()');
         }
@@ -279,7 +281,10 @@ class Expression {
 
       case 'Identifier':
 
-        if (this.functions.hasOwnProperty(node.name)) /* function name */ {
+        if /* call expression callee name */ (
+          'defined' === node.name ||
+          this.functions.hasOwnProperty(node.name)
+        ) {
           res = node.name;
         } else /* variable */ {
           res = context.hasOwnProperty(node.name)
@@ -391,7 +396,7 @@ class Expression {
   }
 
   get functions() {
-    return this._functions | {};
+    return this._functions;
   }
 
   set functions(value) {
