@@ -82,8 +82,28 @@ class Expression {
     // remove unary ops
     this._jsep.removeUnaryOp('~');
 
-    // supported dunctions
-    this._supportedFunctions = ['abs', 'max', 'min', 'defined'];
+    // init built-in functions
+    this._initBuiltinFunctions();
+  }
+
+  /**
+   * Add built-in funtions
+   * @private
+   */
+  _initBuiltinFunctions() {
+    // create Math.* function
+    const mathFunction = (name) => {
+      return (args) => {
+        if (args.length < 1) {
+          throw new Errors.ExpressionError('Wrong number of arguments for ' + name + '()');
+        }
+        return Math[name].apply(Math, args);
+      };
+    };
+
+    this.functions['abs'] = mathFunction('abs');
+    this.functions['min'] = mathFunction('min');
+    this.functions['max'] = mathFunction('max');
   }
 
   /**
@@ -259,7 +279,7 @@ class Expression {
 
       case 'Identifier':
 
-        if (this._supportedFunctions.indexOf(node.name) !== -1) /* function name */ {
+        if (this.functions.hasOwnProperty(node.name)) /* function name */ {
           res = node.name;
         } else /* variable */ {
           res = context.hasOwnProperty(node.name)
@@ -331,6 +351,7 @@ class Expression {
 
         const callee = this._evaluate(node.callee, context);
 
+        // "defined" is not a function, but a syntactic construction
         if ('defined' === callee) {
 
           // defined(varName) should not evaluate variable
@@ -344,27 +365,17 @@ class Expression {
 
           const args = node.arguments.map(v => this._evaluate(v, context));
 
-          switch (callee) {
-            case 'abs':
-            case 'max':
-            case 'min':
+          if (this.functions.hasOwnProperty(callee)) {
+            res = this.functions[callee](args);
+          } else {
 
-              if (args.length < 1) {
-                throw new Errors.ExpressionError('Wrong number of arguments for ' + callee + '()');
-              }
-
-              res = Math[callee].apply(this, args);
-              break;
-
-            default:
-
-              if (node.callee.type === 'Identifier') {
-                throw new Errors.FunctionCallError(`Function "${node.callee.name}" is not defined`);
-              } else if (typeof callee === 'string' || callee instanceof String) {
-                throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
-              } else {
-                throw new Errors.FunctionCallError(`Can't call a non-callable expression`);
-              }
+            if (node.callee.type === 'Identifier') {
+              throw new Errors.FunctionCallError(`Function "${node.callee.name}" is not defined`);
+            } else if (typeof callee === 'string' || callee instanceof String) {
+              throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
+            } else {
+              throw new Errors.FunctionCallError(`Can't call a non-callable expression`);
+            }
           }
 
         }
@@ -377,6 +388,14 @@ class Expression {
 
     return res;
 
+  }
+
+  get functions() {
+    return this._functions | {};
+  }
+
+  set functions(value) {
+    this._functions = value;
   }
 }
 
