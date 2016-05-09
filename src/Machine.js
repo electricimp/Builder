@@ -287,48 +287,15 @@ class Machine {
 
     } else {
 
-      // detect if it's a macro
-      const macro = this.expression.parseMacroCall(
-        instruction.value,
-        this._mergeContexts(this._globals, context),
-        this._macros
+      // evaluate & output
+      this._out(
+        String(this.expression.evaluate(
+          instruction.value,
+          this._mergeContexts(this._globals, context)
+        )),
+        context,
+        buffer
       );
-
-      if (macro) {
-
-        const macroBuffer = [];
-
-        // include macro in inline mode
-        this._includeMacro(
-          macro,
-          /* enable inline mode for all subsequent operations */
-          this._mergeContexts(context, {__INLINE__: true}),
-          macroBuffer
-        );
-
-        // trim trailing newline in inline macro mode
-        if (macroBuffer.length > 0) {
-          macroBuffer[macroBuffer.length - 1] =
-            macroBuffer[macroBuffer.length - 1]
-              .replace(/(\r\n|\n)$/, '');
-        }
-
-        // append to current buffer
-        this._out(macroBuffer, context, buffer);
-
-      } else {
-
-        // evaluate & output
-        this._out(
-          String(this.expression.evaluate(
-            instruction.value,
-            this._mergeContexts(this._globals, context)
-          )),
-          context,
-          buffer
-        );
-
-      }
 
     }
   }
@@ -428,6 +395,30 @@ class Machine {
       args: macro.args,
       body: instruction.body
     };
+
+    // add macro to supported function in expression expression
+    this.expression.functions[macro.name] = ((macro) => {
+      return (args, context) => {
+        const buffer = [];
+
+        // include macro in inline mode
+        this._includeMacro(
+          macro,
+          /* enable inline mode for all subsequent operations */
+          this._mergeContexts(context, {__INLINE__: true}),
+          buffer
+        );
+
+        // trim trailing newline (only in inline mode for macros)
+        if (buffer.length > 0) {
+          buffer[buffer.length - 1] =
+            buffer[buffer.length - 1]
+              .replace(/(\r\n|\n)$/, '');
+        }
+
+        return buffer.join('');
+      };
+    })(macro);
   }
 
   /**
