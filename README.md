@@ -98,7 +98,6 @@ Macros can be used:
 	When macros are used inline:
 	
 	- no line control statements are generated for the output inside the macro scope
-	- `__FILE__`, `__LINE__` and `__PATH__` variables are bound to the scope where  inline inclusion directive appears
 	- trailing newline is trimmed from macro output
 
 Examples:
