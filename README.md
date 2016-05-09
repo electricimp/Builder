@@ -250,8 +250,8 @@ While-loop. [loop](#loop) variable is available in `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
-  // 0-based iteration counter: @{loop.index}
-  // 1-based iteration counter: @{loop.iteration}
+  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
 <b>@endwhile</b>
 </pre>
 
@@ -265,8 +265,8 @@ Loop that repeats a certain number of iterations. [loop](#loop) variable is avai
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
-  // 0-based iteration counter: @{loop.index}
-  // 1-based iteration counter: @{loop.iteration}
+  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
 <b>@endrepeat</b>
 </pre>
 
@@ -276,7 +276,7 @@ Example:
 
 <pre>
 <b>@repeat</b> 3 
-  loop.iteration: @{loop.iteration}
+  loop.iteration: <b>@{</b>loop.iteration<b>}</b>
 <b>@end</b>
 </pre>
 
@@ -465,8 +465,8 @@ Example:
 
 <b>@while</b> myvar > 9
   <b>@set</b> myvar = myvar - 1
-  var: @{myvar}
-  loop.index: @{loop.index}
+  var: <b>@{</b>myvar<b>}</b>
+  loop.index: <b>@{</b>loop.index<b>}</b>
 <b>@end</b>
 </pre>
 
