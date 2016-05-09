@@ -348,16 +348,27 @@ Example:
 
 ## Filters
 
-<code><b>@include</b></code> and inline directive <code><b>@{</b>...<b>}</b></code> output can go through _filters_:
+"Filter" `|` operator allows to pass a value through any of supported functions.
 
 <pre>
-<b>@include</b> <i>&lt;source&gt;</i> | <i>&lt;filter&gt;</i>
 <b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
 </pre>
 
-Built-in filters:
-- `escape`
-- `base64`
+which is equivalent to:
+
+<pre>
+<b>@{<i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
+</pre>
+
+Example:
+
+<pre>
+// include external HTML to a string
+a = "<b>@{</b>&lt;inclide("index.html")&gt;</i>|<i>&lt;escape&gt;</i><b>}</b>"
+
+// include external binaru file to a base64-encoded string
+a = "<b>@{</b>&lt;inclide("index.html")&gt;</i>|<i>&lt;base64&gt;</i><b>}</b>"
+</pre>
 
 ## Expressions
 
@@ -472,10 +483,12 @@ loop.index: 2
 
 ### Functions
 
+- <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
-- <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
+- <code>escape(<i>&lt;value&gt;</i>)</code> – escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`)
+- <code>base64(<i>&lt;value&gt;</i>)</code> – encodes value as base64
 
 ## Comments
 
