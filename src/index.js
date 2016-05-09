@@ -11,6 +11,7 @@ const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const EscapeFilter = require('./Filters/EscapeFilter');
 
 class Builder {
 
@@ -30,6 +31,15 @@ class Builder {
     const expression = new Expression();
     const parser = new AstParser();
     const machine = new Machine();
+
+    // filters
+
+    const escapeFilter = new EscapeFilter();
+    expression.functions[escapeFilter.name] = (args) => {
+      return escapeFilter.filter(args.shift(), args);
+    };
+
+    //
 
     machine.readers.github = githubReader;
     machine.readers.http = httpReader;
