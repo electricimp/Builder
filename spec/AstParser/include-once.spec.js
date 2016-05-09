@@ -1,6 +1,6 @@
 /**
  * Spec for AST Parser
- * @author Mikhail Yurasov <mikhail@electricimp.com>
+ * @author Mikhail Yurasov <me@yurasov.me>
  */
 
 'use strict';

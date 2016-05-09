@@ -556,4 +556,4 @@ MIT
 
 _**Author**_
 
-_Mikhail Yurasov <mikhail@electricimp.com>_
+_Mikhail Yurasov <me@yurasov.me>_

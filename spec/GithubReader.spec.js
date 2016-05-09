@@ -1,6 +1,6 @@
 /**
  * GithubReader spec
- * @author Mikhail Yurasov <mikhail@electricimp.com>
+ * @author Mikhail Yurasov <me@yurasov.me>
  */
 
 'use strict';
