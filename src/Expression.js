@@ -83,19 +83,19 @@ class Expression {
     this._jsep.removeUnaryOp('~');
 
     // init built-in functions
-    this._initBuiltinFunctions();
+    this._addBuiltinFunctions();
   }
 
   /**
    * Add built-in funtions
    * @private
    */
-  _initBuiltinFunctions() {
+  _addBuiltinFunctions() {
     this.functions = {};
 
     // create Math.* function
-    const mathFunction = function (name) {
-      return function (args) {
+    const mathFunction = (name) => {
+      return (args, context) => {
         if (args.length < 1) {
           throw new Errors.ExpressionError('Wrong number of arguments for ' + name + '()');
         }
