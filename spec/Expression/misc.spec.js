@@ -249,4 +249,14 @@ describe('Expression', () => {
       expect(e.message).toBe('Function "abc" is not defined');
     }
   });
+
+  it('should fail on incorrect filter operator usage', ()=> {
+    try {
+      expression.evaluate('|abs');
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.ExpressionError).toBeTruthy();
+      expect(e.message).toBe('Syntax error in "|" operator');
+    }
+  });
 });

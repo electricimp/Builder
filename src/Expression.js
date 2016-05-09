@@ -211,6 +211,11 @@ class Expression {
       case 'BinaryExpression':
       case 'LogicalExpression':
 
+        // check that we have both left and right parts
+        if (node.left === false || node.right === false) {
+          throw new Errors.ExpressionError('Syntax error in "' + node.operator + '" operator');
+        }
+
         if ('|' === node.operator /* filter operator */) {
 
           if (node.right.type === 'CallExpression' /* value|filter() */) {
