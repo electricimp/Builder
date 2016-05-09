@@ -211,12 +211,25 @@ class Expression {
       case 'BinaryExpression':
       case 'LogicalExpression':
 
-
         if ('|' === node.operator /* filter operator */) {
 
-          // set left-hand expression as the first argument
-          node.right.arguments.unshift(node.left);
-          res = this._evaluate(node.right, context);
+          if (node.right.type === 'CallExpression' /* value|filter() */) {
+
+            // set left-hand expression as the first argument
+            node.right.arguments.unshift(node.left);
+            res = this._evaluate(node.right, context);
+
+          } else /* value|filter */{
+
+            // construct call expression
+            const filterCallExpression = {
+              type: 'CallExpression',
+              arguments: [node.left],
+              callee: node.right
+            };
+
+            res = this._evaluate(filterCallExpression, context);
+          }
 
         } else {
 
