@@ -25,10 +25,16 @@ describe('Builder', () => {
       .toBe('#line 1 "main"\nmain:1');
   });
 
-  it('should execute "escape" filter #1', () => {
+  it('should execute "escape" filter', () => {
     expect(builder.machine instanceof Machine).toBeTruthy();
     const res = builder.machine.execute(`"@{'"'|escape}"`);
     expect(res).toBe(`"\\""`);
+  });
+
+  it('should execute "base64" filter', () => {
+    expect(builder.machine instanceof Machine).toBeTruthy();
+    const res = builder.machine.execute(`@{"abc"|base64}`);
+    expect(res).toBe(`YWJj`);
   });
 
 });
