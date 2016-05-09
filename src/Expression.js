@@ -16,6 +16,14 @@
  *
  * + - !
  *
+ * Filter operator
+ * ===============
+ *
+ * |
+ *
+ * value|filter === filter(value)
+ * value|filter(arg) === filter(value, arg)
+ *
  * Member expressions:
  * ===================
  *
@@ -77,7 +85,6 @@ class Expression {
     this._jsep.removeBinaryOp('>>>');
     this._jsep.removeBinaryOp('&');
     this._jsep.removeBinaryOp('^');
-    this._jsep.removeBinaryOp('|');
 
     // remove unary ops
     this._jsep.removeUnaryOp('~');
@@ -204,72 +211,85 @@ class Expression {
       case 'BinaryExpression':
       case 'LogicalExpression':
 
-        const left = this._evaluate(node.left, context);
-        const right = this._evaluate(node.right, context);
 
-        switch (node.operator) {
+        if ('|' === node.operator /* filter operator */) {
 
-          case '-':
-            res = left - right;
-            break;
+          // set left-hand expression as the first argument
+          node.right.arguments.unshift(node.left);
+          res = this._evaluate(node.right, context);
 
-          case '+':
-            res = left + right;
-            break;
+        } else {
 
-          case '*':
-            res = left * right;
-            break;
+          const left = this._evaluate(node.left, context);
+          const right = this._evaluate(node.right, context);
 
-          case '/':
+          switch (node.operator) {
 
-            if (0 === right) {
-              throw new Errors.ExpressionError('Division by zero');
-            }
+            case '-':
+              res = left - right;
+              break;
 
-            res = left / right;
-            break;
+            case '+':
+              res = left + right;
+              break;
 
-          case '%':
+            case '*':
+              res = left * right;
+              break;
 
-            if (0 === right) {
-              throw new Errors.ExpressionError('Division by zero');
-            }
+            case '/':
 
-            res = left % right;
-            break;
+              if (0 === right) {
+                throw new Errors.ExpressionError('Division by zero');
+              }
 
-          case '||':
-            res = left || right;
-            break;
+              res = left / right;
+              break;
 
-          case '&&':
-            res = left && right;
-            break;
+            case '%':
 
-          case '==':
-            res = left == right;
-            break;
+              if (0 === right) {
+                throw new Errors.ExpressionError('Division by zero');
+              }
 
-          case '!=':
-            res = left != right;
-            break;
+              res = left % right;
+              break;
 
-          case '>':
-            res = left > right;
-            break;
+            case '||':
+              res = left || right;
+              break;
 
-          case '<':
-            res = left < right;
-            break;
+            case '&&':
+              res = left && right;
+              break;
 
-          case '>=':
-            res = left >= right;
-            break;
+            case '==':
+              res = left == right;
+              break;
 
-          case '<=':
-            res = left <= right;
-            break;
+            case '!=':
+              res = left != right;
+              break;
+
+            case '>':
+              res = left > right;
+              break;
+
+            case '<':
+              res = left < right;
+              break;
+
+            case '>=':
+              res = left >= right;
+              break;
+
+            case '<=':
+              res = left <= right;
+              break;
+
+            default:
+              throw new Errors.ExpressionError('Unknown binary operator: ' + node.operator);
+          }
         }
 
         break;
