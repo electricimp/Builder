@@ -12,6 +12,7 @@ const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 const EscapeFilter = require('./Filters/EscapeFilter');
+const Base64Filter = require('./Filters/Base64Filter');
 
 class Builder {
 
@@ -37,6 +38,11 @@ class Builder {
     const escapeFilter = new EscapeFilter();
     expression.functions[escapeFilter.name] = (args) => {
       return escapeFilter.filter(args.shift(), args);
+    };
+
+    const base64Filter = new Base64Filter();
+    expression.functions[base64Filter.name] = (args) => {
+      return base64Filter.filter(args.shift(), args);
     };
 
     //
