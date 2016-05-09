@@ -28,13 +28,13 @@ describe('Machine', () => {
 A.1 // @{__FILE__}:@{__LINE__}
 A.2 // @{__FILE__}:@{__LINE__}
 @end
--~=[@{A()}]=~-
+-~=[@{A(1,2,3)}]=~-
 @include A()
     `.trim());
 
     expect(res).diffChars(`#line 5 "main"
--~=[A.1 // main:5
-A.2 // main:5]=~-
+-~=[A.1 // main:2
+A.2 // main:3]=~-
 A.1 // main:2
 A.2 // main:3
 `);
