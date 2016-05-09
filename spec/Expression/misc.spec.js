@@ -7,7 +7,7 @@
 
 require('jasmine-expect');
 
-const Expression = require('../src/Expression');
+const Expression = require('../../src/Expression');
 
 describe('Expression', () => {
 
@@ -247,6 +247,16 @@ describe('Expression', () => {
     } catch (e) {
       expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
       expect(e.message).toBe('Function "abc" is not defined');
+    }
+  });
+
+  it('should fail on incorrect filter operator usage', ()=> {
+    try {
+      expression.evaluate('|abs');
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.ExpressionError).toBeTruthy();
+      expect(e.message).toBe('Syntax error in "|" operator');
     }
   });
 });

@@ -16,6 +16,7 @@
     - [@repeat](#repeat)
     - [@if – @elseif – @else](#if--elseif--else)
     - [@error](#error)
+  - [Filters](#filters)
   - [Expressions](#expressions)
     - [Types](#types)
     - [Operators](#operators)
@@ -97,7 +98,6 @@ Macros can be used:
 	When macros are used inline:
 	
 	- no line control statements are generated for the output inside the macro scope
-	- `__FILE__`, `__LINE__` and `__PATH__` variables are bound to the scope where  inline inclusion directive appears
 	- trailing newline is trimmed from macro output
 
 Examples:
@@ -250,8 +250,8 @@ While-loop. [loop](#loop) variable is available in `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
-  // 0-based iteration counter: @{loop.index}
-  // 1-based iteration counter: @{loop.iteration}
+  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
 <b>@endwhile</b>
 </pre>
 
@@ -265,8 +265,8 @@ Loop that repeats a certain number of iterations. [loop](#loop) variable is avai
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
-  // 0-based iteration counter: @{loop.index}
-  // 1-based iteration counter: @{loop.iteration}
+  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
 <b>@endrepeat</b>
 </pre>
 
@@ -276,7 +276,7 @@ Example:
 
 <pre>
 <b>@repeat</b> 3 
-  loop.iteration: @{loop.iteration}
+  loop.iteration: <b>@{</b>loop.iteration<b>}</b>
 <b>@end</b>
 </pre>
 
@@ -344,6 +344,30 @@ Example:
 <b>@else</b>
   <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
 <b>@endif</b>
+</pre>
+
+## Filters
+
+"Filter" `|` operator allows to pass a value through any of supported functions.
+
+<pre>
+<b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
+</pre>
+
+which is equivalent to:
+
+<pre>
+<b>@{</b><i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
+</pre>
+
+Example:
+
+<pre>
+// include external HTML to a string
+a = "<b>@{</b>include('index.html')|escape<b>}</b>"
+
+// include external binary file to a base64-encoded string
+b = "<b>@{</b>include('file.bin')|base64<b>}</b>"
 </pre>
 
 ## Expressions
@@ -441,8 +465,8 @@ Example:
 
 <b>@while</b> myvar > 9
   <b>@set</b> myvar = myvar - 1
-  var: @{myvar}
-  loop.index: @{loop.index}
+  var: <b>@{</b>myvar<b>}</b>
+  loop.index: <b>@{</b>loop.index<b>}</b>
 <b>@end</b>
 </pre>
 
@@ -459,10 +483,12 @@ loop.index: 2
 
 ### Functions
 
+- <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
-- <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
+- <code>escape(<i>&lt;value&gt;</i>)</code> – escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`)
+- <code>base64(<i>&lt;value&gt;</i>)</code> – encodes value as base64
 
 ## Comments
 

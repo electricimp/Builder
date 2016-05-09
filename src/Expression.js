@@ -16,6 +16,14 @@
  *
  * + - !
  *
+ * Filter operator
+ * ===============
+ *
+ * |
+ *
+ * value|filter === filter(value)
+ * value|filter(arg) === filter(value, arg)
+ *
  * Member expressions:
  * ===================
  *
@@ -77,13 +85,34 @@ class Expression {
     this._jsep.removeBinaryOp('>>>');
     this._jsep.removeBinaryOp('&');
     this._jsep.removeBinaryOp('^');
-    this._jsep.removeBinaryOp('|');
 
     // remove unary ops
     this._jsep.removeUnaryOp('~');
 
-    // supported dunctions
-    this._supportedFunctions = ['abs', 'max', 'min', 'defined'];
+    // init built-in functions
+    this._addBuiltinFunctions();
+  }
+
+  /**
+   * Add built-in funtions
+   * @private
+   */
+  _addBuiltinFunctions() {
+    this.functions = {};
+
+    // create Math.* function
+    const mathFunction = (name) => {
+      return (args, context) => {
+        if (args.length < 1) {
+          throw new Errors.ExpressionError('Wrong number of arguments for ' + name + '()');
+        }
+        return Math[name].apply(Math, args);
+      };
+    };
+
+    this.functions['abs'] = mathFunction('abs');
+    this.functions['min'] = mathFunction('min');
+    this.functions['max'] = mathFunction('max');
   }
 
   /**
@@ -182,72 +211,103 @@ class Expression {
       case 'BinaryExpression':
       case 'LogicalExpression':
 
-        const left = this._evaluate(node.left, context);
-        const right = this._evaluate(node.right, context);
+        // check that we have both left and right parts
+        if (node.left === false || node.right === false) {
+          throw new Errors.ExpressionError('Syntax error in "' + node.operator + '" operator');
+        }
 
-        switch (node.operator) {
+        if ('|' === node.operator /* filter operator */) {
 
-          case '-':
-            res = left - right;
-            break;
+          if (node.right.type === 'CallExpression' /* value|filter() */) {
 
-          case '+':
-            res = left + right;
-            break;
+            // set left-hand expression as the first argument
+            node.right.arguments.unshift(node.left);
+            res = this._evaluate(node.right, context);
 
-          case '*':
-            res = left * right;
-            break;
+          } else /* value|filter */{
 
-          case '/':
+            // construct call expression
+            const filterCallExpression = {
+              type: 'CallExpression',
+              arguments: [node.left],
+              callee: node.right
+            };
 
-            if (0 === right) {
-              throw new Errors.ExpressionError('Division by zero');
-            }
+            res = this._evaluate(filterCallExpression, context);
+          }
 
-            res = left / right;
-            break;
+        } else {
 
-          case '%':
+          const left = this._evaluate(node.left, context);
+          const right = this._evaluate(node.right, context);
 
-            if (0 === right) {
-              throw new Errors.ExpressionError('Division by zero');
-            }
+          switch (node.operator) {
 
-            res = left % right;
-            break;
+            case '-':
+              res = left - right;
+              break;
 
-          case '||':
-            res = left || right;
-            break;
+            case '+':
+              res = left + right;
+              break;
 
-          case '&&':
-            res = left && right;
-            break;
+            case '*':
+              res = left * right;
+              break;
 
-          case '==':
-            res = left == right;
-            break;
+            case '/':
 
-          case '!=':
-            res = left != right;
-            break;
+              if (0 === right) {
+                throw new Errors.ExpressionError('Division by zero');
+              }
 
-          case '>':
-            res = left > right;
-            break;
+              res = left / right;
+              break;
 
-          case '<':
-            res = left < right;
-            break;
+            case '%':
 
-          case '>=':
-            res = left >= right;
-            break;
+              if (0 === right) {
+                throw new Errors.ExpressionError('Division by zero');
+              }
 
-          case '<=':
-            res = left <= right;
-            break;
+              res = left % right;
+              break;
+
+            case '||':
+              res = left || right;
+              break;
+
+            case '&&':
+              res = left && right;
+              break;
+
+            case '==':
+              res = left == right;
+              break;
+
+            case '!=':
+              res = left != right;
+              break;
+
+            case '>':
+              res = left > right;
+              break;
+
+            case '<':
+              res = left < right;
+              break;
+
+            case '>=':
+              res = left >= right;
+              break;
+
+            case '<=':
+              res = left <= right;
+              break;
+
+            default:
+              throw new Errors.ExpressionError('Unknown binary operator: ' + node.operator);
+          }
         }
 
         break;
@@ -259,7 +319,10 @@ class Expression {
 
       case 'Identifier':
 
-        if (this._supportedFunctions.indexOf(node.name) !== -1) /* function name */ {
+        if /* call expression callee name */ (
+          'defined' === node.name ||
+          this.functions.hasOwnProperty(node.name)
+        ) {
           res = node.name;
         } else /* variable */ {
           res = context.hasOwnProperty(node.name)
@@ -331,6 +394,7 @@ class Expression {
 
         const callee = this._evaluate(node.callee, context);
 
+        // "defined" is not a function, but a syntactic construction
         if ('defined' === callee) {
 
           // defined(varName) should not evaluate variable
@@ -344,27 +408,17 @@ class Expression {
 
           const args = node.arguments.map(v => this._evaluate(v, context));
 
-          switch (callee) {
-            case 'abs':
-            case 'max':
-            case 'min':
+          if (this.functions.hasOwnProperty(callee)) {
+            res = this.functions[callee](args, context);
+          } else {
 
-              if (args.length < 1) {
-                throw new Errors.ExpressionError('Wrong number of arguments for ' + callee + '()');
-              }
-
-              res = Math[callee].apply(this, args);
-              break;
-
-            default:
-
-              if (node.callee.type === 'Identifier') {
-                throw new Errors.FunctionCallError(`Function "${node.callee.name}" is not defined`);
-              } else if (typeof callee === 'string' || callee instanceof String) {
-                throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
-              } else {
-                throw new Errors.FunctionCallError(`Can't call a non-callable expression`);
-              }
+            if (node.callee.type === 'Identifier') {
+              throw new Errors.FunctionCallError(`Function "${node.callee.name}" is not defined`);
+            } else if (typeof callee === 'string' || callee instanceof String) {
+              throw new Errors.FunctionCallError(`Function "${callee}" is not defined`);
+            } else {
+              throw new Errors.FunctionCallError(`Can't call a non-callable expression`);
+            }
           }
 
         }
@@ -377,6 +431,14 @@ class Expression {
 
     return res;
 
+  }
+
+  get functions() {
+    return this._functions;
+  }
+
+  set functions(value) {
+    this._functions = value;
   }
 }
 
