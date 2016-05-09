@@ -371,7 +371,7 @@ class Expression {
           const args = node.arguments.map(v => this._evaluate(v, context));
 
           if (this.functions.hasOwnProperty(callee)) {
-            res = this.functions[callee](args);
+            res = this.functions[callee](args, context);
           } else {
 
             if (node.callee.type === 'Identifier') {
