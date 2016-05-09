@@ -357,17 +357,17 @@ Example:
 which is equivalent to:
 
 <pre>
-<b>@{<i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
+<b>@{</b><i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
 </pre>
 
 Example:
 
 <pre>
 // include external HTML to a string
-a = "<b>@{</b>inclide("index.html")|escape<b>}</b>"
+a = "<b>@{</b>include("index.html")|escape<b>}</b>"
 
-// include external binaru file to a base64-encoded string
-b = "<b>@{</b>inclide("index.html")|base64<b>}</b>"
+// include external binary file to a base64-encoded string
+b = "<b>@{</b>include("index.html")|base64<b>}</b>"
 </pre>
 
 ## Expressions
