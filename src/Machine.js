@@ -103,15 +103,11 @@ class Machine {
 
     for (const insruction of ast) {
 
-      // if called from inline directive (@{...}),
-      // __LINE__ should not be updated
-      if (!context.__INLINE__) {
-        // set __LINE__
-        context = this._mergeContexts(
-          context,
-          {__LINE__: insruction._line}
-        );
-      }
+      // set __LINE__
+      context = this._mergeContexts(
+        context,
+        {__LINE__: insruction._line}
+      );
 
       try {
 
@@ -225,13 +221,12 @@ class Machine {
     const ast = this.parser.parse(content);
 
     // update context
-    if (!context.__INLINE__) {
-      // __FILE__/__PATH__
-      context = this._mergeContexts(
-        context,
-        includePathParsed
-      );
-    }
+
+    // __FILE__/__PATH__
+    context = this._mergeContexts(
+      context,
+      includePathParsed
+    );
 
     // store included source
     this._includedSources.add(includePath);
@@ -259,11 +254,10 @@ class Machine {
     }
 
     // update context
-    if (!context.__INLINE__) {
-      // __FILE__/__PATH__ (file macro is defined in)
-      macroContext.__FILE__ = this._macros[macro.name].file;
-      macroContext.__PATH__ = this._macros[macro.name].path;
-    }
+
+    // __FILE__/__PATH__ (file macro is defined in)
+    macroContext.__FILE__ = this._macros[macro.name].file;
+    macroContext.__PATH__ = this._macros[macro.name].path;
 
     // execute macro
     this._execute(
