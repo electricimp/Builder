@@ -364,10 +364,10 @@ Example:
 
 <pre>
 // include external HTML to a string
-a = "<b>@{</b>include("index.html")|escape<b>}</b>"
+a = "<b>@{</b>include('index.html')|escape<b>}</b>"
 
 // include external binary file to a base64-encoded string
-b = "<b>@{</b>include("index.html")|base64<b>}</b>"
+b = "<b>@{</b>include('file.bin')|base64<b>}</b>"
 </pre>
 
 ## Expressions
