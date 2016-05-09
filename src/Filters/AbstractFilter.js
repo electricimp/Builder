@@ -14,6 +14,10 @@ class AbstractFilter {
   filter(input, args) {
     return String(input);
   }
+
+  get name() {
+    return 'abstract';
+  }
 }
 
 module.exports = AbstractFilter;
