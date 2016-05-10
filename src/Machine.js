@@ -399,7 +399,7 @@ class Machine {
     };
 
     // add macro to supported function in expression expression
-    this.expression.functions[macro.name] = ((macro) => {
+    this._globalContext[macro.name] = ((macro) => {
       return (args, context) => {
         const buffer = [];
 
