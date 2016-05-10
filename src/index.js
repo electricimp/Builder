@@ -17,7 +17,7 @@ const Base64Filter = require('./Filters/Base64Filter');
 class Builder {
 
   constructor() {
-    this._initGlobalContext();
+    this._initGlobals();
     this._initMachine();
   }
 
@@ -25,26 +25,26 @@ class Builder {
    * Init global context
    * @private
    */
-  _initGlobalContext() {
+  _initGlobals() {
     // global context
-    this._globalContext = {};
+    this._globals = {};
 
     // filters
 
     const escapeFilter = new EscapeFilter();
-    this._globalContext[escapeFilter.name] = (args) => {
+    this._globals[escapeFilter.name] = (args) => {
       return escapeFilter.filter(args.shift(), args);
     };
 
     const base64Filter = new Base64Filter();
-    this._globalContext[base64Filter.name] = (args) => {
+    this._globals[base64Filter.name] = (args) => {
       return base64Filter.filter(args.shift(), args);
     };
 
     // arithmetic functions
 
     // create Math.* function
-    const mathFunction = (name) => {
+    const _createMathFunction = (name) => {
       return (args, context) => {
         if (args.length < 1) {
           throw new Error('Wrong number of arguments for ' + name + '()');
@@ -53,9 +53,9 @@ class Builder {
       };
     };
 
-    this._globalContext['abs'] = mathFunction('abs');
-    this._globalContext['min'] = mathFunction('min');
-    this._globalContext['max'] = mathFunction('max');
+    this._globals['abs'] = _createMathFunction('abs');
+    this._globals['min'] = _createMathFunction('min');
+    this._globals['max'] = _createMathFunction('max');
   }
 
   /**
@@ -75,7 +75,7 @@ class Builder {
     machine.readers.http = httpReader;
     machine.readers.file = fileReader;
 
-    machine.globals = this._globalContext;
+    machine.globals = this._globals;
 
     machine.expression = expression;
     machine.parser = parser;

@@ -35,6 +35,9 @@ module.exports = (sampleFile) => {
       githubReader.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
 
       const expression = new Expression();
+      const parser = new AstParser();
+
+      const machine = new Machine();
 
       // add expression functions
 
@@ -48,15 +51,9 @@ module.exports = (sampleFile) => {
         };
       };
 
-      expression.functions['abs'] = mathFunction('abs');
-      expression.functions['min'] = mathFunction('min');
-      expression.functions['max'] = mathFunction('max');
-
-      //
-
-      const parser = new AstParser();
-
-      const machine = new Machine();
+      machine.globals['abs'] = mathFunction('abs');
+      machine.globals['min'] = mathFunction('min');
+      machine.globals['max'] = mathFunction('max');
 
       machine.readers.github = githubReader;
       machine.readers.http = httpReader;
