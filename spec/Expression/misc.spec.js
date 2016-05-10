@@ -15,6 +15,20 @@ describe('Expression', () => {
 
   beforeEach(() => {
     expression = new Expression();
+
+    // create Math.* function
+    const mathFunction = (name) => {
+      return (args, context) => {
+        if (args.length < 1) {
+          throw new Error('Wrong number of arguments for ' + name + '()');
+        }
+        return Math[name].apply(Math, args);
+      };
+    };
+
+    expression.functions['abs'] = mathFunction('abs');
+    expression.functions['min'] = mathFunction('min');
+    expression.functions['max'] = mathFunction('max');
   });
 
   it('should evaluate expressions with binary operators', () => {
@@ -257,6 +271,16 @@ describe('Expression', () => {
     } catch (e) {
       expect(e instanceof Expression.Errors.ExpressionError).toBeTruthy();
       expect(e.message).toBe('Syntax error in "|" operator');
+    }
+  });
+
+  it('should fail on incorrect nuber of args for a function', ()=> {
+    try {
+      expression.evaluate('abs()');
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.ExpressionError).toBeTruthy();
+      expect(e.message).toBe('Wrong number of arguments for abs()');
     }
   });
 });

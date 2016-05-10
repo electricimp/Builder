@@ -73,8 +73,15 @@ Errors.FunctionCallError = class FunctionCallError extends Errors.ExpressionErro
 class Expression {
 
   constructor() {
-    // configure JSEP
+    this.functions = {};
+    this._initParser();
+  }
 
+  /**
+   * Confugure parser
+   * @private
+   */
+  _initParser() {
     this._jsep = jsep;
 
     // remove binary ops
@@ -88,31 +95,6 @@ class Expression {
 
     // remove unary ops
     this._jsep.removeUnaryOp('~');
-
-    // init built-in functions
-    this._addBuiltinFunctions();
-  }
-
-  /**
-   * Add built-in funtions
-   * @private
-   */
-  _addBuiltinFunctions() {
-    this.functions = {};
-
-    // create Math.* function
-    const mathFunction = (name) => {
-      return (args, context) => {
-        if (args.length < 1) {
-          throw new Errors.ExpressionError('Wrong number of arguments for ' + name + '()');
-        }
-        return Math[name].apply(Math, args);
-      };
-    };
-
-    this.functions['abs'] = mathFunction('abs');
-    this.functions['min'] = mathFunction('min');
-    this.functions['max'] = mathFunction('max');
   }
 
   /**

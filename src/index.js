@@ -45,6 +45,22 @@ class Builder {
       return base64Filter.filter(args.shift(), args);
     };
 
+    // arithmetic functions
+
+    // create Math.* function
+    const mathFunction = (name) => {
+      return (args, context) => {
+        if (args.length < 1) {
+          throw new Error('Wrong number of arguments for ' + name + '()');
+        }
+        return Math[name].apply(Math, args);
+      };
+    };
+
+    expression.functions['abs'] = mathFunction('abs');
+    expression.functions['min'] = mathFunction('min');
+    expression.functions['max'] = mathFunction('max');
+
     //
 
     machine.readers.github = githubReader;

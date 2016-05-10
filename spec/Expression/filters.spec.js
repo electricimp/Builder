@@ -15,6 +15,9 @@ describe('Expression', () => {
 
   beforeEach(() => {
     expression = new Expression();
+    expression.functions['max'] = (args) => {
+      return Math.abs.apply(Math, args);
+    };
   });
 
   it('should suppor filter operator with call invocation', () => {
