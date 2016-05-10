@@ -17,31 +17,27 @@ const Base64Filter = require('./Filters/Base64Filter');
 class Builder {
 
   constructor() {
+    this._initGlobalContext();
     this._initMachine();
   }
 
   /**
-   * Init machine
+   * Init global context
    * @private
    */
-  _initMachine() {
-    const fileReader = new FileReader();
-    const httpReader = new HttpReader();
-    const githubReader = new GithubReader();
-
-    const expression = new Expression();
-    const parser = new AstParser();
-    const machine = new Machine();
+  _initGlobalContext() {
+    // global context
+    this._globalContext = {};
 
     // filters
 
     const escapeFilter = new EscapeFilter();
-    expression.functions[escapeFilter.name] = (args) => {
+    this._globalContext[escapeFilter.name] = (args) => {
       return escapeFilter.filter(args.shift(), args);
     };
 
     const base64Filter = new Base64Filter();
-    expression.functions[base64Filter.name] = (args) => {
+    this._globalContext[base64Filter.name] = (args) => {
       return base64Filter.filter(args.shift(), args);
     };
 
@@ -57,15 +53,29 @@ class Builder {
       };
     };
 
-    expression.functions['abs'] = mathFunction('abs');
-    expression.functions['min'] = mathFunction('min');
-    expression.functions['max'] = mathFunction('max');
+    this._globalContext['abs'] = mathFunction('abs');
+    this._globalContext['min'] = mathFunction('min');
+    this._globalContext['max'] = mathFunction('max');
+  }
 
-    //
+  /**
+   * Init machine
+   * @private
+   */
+  _initMachine() {
+    const fileReader = new FileReader();
+    const httpReader = new HttpReader();
+    const githubReader = new GithubReader();
+
+    const expression = new Expression();
+    const parser = new AstParser();
+    const machine = new Machine();
 
     machine.readers.github = githubReader;
     machine.readers.http = httpReader;
     machine.readers.file = fileReader;
+
+    machine.globals = this._globalContext;
 
     machine.expression = expression;
     machine.parser = parser;
