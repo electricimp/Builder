@@ -303,7 +303,7 @@ class Expression {
 
         if /* call expression callee name */ (
           'defined' === node.name ||
-          this.functions.hasOwnProperty(node.name)
+          context.hasOwnProperty(node.name) && typeof context[node.name] === 'function'
         ) {
           res = node.name;
         } else /* variable */ {
@@ -390,8 +390,8 @@ class Expression {
 
           const args = node.arguments.map(v => this._evaluate(v, context));
 
-          if (this.functions.hasOwnProperty(callee)) {
-            res = this.functions[callee](args, context);
+          if (context.hasOwnProperty(callee) && typeof context[callee] === 'function') {
+            res = context[callee](args, context);
           } else {
 
             if (node.callee.type === 'Identifier') {
@@ -413,14 +413,6 @@ class Expression {
 
     return res;
 
-  }
-
-  get functions() {
-    return this._functions;
-  }
-
-  set functions(value) {
-    this._functions = value;
   }
 }
 

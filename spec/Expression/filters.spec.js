@@ -11,27 +11,28 @@ const Expression = require('../../src/Expression');
 
 describe('Expression', () => {
 
-  let expression;
+  let expression, context;
 
   beforeEach(() => {
     expression = new Expression();
-    expression.functions['max'] = (args) => {
+    context = {};
+    context.max = (args, context) => {
       return Math.abs.apply(Math, args);
     };
   });
 
   it('should suppor filter operator with call invocation', () => {
-    const res = expression.evaluate('5|max(1,2)', {});
+    const res = expression.evaluate('5|max(1,2)', context);
     expect(res).toBe(5);
   });
 
   it('should suppor filter operator without call invocation #1', () => {
-    const res = expression.evaluate('5|max', {});
+    const res = expression.evaluate('5|max', context);
     expect(res).toBe(5);
   });
 
   it('should suppor filter operator without call invocation #2', () => {
-    const res = expression.evaluate('5|("m" + "ax")', {});
+    const res = expression.evaluate('5|("m" + "ax")', context);
     expect(res).toBe(5);
   });
 
