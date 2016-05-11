@@ -42,7 +42,36 @@ class Machine {
     this.file = 'main'; // default source filename
     this.path = ''; // default source path
     this.readers = {};
+    this.globals = {};
+
+    // built-in macros
+    this._builtinFunctions = {};
+    this._builtinFunctions['include'] = (args, context) => {
+      const buffer = [];
+
+      console.log(args, context);
+
+      // include macro in inline mode
+      this._executeInclude( {
+        ty
+      },
+        /* enable inline mode for all subsequent operations */
+        this._mergeContexts(context, {__INLINE__: true}),
+        buffer,
+        false
+      );
+
+      // trim trailing newline (only in inline mode for macros)
+      if (buffer.length > 0) {
+        buffer[buffer.length - 1] =
+          buffer[buffer.length - 1]
+            .replace(/(\r\n|\n)$/, '');
+      }
+
+      return buffer.join('');
+    };
   }
+
 
   /**
    * Execute some code
@@ -59,7 +88,8 @@ class Machine {
     // execute
     context = this._mergeContexts(
       {__FILE__: this.file, __PATH__: this.path},
-      this._globals,
+      this._builtinFunctions,
+      this.globals,
       context
     );
 
@@ -79,6 +109,7 @@ class Machine {
     this._macros = {}; // macros
     this._depth = 0; // nesting level
     this._includedSources = new Set(); // all included sources
+    this._globalContext = {}; // global context
   }
 
   /**
@@ -173,7 +204,7 @@ class Machine {
 
     const macro = this.expression.parseMacroCall(
       instruction.value,
-      this._mergeContexts(this._globals, context),
+      this._mergeContexts(this._globalContext, context),
       this._macros
     );
 
@@ -198,7 +229,7 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = this.expression.evaluate(
-      source, this._mergeContexts(this._globals, context)
+      source, this._mergeContexts(this._globalContext, context)
     );
 
     // if once flag is set, then check if source has alredy been included
@@ -291,7 +322,7 @@ class Machine {
       this._out(
         String(this.expression.evaluate(
           instruction.value,
-          this._mergeContexts(this._globals, context)
+          this._mergeContexts(this._globalContext, context)
         )),
         context,
         buffer
@@ -308,9 +339,9 @@ class Machine {
    * @private
    */
   _executeSet(instruction, context, buffer) {
-    this._globals[instruction.variable] =
+    this._globalContext[instruction.variable] =
       this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globals, context));
+        this._mergeContexts(this._globalContext, context));
   }
 
   /**
@@ -323,7 +354,7 @@ class Machine {
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globals, context))
+        this._mergeContexts(this._globalContext, context))
     );
   }
 
@@ -338,7 +369,7 @@ class Machine {
 
     const test = this.expression.evaluate(
       instruction.test,
-      this._mergeContexts(this._globals, context)
+      this._mergeContexts(this._globalContext, context)
     );
 
     if (test) {
@@ -397,7 +428,7 @@ class Machine {
     };
 
     // add macro to supported function in expression expression
-    this.expression.functions[macro.name] = ((macro) => {
+    this._globalContext[macro.name] = ((macro) => {
       return (args, context) => {
         const buffer = [];
 
@@ -436,7 +467,7 @@ class Machine {
       // evaluate test expression
       const test = this._expression.evaluate(
         insruction.while || insruction.repeat,
-        this._mergeContexts(this._globals, context)
+        this._mergeContexts(this._globalContext, context)
       );
 
       // check break condition
@@ -626,6 +657,14 @@ class Machine {
 
   set path(value) {
     this._path = value;
+  }
+
+  get globals() {
+    return this._globals;
+  }
+
+  set globals(value) {
+    this._globals = value;
   }
 
   // </editor-fold>
