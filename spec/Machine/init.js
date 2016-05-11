@@ -39,6 +39,22 @@ module.exports = (sampleFile) => {
 
       const machine = new Machine();
 
+      // add expression functions
+
+      // create Math.* function
+      const mathFunction = (name) => {
+        return (args, context) => {
+          if (args.length < 1) {
+            throw new Error('Wrong number of arguments for ' + name + '()');
+          }
+          return Math[name].apply(Math, args);
+        };
+      };
+
+      machine.globals['abs'] = mathFunction('abs');
+      machine.globals['min'] = mathFunction('min');
+      machine.globals['max'] = mathFunction('max');
+
       machine.readers.github = githubReader;
       machine.readers.http = httpReader;
       machine.readers.file = fileReader;

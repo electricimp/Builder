@@ -11,10 +11,25 @@ const Expression = require('../../src/Expression');
 
 describe('Expression', () => {
 
-  let expression;
+  let expression, context;
 
   beforeEach(() => {
     expression = new Expression();
+    context = {};
+
+    // create Math.* function
+    const mathFunction = (name) => {
+      return (args, context) => {
+        if (args.length < 1) {
+          throw new Error('Wrong number of arguments for ' + name + '()');
+        }
+        return Math[name].apply(Math, args);
+      };
+    };
+
+    context['abs'] = mathFunction('abs');
+    context['min'] = mathFunction('min');
+    context['max'] = mathFunction('max');
   });
 
   it('should evaluate expressions with binary operators', () => {
@@ -41,11 +56,9 @@ describe('Expression', () => {
   it('should recognize variables', () => {
     let res;
 
-    const context = {
-      'SOMEVAR1': 123,
-      '_SOMEVAR2': 'abc',
-      'some_var_3': 100500,
-    };
+    context['SOMEVAR1'] = 123;
+    context['_SOMEVAR2'] = 'abc';
+    context['some_var_3'] = 100500;
 
     res = expression.evaluate('SOMEVAR1', context);
     expect(res).toBe(context['SOMEVAR1']);
@@ -59,36 +72,36 @@ describe('Expression', () => {
 
   it('should support unary operators', () => {
     let res;
-    res = expression.evaluate('!10');
+    res = expression.evaluate('!10', context);
     expect(res).toBe(false);
   });
 
   it('should evaluate conditional expressions', () => {
     let res;
 
-    res = expression.evaluate('1 ? 100 : 200');
+    res = expression.evaluate('1 ? 100 : 200', context);
     expect(res).toBe(100);
 
-    res = expression.evaluate('0 ? 100 : 200');
+    res = expression.evaluate('0 ? 100 : 200', context);
     expect(res).toBe(200);
 
     // should not get to undefined var
-    res = expression.evaluate('1 ? 100 : undefinedVar');
+    res = expression.evaluate('1 ? 100 : undefinedVar', context);
     expect(res).toBe(100);
   });
 
   it('should support array expressions', () => {
     let res;
-    res = expression.evaluate('[1,2,3]');
+    res = expression.evaluate('[1,2,3]', context);
     expect(res).toEqual([1, 2, 3]);
   });
 
   it('should support member expressions', () => {
     let res;
-    res = expression.evaluate('([1,2,3])[1]');
+    res = expression.evaluate('([1,2,3])[1]', context);
     expect(res).toBe(2);
 
-    const context = {abc: {a: 123}};
+    context.abc = {a: 123};
     res = expression.evaluate('abc.a', context);
     expect(res).toBe(123);
   });
@@ -96,15 +109,15 @@ describe('Expression', () => {
   it('shuould support string literals', () => {
     let res;
 
-    res = expression.evaluate('"abc"');
+    res = expression.evaluate('"abc"', context);
     expect(res).toBe('abc');
 
-    res = expression.evaluate('\'abc\'');
+    res = expression.evaluate('\'abc\'', context);
     expect(res).toBe('abc');
 
     // ` quotes are not supported
     try {
-      expression.evaluate('`abc`');
+      expression.evaluate('`abc`', context);
       fail();
     } catch (e) {
       expect(e.message).toMatch('Unexpected "`"');
@@ -114,15 +127,15 @@ describe('Expression', () => {
   it('should support functions', () => {
     let res;
 
-    res = expression.evaluate('abs(-10)');
+    res = expression.evaluate('abs(-10)', context);
     expect(res).toBe(10);
 
-    res = expression.evaluate('min(-10, 10, -11)');
+    res = expression.evaluate('min(-10, 10, -11)', context);
     expect(res).toBe(-11);
 
     // min() w/o args
     try {
-      res = expression.evaluate('min()');
+      res = expression.evaluate('min()', context);
       fail();
     } catch (e) {
       expect(e.message).toBe('Wrong number of arguments for min()');
@@ -130,16 +143,16 @@ describe('Expression', () => {
 
     // defined(NON_LITERAL) should produce an error
     try {
-      res = expression.evaluate('defined("undefinedVar")');
+      res = expression.evaluate('defined("undefinedVar")', context);
       fail();
     } catch (e) {
       expect(e.message).toBe('defined() can only be called with an identifier as an argument');
     }
 
-    res = expression.evaluate('defined(undefinedVar)');
+    res = expression.evaluate('defined(undefinedVar)', context);
     expect(res).toBe(false);
 
-    const context = {definedVar: false};
+    context.definedVar = false;
     res = expression.evaluate('defined(definedVar)', context);
     expect(res).toBe(true);
   });
@@ -147,14 +160,14 @@ describe('Expression', () => {
   it('should not support compound & this expressions', () => {
 
     try {
-      expression.evaluate('"abc" "def"');
+      expression.evaluate('"abc" "def"', context);
       fail();
     } catch (e) {
       expect(e.message).toMatch('Syntax error');
     }
 
     try {
-      expression.evaluate('this');
+      expression.evaluate('this', context);
       fail();
     } catch (e) {
       expect(e.message).toMatch('`this` keyword is not supported');
@@ -222,7 +235,7 @@ describe('Expression', () => {
 
   it('should fail to call undefined function #1', ()=> {
     try {
-      expression.evaluate('undefF()');
+      expression.evaluate('undefF()', context);
       fail();
     } catch (e) {
       expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
@@ -232,7 +245,7 @@ describe('Expression', () => {
 
   it('should fail to call undefined function #2', ()=> {
     try {
-      expression.evaluate('(0)()');
+      expression.evaluate('(0)()', context);
       fail();
     } catch (e) {
       expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
@@ -242,7 +255,7 @@ describe('Expression', () => {
 
   it('should fail to call undefined function #3', ()=> {
     try {
-      expression.evaluate('("abc")()');
+      expression.evaluate('("abc")()', context);
       fail();
     } catch (e) {
       expect(e instanceof Expression.Errors.FunctionCallError).toBeTruthy();
@@ -252,11 +265,21 @@ describe('Expression', () => {
 
   it('should fail on incorrect filter operator usage', ()=> {
     try {
-      expression.evaluate('|abs');
+      expression.evaluate('|abs', context);
       fail();
     } catch (e) {
       expect(e instanceof Expression.Errors.ExpressionError).toBeTruthy();
       expect(e.message).toBe('Syntax error in "|" operator');
+    }
+  });
+
+  it('should fail on incorrect nuber of args for a function', ()=> {
+    try {
+      expression.evaluate('abs()', context);
+      fail();
+    } catch (e) {
+      expect(e instanceof Expression.Errors.ExpressionError).toBeTruthy();
+      expect(e.message).toBe('Wrong number of arguments for abs()');
     }
   });
 });

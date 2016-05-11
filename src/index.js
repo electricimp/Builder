@@ -17,7 +17,45 @@ const Base64Filter = require('./Filters/Base64Filter');
 class Builder {
 
   constructor() {
+    this._initGlobals();
     this._initMachine();
+  }
+
+  /**
+   * Init global context
+   * @private
+   */
+  _initGlobals() {
+    // global context
+    this._globals = {};
+
+    // filters
+
+    const escapeFilter = new EscapeFilter();
+    this._globals[escapeFilter.name] = (args) => {
+      return escapeFilter.filter(args.shift(), args);
+    };
+
+    const base64Filter = new Base64Filter();
+    this._globals[base64Filter.name] = (args) => {
+      return base64Filter.filter(args.shift(), args);
+    };
+
+    // arithmetic functions
+
+    // create Math.* function
+    const _createMathFunction = (name) => {
+      return (args, context) => {
+        if (args.length < 1) {
+          throw new Error('Wrong number of arguments for ' + name + '()');
+        }
+        return Math[name].apply(Math, args);
+      };
+    };
+
+    this._globals['abs'] = _createMathFunction('abs');
+    this._globals['min'] = _createMathFunction('min');
+    this._globals['max'] = _createMathFunction('max');
   }
 
   /**
@@ -33,23 +71,11 @@ class Builder {
     const parser = new AstParser();
     const machine = new Machine();
 
-    // filters
-
-    const escapeFilter = new EscapeFilter();
-    expression.functions[escapeFilter.name] = (args) => {
-      return escapeFilter.filter(args.shift(), args);
-    };
-
-    const base64Filter = new Base64Filter();
-    expression.functions[base64Filter.name] = (args) => {
-      return base64Filter.filter(args.shift(), args);
-    };
-
-    //
-
     machine.readers.github = githubReader;
     machine.readers.http = httpReader;
     machine.readers.file = fileReader;
+
+    machine.globals = this._globals;
 
     machine.expression = expression;
     machine.parser = parser;

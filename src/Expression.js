@@ -73,8 +73,15 @@ Errors.FunctionCallError = class FunctionCallError extends Errors.ExpressionErro
 class Expression {
 
   constructor() {
-    // configure JSEP
+    this.functions = {};
+    this._initParser();
+  }
 
+  /**
+   * Confugure parser
+   * @private
+   */
+  _initParser() {
     this._jsep = jsep;
 
     // remove binary ops
@@ -88,31 +95,6 @@ class Expression {
 
     // remove unary ops
     this._jsep.removeUnaryOp('~');
-
-    // init built-in functions
-    this._addBuiltinFunctions();
-  }
-
-  /**
-   * Add built-in funtions
-   * @private
-   */
-  _addBuiltinFunctions() {
-    this.functions = {};
-
-    // create Math.* function
-    const mathFunction = (name) => {
-      return (args, context) => {
-        if (args.length < 1) {
-          throw new Errors.ExpressionError('Wrong number of arguments for ' + name + '()');
-        }
-        return Math[name].apply(Math, args);
-      };
-    };
-
-    this.functions['abs'] = mathFunction('abs');
-    this.functions['min'] = mathFunction('min');
-    this.functions['max'] = mathFunction('max');
   }
 
   /**
@@ -321,7 +303,7 @@ class Expression {
 
         if /* call expression callee name */ (
           'defined' === node.name ||
-          this.functions.hasOwnProperty(node.name)
+          context.hasOwnProperty(node.name) && typeof context[node.name] === 'function'
         ) {
           res = node.name;
         } else /* variable */ {
@@ -408,8 +390,8 @@ class Expression {
 
           const args = node.arguments.map(v => this._evaluate(v, context));
 
-          if (this.functions.hasOwnProperty(callee)) {
-            res = this.functions[callee](args, context);
+          if (context.hasOwnProperty(callee) && typeof context[callee] === 'function') {
+            res = context[callee](args, context);
           } else {
 
             if (node.callee.type === 'Identifier') {
@@ -431,14 +413,6 @@ class Expression {
 
     return res;
 
-  }
-
-  get functions() {
-    return this._functions;
-  }
-
-  set functions(value) {
-    this._functions = value;
   }
 }
 

@@ -5,6 +5,7 @@
 
 'use strict';
 
+const clone = require('clone');
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 
@@ -43,35 +44,7 @@ class Machine {
     this.path = ''; // default source path
     this.readers = {};
     this.globals = {};
-
-    // built-in macros
-    this._builtinFunctions = {};
-    this._builtinFunctions['include'] = (args, context) => {
-      const buffer = [];
-
-      console.log(args, context);
-
-      // include macro in inline mode
-      this._executeInclude( {
-        ty
-      },
-        /* enable inline mode for all subsequent operations */
-        this._mergeContexts(context, {__INLINE__: true}),
-        buffer,
-        false
-      );
-
-      // trim trailing newline (only in inline mode for macros)
-      if (buffer.length > 0) {
-        buffer[buffer.length - 1] =
-          buffer[buffer.length - 1]
-            .replace(/(\r\n|\n)$/, '');
-      }
-
-      return buffer.join('');
-    };
   }
-
 
   /**
    * Execute some code
@@ -88,7 +61,6 @@ class Machine {
     // execute
     context = this._mergeContexts(
       {__FILE__: this.file, __PATH__: this.path},
-      this._builtinFunctions,
       this.globals,
       context
     );
@@ -105,7 +77,6 @@ class Machine {
    * @private
    */
   _reset() {
-    this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
     this._includedSources = new Set(); // all included sources
@@ -529,7 +500,7 @@ class Machine {
 
     // clone target
     let target = args.shift();
-    target = JSON.parse(JSON.stringify(target));
+    target = clone(target);
     args.unshift(target);
 
     return Object.assign.apply(this, args);
