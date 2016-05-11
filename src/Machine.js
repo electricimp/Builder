@@ -44,6 +44,7 @@ class Machine {
     this.path = ''; // default source path
     this.readers = {};
     this.globals = {};
+    this._initBuiltinFunctions();
   }
 
   /**
@@ -61,6 +62,7 @@ class Machine {
     // execute
     context = this._mergeContexts(
       {__FILE__: this.file, __PATH__: this.path},
+      this._builtinFunctions,
       this.globals,
       context
     );
@@ -70,6 +72,38 @@ class Machine {
 
     // return output buffer contents
     return buffer.join('');
+  }
+
+  /**
+   * Init built-in expression functions
+   * @private
+   */
+  _initBuiltinFunctions() {
+    this._builtinFunctions = {}; // builtin functions
+
+    // include()
+    this._builtinFunctions['include'] = (args, context) => {
+      if (args.length < 1) {
+        throw Error('Wrong number of arguments for include()');
+      }
+
+      const buffer = [];
+
+      // include macro in inline mode
+      this._includeSource(
+        args[0],
+        /* enable inline mode for all subsequent operations */
+        this._mergeContexts(context, {__INLINE__: true}),
+        buffer,
+        false,
+        true
+      );
+
+      // trim trailing newline in inline mode
+      this._trimLastLine(buffer);
+
+      return buffer.join('');
+    };
   }
 
   /**
@@ -193,13 +227,14 @@ class Machine {
    * @param {string} source
    * @param {{}} context
    * @param {string[]} buffer
-   * @param {boolean} once
+   * @param {boolean=false} once
+   * @param {boolean=false} evaluated - is source ref already evaluated?
    * @private
    */
-  _includeSource(source, context, buffer, once) {
+  _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(
+    const includePath = evaluated ? source : this.expression.evaluate(
       source, this._mergeContexts(this._globalContext, context)
     );
 
@@ -412,11 +447,7 @@ class Machine {
         );
 
         // trim trailing newline (only in inline mode for macros)
-        if (buffer.length > 0) {
-          buffer[buffer.length - 1] =
-            buffer[buffer.length - 1]
-              .replace(/(\r\n|\n)$/, '');
-        }
+        this._trimLastLine(buffer);
 
         return buffer.join('');
       };
@@ -522,6 +553,21 @@ class Machine {
     }
 
     throw new Error(`Source "${source}" is not supported`);
+  }
+
+
+  /**
+   * Trim last buffer line
+   * @param {[string]} buffer
+   * @private
+   */
+  _trimLastLine(buffer) {
+    // trim trailing newline in inline mode
+    if (buffer.length > 0) {
+      buffer[buffer.length - 1] =
+        buffer[buffer.length - 1]
+          .replace(/(\r\n|\n)$/, '');
+    }
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">

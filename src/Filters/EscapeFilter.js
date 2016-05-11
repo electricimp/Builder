@@ -12,7 +12,7 @@ class EscapeFilter extends AbstractFilter {
   filter(input, args) {
     input = String(input);
 
-    input = input.replace(/(\"|\'|\\|\b|\f|\n|\r|\t)/g, (m) => {
+    input = input.replace(/[\"\'\\\b\f\n\r\t]/g, (m) => {
       return {
         '"':'\\"',
         '\'':'\\\'',
