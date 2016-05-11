@@ -17,7 +17,7 @@ module.exports = (sampleFile) => {
       const builder = new Builder();
       builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
       builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
-      builder.machine.readers.github.token = process.env.SPEC_GITHUB_USERNAME;
+      builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
       builder.machine.readers.file.searchDirs.push(path.dirname(sampleFile));
       return builder.machine;
     },
