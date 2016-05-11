@@ -484,11 +484,12 @@ loop.index: 2
 ### Functions
 
 - <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
+- <code>include(<i>&lt;source&gt;</i>)</code> – includes external source
+- <code>escape(<i>&lt;value&gt;</i>)</code> – escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`)
+- <code>base64(<i>&lt;value&gt;</i>)</code> – encodes value as base64
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
-- <code>escape(<i>&lt;value&gt;</i>)</code> – escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`)
-- <code>base64(<i>&lt;value&gt;</i>)</code> – encodes value as base64
 
 ## Comments
 
