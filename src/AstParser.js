@@ -1,8 +1,6 @@
-/**
- * AST parser
- * Converts source into AST that can be interpreted by Builder VM
- * @author Mikhail Yurasov <me@yurasov.me>
- */
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 'use strict';
 
@@ -53,6 +51,10 @@ const Errors = {
   }
 };
 
+/**
+ * AST parser
+ * Converts source into AST that can be interpreted by Builder VM
+ */
 class AstParser {
 
   /**

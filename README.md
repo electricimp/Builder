@@ -551,10 +551,4 @@ npm test
 
 # License
 
-MIT
-
-<br />
-
-_**Author**_
-
-_Mikhail Yurasov <me@yurasov.me>_
+Builder is licensed under the [MIT License](./LICENSE).

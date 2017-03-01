@@ -1,10 +1,10 @@
-/**
- * Builder VM
- * @author Mikhail Yurasov <me@yurasov.me>
- */
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 'use strict';
 
+const path = require('path');
 const clone = require('clone');
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
@@ -37,6 +37,9 @@ const Errors = {
 // maximum nesting depth
 const MAX_EXECUTION_DEPTH = 256;
 
+/**
+ * Builder VM
+ */
 class Machine {
 
   constructor() {
@@ -137,48 +140,48 @@ class Machine {
 
     this._depth++;
 
-    for (const insruction of ast) {
+    for (const instruction of ast) {
 
       // set __LINE__
       context = this._mergeContexts(
         context,
-        {__LINE__: insruction._line}
+        {__LINE__: instruction._line}
       );
 
       try {
 
-        switch (insruction.type) {
+        switch (instruction.type) {
 
           case INSTRUCTIONS.INCLUDE:
-            this._executeInclude(insruction, context, buffer);
+            this._executeInclude(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.OUTPUT:
-            this._executeOutput(insruction, context, buffer);
+            this._executeOutput(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.SET:
-            this._executeSet(insruction, context, buffer);
+            this._executeSet(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.CONDITIONAL:
-            this._executeConditional(insruction, context, buffer);
+            this._executeConditional(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.ERROR:
-            this._executeError(insruction, context, buffer);
+            this._executeError(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.MACRO:
-            this._executeMacro(insruction, context, buffer);
+            this._executeMacro(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.LOOP:
-            this._executeLoop(insruction, context, buffer);
+            this._executeLoop(instruction, context, buffer);
             break;
 
           default:
-            throw new Error(`Unsupported instruction "${insruction.type}"`);
+            throw new Error(`Unsupported instruction "${instruction.type}"`);
         }
 
       } catch (e) {

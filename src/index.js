@@ -1,7 +1,6 @@
-/**
- * Builder
- * @author Mikhail Yurasov <me@yurasov.me>
- */
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 'use strict';
 
@@ -14,6 +13,9 @@ const GithubReader = require('./Readers/GithubReader');
 const EscapeFilter = require('./Filters/EscapeFilter');
 const Base64Filter = require('./Filters/Base64Filter');
 
+/**
+ * Main Builder class
+ */
 class Builder {
 
   constructor() {
