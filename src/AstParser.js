@@ -69,21 +69,18 @@ class AstParser {
 
   /**
    * Returns tokens generator
-   * @param {string{ source
+   * @param {string} source
    * @private
    */
   * _tokenize(source) {
 
     let matches, type, arg;
-
     const lines = source.match(LINES);
 
     for (let i = 0; i < lines.length - 1 /* last line is always empty */; i++) {
-
       const text = lines[i];
 
       if (matches = text.match(DIRECTIVE)) {
-
         const token = {_line: 1 + i};
 
         type = matches[1];
@@ -93,7 +90,6 @@ class AstParser {
         switch (type) {
 
           case 'include':
-
             // detect "once" flag
             if (/^once\b/.test(arg)) {
               token.args.push('once');
@@ -106,7 +102,6 @@ class AstParser {
             break;
 
           case 'set':
-
             // split arg
             matches = arg.match(/^([_$A-Za-z][_A-Za-z0-9]*)\s*(?:=\s*)?(.*?)$/);
 
@@ -120,59 +115,50 @@ class AstParser {
             break;
 
           case 'if':
-
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.IF;
             token.args.push(arg);
             break;
 
           case 'else':
-
             this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ELSE;
             break;
 
           case 'elseif':
-
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ELSEIF;
             token.args.push(arg);
             break;
 
           case 'endif':
-
             this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ENDIF;
             break;
 
           case 'error':
-
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ERROR;
             token.args.push(arg);
             break;
 
           case 'macro':
-
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.MACRO;
             token.args.push(arg);
             break;
 
           case 'endmacro':
-
             this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.ENDMACRO;
             break;
 
           case 'end':
-
             this._checkArgumentIsEmpty(type, arg, token._line);
             token.type = TOKENS.END;
             break;
 
           case 'while':
-
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.WHILE;
             token.args.push(arg);
@@ -184,7 +170,6 @@ class AstParser {
             break;
 
           case 'repeat':
-
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.REPEAT;
             token.args.push(arg);
@@ -200,29 +185,22 @@ class AstParser {
         }
 
         yield token;
-
       } else if (text.match(COMMENT)) {
-
         // do nothing
-        continue;
-
       } else {
-
-        // split source fragment into computed/uncomupted chunks
-        yield* this._tokenizeSourceFragment(text, 1 + i);
-
+        // split source fragment into computed/uncomputed chunks
+        yield* AstParser._tokenizeSourceFragment(text, 1 + i);
       }
-
     }
   }
 
   /**
-   * Split source fragment into computed/uncomupted chunks
+   * Split source fragment into computed/uncomputed chunks
    * @param {string} fragment
    * @param {number} line #
    * @private
    */
-  * _tokenizeSourceFragment(fragment, line) {
+  static * _tokenizeSourceFragment(fragment, line) {
 
     let matches;
 
@@ -262,7 +240,7 @@ class AstParser {
    *  Check that argument is not empty
    * @param {string} keyword
    * @param {string} arg
-   * @param {{}} token
+   * @param line
    * @private
    */
   _checkArgumentIsNonempty(keyword, arg, line) {
@@ -275,7 +253,7 @@ class AstParser {
    *  Check that argument is not empty
    * @param {string} keyword
    * @param {string} arg
-   * @param {{}} token
+   * @param line
    * @private
    */
   _checkArgumentIsEmpty(keyword, arg, line) {
@@ -288,6 +266,7 @@ class AstParser {
    * Parse source into AST
    *
    * @param {[]} tokens
+   * @param source
    * @param {*} parent
    * @param {string} state
    * @return {*}
@@ -296,8 +275,11 @@ class AstParser {
   _parse(tokens, parent, state) {
 
     let token;
+    let next = tokens.next();
 
-    for (token of tokens) {
+    while (!next.done) {
+
+      token = next.value;
 
       const node = {
         _line: token._line
@@ -530,6 +512,8 @@ class AstParser {
         default:
           throw new Errors.SyntaxError(`Unsupported token type "${token.type}" (${this.file}:${node._line})`);
       }
+
+      next = tokens.next();
     }
 
     // check final state
