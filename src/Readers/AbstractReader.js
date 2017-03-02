@@ -5,6 +5,7 @@
 
 'use strict';
 
+const url = require('url');
 const path = require('path');
 
 // <editor-fold desc="Errors" defaultstate="collapsed">
@@ -40,13 +41,21 @@ class AbstractReader {
    * @return {{__FILE__, __PATH__}}
    */
   parsePath(source) {
-    // file
-    const __FILE__ = path.basename(source);
 
-    // path
-    let __PATH__ = path.dirname(source);
-    __PATH__ = path.normalize(__PATH__);
-    if (__PATH__ === '.') __PATH__ = '';
+    const __FILE__ = path.basename(source);
+    let __PATH__;
+
+    let parsedURL = url.parse(source);
+    if (parsedURL.protocol) {
+      // URL
+      __PATH__ = path.dirname(source);
+    } else {
+      // path
+      __PATH__ = path.normalize(path.dirname(source));
+      if (__PATH__ === '.') {
+        __PATH__ = '';
+      }
+    }
 
     return {__FILE__, __PATH__};
   }

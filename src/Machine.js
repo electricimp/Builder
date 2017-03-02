@@ -4,6 +4,7 @@
 
 'use strict';
 
+const url = require('url');
 const path = require('path');
 const clone = require('clone');
 const Expression = require('./Expression');
@@ -238,8 +239,8 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = evaluated ? source : this.expression.evaluate(
-      source, this._mergeContexts(this._globalContext, context)
-    );
+        source, this._mergeContexts(this._globalContext, context)
+      );
 
     // if once flag is set, then check if source has alredy been included
     if (once && this._includedSources.has(includePath)) {
@@ -509,7 +510,11 @@ class Machine {
     // generate line control statement
     if (this.generateLineControlStatements && !context.__INLINE__) {
       if (buffer.lastOutputFile !== context.__FILE__ /* detect file switch */) {
-        buffer.push(`#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`);
+        let parsedURL = url.parse(context.__PATH__);
+        let source = parsedURL.protocol ?
+          `${context.__PATH__}/${context.__FILE__}` :
+          path.join(context.__PATH__, context.__FILE__);
+        buffer.push(`#line ${context.__LINE__} "${source.replace(/"/g, '\\\"')}"\n`);
         buffer.lastOutputFile = context.__FILE__;
       }
     }
