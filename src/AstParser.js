@@ -38,7 +38,7 @@ const TOKENS = {
 };
 
 // lines gobbling regex
-const LINES = /(.*(?:\n|\r\n)?)/g;
+const LINES = /(.*(?:\r\n|\n)?)/g;
 
 // regex to detect if fragment is a directive
 const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end|while|endwhile|repeat|endrepeat)\b(.*?)\s*$/;
