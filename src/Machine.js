@@ -422,7 +422,7 @@ class Machine {
     // do not allow macro redeclaration
     if (this._macros.hasOwnProperty(macro.name)) {
       throw new Errors.MacroIsAlreadyDeclared(
-        `Macro "${macro.name}" is alredy declared in ` +
+        `Macro "${macro.name}" is already declared in ` +
         `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
         ` (${context.__FILE__}:${context.__LINE__})`
       );
@@ -441,6 +441,7 @@ class Machine {
     this._globalContext[macro.name] = ((macro) => {
       return (args, context) => {
         const buffer = [];
+        macro.args = args;
 
         // include macro in inline mode
         this._includeMacro(

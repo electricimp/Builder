@@ -87,7 +87,7 @@ describe('Machine', () => {
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.MacroIsAlreadyDeclared).toBe(true);
-      expect(e.message).toBe('Macro "A" is alredy declared in main:1 (main:3)');
+      expect(e.message).toBe('Macro "A" is already declared in main:1 (main:3)');
     }
   });
 

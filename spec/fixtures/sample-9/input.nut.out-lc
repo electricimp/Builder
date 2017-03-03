@@ -1,0 +1,8 @@
+#line 2 "input.nut"
+local variable = null;
+local variable = a1;
+local variable = a2;
+
+local variable = null;
+local variable = a3;
+local variable = a4;

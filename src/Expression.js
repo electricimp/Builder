@@ -80,7 +80,7 @@ class Expression {
   }
 
   /**
-   * Confugure parser
+   * Configure parser
    * @private
    */
   _initParser() {
@@ -102,7 +102,7 @@ class Expression {
   /**
    * Evaluate an expression
    * @param {string} expression
-   * @param {{}={}} context - defined variables
+   * @param context
    * @return {*}
    */
   evaluate(expression, context) {
@@ -126,7 +126,7 @@ class Expression {
    * @param {{}} macros - defined macroses
    * @return {{name, args: []}|null}
    */
-  parseMacroCall(text, context, definedMacroses) {
+  parseMacroCall(text, context, definedMacros) {
     let root;
 
     try {
@@ -135,8 +135,9 @@ class Expression {
       return null;
     }
 
-    if (root.type !== 'CallExpression' || root.callee.type !== 'Identifier'
-        || !definedMacroses.hasOwnProperty(root.callee.name)) {
+    if (root.type !== 'CallExpression'
+      || root.callee.type !== 'Identifier'
+      || !definedMacros.hasOwnProperty(root.callee.name)) {
       // not a macro
       return null;
     }
