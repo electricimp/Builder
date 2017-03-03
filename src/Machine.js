@@ -1,10 +1,12 @@
-/**
- * Builder VM
- * @author Mikhail Yurasov <me@yurasov.me>
- */
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 'use strict';
 
+const url = require('url');
+const path = require('path');
+const clone = require('clone');
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 
@@ -36,12 +38,17 @@ const Errors = {
 // maximum nesting depth
 const MAX_EXECUTION_DEPTH = 256;
 
+/**
+ * Builder VM
+ */
 class Machine {
 
   constructor() {
     this.file = 'main'; // default source filename
     this.path = ''; // default source path
     this.readers = {};
+    this.globals = {};
+    this._initBuiltinFunctions();
   }
 
   /**
@@ -59,7 +66,8 @@ class Machine {
     // execute
     context = this._mergeContexts(
       {__FILE__: this.file, __PATH__: this.path},
-      this._globals,
+      this._builtinFunctions,
+      this.globals,
       context
     );
 
@@ -71,14 +79,46 @@ class Machine {
   }
 
   /**
+   * Init built-in expression functions
+   * @private
+   */
+  _initBuiltinFunctions() {
+    this._builtinFunctions = {}; // builtin functions
+
+    // include()
+    this._builtinFunctions['include'] = (args, context) => {
+      if (args.length < 1) {
+        throw Error('Wrong number of arguments for include()');
+      }
+
+      const buffer = [];
+
+      // include macro in inline mode
+      this._includeSource(
+        args[0],
+        /* enable inline mode for all subsequent operations */
+        this._mergeContexts(context, {__INLINE__: true}),
+        buffer,
+        false,
+        true
+      );
+
+      // trim trailing newline in inline mode
+      this._trimLastLine(buffer);
+
+      return buffer.join('');
+    };
+  }
+
+  /**
    * Reset state
    * @private
    */
   _reset() {
-    this._globals = {}; // global context
     this._macros = {}; // macros
     this._depth = 0; // nesting level
     this._includedSources = new Set(); // all included sources
+    this._globalContext = {}; // global context
   }
 
   /**
@@ -101,52 +141,48 @@ class Machine {
 
     this._depth++;
 
-    for (const insruction of ast) {
+    for (const instruction of ast) {
 
-      // if called from inline directive (@{...}),
-      // __LINE__ should not be updated
-      if (!context.__INLINE__) {
-        // set __LINE__
-        context = this._mergeContexts(
-          context,
-          {__LINE__: insruction._line}
-        );
-      }
+      // set __LINE__
+      context = this._mergeContexts(
+        context,
+        {__LINE__: instruction._line}
+      );
 
       try {
 
-        switch (insruction.type) {
+        switch (instruction.type) {
 
           case INSTRUCTIONS.INCLUDE:
-            this._executeInclude(insruction, context, buffer);
+            this._executeInclude(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.OUTPUT:
-            this._executeOutput(insruction, context, buffer);
+            this._executeOutput(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.SET:
-            this._executeSet(insruction, context, buffer);
+            this._executeSet(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.CONDITIONAL:
-            this._executeConditional(insruction, context, buffer);
+            this._executeConditional(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.ERROR:
-            this._executeError(insruction, context, buffer);
+            this._executeError(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.MACRO:
-            this._executeMacro(insruction, context, buffer);
+            this._executeMacro(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.LOOP:
-            this._executeLoop(insruction, context, buffer);
+            this._executeLoop(instruction, context, buffer);
             break;
 
           default:
-            throw new Error(`Unsupported instruction "${insruction.type}"`);
+            throw new Error(`Unsupported instruction "${instruction.type}"`);
         }
 
       } catch (e) {
@@ -177,7 +213,7 @@ class Machine {
 
     const macro = this.expression.parseMacroCall(
       instruction.value,
-      this._mergeContexts(this._globals, context),
+      this._mergeContexts(this._globalContext, context),
       this._macros
     );
 
@@ -195,15 +231,16 @@ class Machine {
    * @param {string} source
    * @param {{}} context
    * @param {string[]} buffer
-   * @param {boolean} once
+   * @param {boolean=false} once
+   * @param {boolean=false} evaluated - is source ref already evaluated?
    * @private
    */
-  _includeSource(source, context, buffer, once) {
+  _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    const includePath = this.expression.evaluate(
-      source, this._mergeContexts(this._globals, context)
-    );
+    const includePath = evaluated ? source : this.expression.evaluate(
+        source, this._mergeContexts(this._globalContext, context)
+      );
 
     // if once flag is set, then check if source has alredy been included
     if (once && this._includedSources.has(includePath)) {
@@ -225,13 +262,12 @@ class Machine {
     const ast = this.parser.parse(content);
 
     // update context
-    if (!context.__INLINE__) {
-      // __FILE__/__PATH__
-      context = this._mergeContexts(
-        context,
-        includePathParsed
-      );
-    }
+
+    // __FILE__/__PATH__
+    context = this._mergeContexts(
+      context,
+      includePathParsed
+    );
 
     // store included source
     this._includedSources.add(includePath);
@@ -259,11 +295,10 @@ class Machine {
     }
 
     // update context
-    if (!context.__INLINE__) {
-      // __FILE__/__PATH__ (file macro is defined in)
-      macroContext.__FILE__ = this._macros[macro.name].file;
-      macroContext.__PATH__ = this._macros[macro.name].path;
-    }
+
+    // __FILE__/__PATH__ (file macro is defined in)
+    macroContext.__FILE__ = this._macros[macro.name].file;
+    macroContext.__PATH__ = this._macros[macro.name].path;
 
     // execute macro
     this._execute(
@@ -293,48 +328,15 @@ class Machine {
 
     } else {
 
-      // detect if it's a macro
-      const macro = this.expression.parseMacroCall(
-        instruction.value,
-        this._mergeContexts(this._globals, context),
-        this._macros
+      // evaluate & output
+      this._out(
+        String(this.expression.evaluate(
+          instruction.value,
+          this._mergeContexts(this._globalContext, context)
+        )),
+        context,
+        buffer
       );
-
-      if (macro) {
-
-        const macroBuffer = [];
-
-        // include macro in inline mode
-        this._includeMacro(
-          macro,
-          /* enable inline mode for all subsequent operations */
-          this._mergeContexts(context, {__INLINE__: true}),
-          macroBuffer
-        );
-
-        // trim trailing newline in inline macro mode
-        if (macroBuffer.length > 0) {
-          macroBuffer[macroBuffer.length - 1] =
-            macroBuffer[macroBuffer.length - 1]
-              .replace(/(\r\n|\n)$/, '');
-        }
-
-        // append to current buffer
-        this._out(macroBuffer, context, buffer);
-
-      } else {
-
-        // evaluate & output
-        this._out(
-          String(this.expression.evaluate(
-            instruction.value,
-            this._mergeContexts(this._globals, context)
-          )),
-          context,
-          buffer
-        );
-
-      }
 
     }
   }
@@ -347,9 +349,9 @@ class Machine {
    * @private
    */
   _executeSet(instruction, context, buffer) {
-    this._globals[instruction.variable] =
+    this._globalContext[instruction.variable] =
       this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globals, context));
+        this._mergeContexts(this._globalContext, context));
   }
 
   /**
@@ -362,7 +364,7 @@ class Machine {
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globals, context))
+        this._mergeContexts(this._globalContext, context))
     );
   }
 
@@ -377,7 +379,7 @@ class Machine {
 
     const test = this.expression.evaluate(
       instruction.test,
-      this._mergeContexts(this._globals, context)
+      this._mergeContexts(this._globalContext, context)
     );
 
     if (test) {
@@ -420,7 +422,7 @@ class Machine {
     // do not allow macro redeclaration
     if (this._macros.hasOwnProperty(macro.name)) {
       throw new Errors.MacroIsAlreadyDeclared(
-        `Macro "${macro.name}" is alredy declared in ` +
+        `Macro "${macro.name}" is already declared in ` +
         `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
         ` (${context.__FILE__}:${context.__LINE__})`
       );
@@ -434,6 +436,27 @@ class Machine {
       args: macro.args,
       body: instruction.body
     };
+
+    // add macro to supported function in expression expression
+    this._globalContext[macro.name] = ((macro) => {
+      return (args, context) => {
+        const buffer = [];
+        macro.args = args;
+
+        // include macro in inline mode
+        this._includeMacro(
+          macro,
+          /* enable inline mode for all subsequent operations */
+          this._mergeContexts(context, {__INLINE__: true}),
+          buffer
+        );
+
+        // trim trailing newline (only in inline mode for macros)
+        this._trimLastLine(buffer);
+
+        return buffer.join('');
+      };
+    })(macro);
   }
 
   /**
@@ -451,7 +474,7 @@ class Machine {
       // evaluate test expression
       const test = this._expression.evaluate(
         insruction.while || insruction.repeat,
-        this._mergeContexts(this._globals, context)
+        this._mergeContexts(this._globalContext, context)
       );
 
       // check break condition
@@ -488,7 +511,11 @@ class Machine {
     // generate line control statement
     if (this.generateLineControlStatements && !context.__INLINE__) {
       if (buffer.lastOutputFile !== context.__FILE__ /* detect file switch */) {
-        buffer.push(`#line ${context.__LINE__} "${context.__FILE__.replace(/\"/g, '\\\"')}"\n`);
+        let parsedURL = url.parse(context.__PATH__);
+        let source = parsedURL.protocol ?
+          `${context.__PATH__}/${context.__FILE__}` :
+          path.join(context.__PATH__, context.__FILE__);
+        buffer.push(`#line ${context.__LINE__} "${source.replace(/"/g, '\\\"')}"\n`);
         buffer.lastOutputFile = context.__FILE__;
       }
     }
@@ -513,7 +540,7 @@ class Machine {
 
     // clone target
     let target = args.shift();
-    target = JSON.parse(JSON.stringify(target));
+    target = clone(target);
     args.unshift(target);
 
     return Object.assign.apply(this, args);
@@ -535,6 +562,21 @@ class Machine {
     }
 
     throw new Error(`Source "${source}" is not supported`);
+  }
+
+
+  /**
+   * Trim last buffer line
+   * @param {[string]} buffer
+   * @private
+   */
+  _trimLastLine(buffer) {
+    // trim trailing newline in inline mode
+    if (buffer.length > 0) {
+      buffer[buffer.length - 1] =
+        buffer[buffer.length - 1]
+          .replace(/(\r\n|\n)$/, '');
+    }
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -641,6 +683,14 @@ class Machine {
 
   set path(value) {
     this._path = value;
+  }
+
+  get globals() {
+    return this._globals;
+  }
+
+  set globals(value) {
+    this._globals = value;
   }
 
   // </editor-fold>

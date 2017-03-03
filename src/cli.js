@@ -1,9 +1,11 @@
 #! /usr/bin/env node
 
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
+
 /**
  * Basic CLI for testing
- *
- * @author Mikhail Yurasov <me@yurasov.me>
  */
 
 'use strict';
@@ -62,8 +64,7 @@ function readArgs() {
     if ('-l' === arg) {
       res.lineControl = true;
     } else if (m = arg.match(/^-D(.+)$/)) {
-      const val = args.length ? args.shift() : null;
-      res.defines[m[1]] = val;
+      res.defines[m[1]] = args.length ? args.shift() : null;
     } else if (arg === '--github-user') {
       if (!args.length) {
         throw Error('Expected argument value after ' + arg);

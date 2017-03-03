@@ -1,7 +1,6 @@
-/**
- * Spec for AST Parser
- * @author Mikhail Yurasov <mikhail@electricimp.com>
- */
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 'use strict';
 
@@ -88,7 +87,7 @@ describe('Machine', () => {
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.MacroIsAlreadyDeclared).toBe(true);
-      expect(e.message).toBe('Macro "A" is alredy declared in main:1 (main:3)');
+      expect(e.message).toBe('Macro "A" is already declared in main:1 (main:3)');
     }
   });
 

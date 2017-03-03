@@ -1,7 +1,7 @@
 {
   "name": "Builder",
-  "version": "1.0.0",
-  "description": "Builder language implementation",
+  "version": "1.1.0",
+  "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
     "pleasebuild": "src/cli.js"
@@ -13,13 +13,14 @@
     "type": "git",
     "url": "git+https://github.com/electricimp/Builder.git"
   },
-  "author": "Mikhail Yurasov <mikhail@electricimp.com>",
+  "author": "Electric Imp",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/electricimp/Builder/issues"
   },
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
+    "clone": "^1.0.2",
     "github": "^0.2.4",
     "jsep": "^0.3.0",
     "request": "^2.71.0"

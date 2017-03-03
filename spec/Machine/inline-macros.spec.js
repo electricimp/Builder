@@ -1,7 +1,6 @@
-/**
- * Spec for Machine
- * @author Mikhail Yurasov <mikhail@electricimp.com>
- */
+// Copyright (c) 2016-2017 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
 
 'use strict';
 
@@ -28,13 +27,13 @@ describe('Machine', () => {
 A.1 // @{__FILE__}:@{__LINE__}
 A.2 // @{__FILE__}:@{__LINE__}
 @end
--~=[@{A()}]=~-
+-~=[@{A(1,2,3)}]=~-
 @include A()
     `.trim());
 
     expect(res).diffChars(`#line 5 "main"
--~=[A.1 // main:5
-A.2 // main:5]=~-
+-~=[A.1 // main:2
+A.2 // main:3]=~-
 A.1 // main:2
 A.2 // main:3
 `);

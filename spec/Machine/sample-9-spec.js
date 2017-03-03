@@ -6,7 +6,7 @@
 
 require('jasmine-expect');
 
-const FILE = __dirname + '/../fixtures/sample-1/input.nut';
+const FILE = __dirname + '/../fixtures/sample-9/input.nut';
 const init = require('./init')(FILE);
 
 describe('Machine', () => {
