@@ -57,11 +57,9 @@ Directives start with <code><b>@</b></code> symbol.
 <b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> = <i>&lt;value:expression&gt;</i>
 </pre>
 
-Assigns a value of an _expression_ to a _variable_.
+Assigns a value of an _expression_ to a _variable_. Variables are defined in a _global_ context.
 
-Variables are defined in a _global_ context.
-
-Example:
+#### Example
 
 _Sets `SOMEVAR` to 1:_
 
@@ -77,13 +75,13 @@ _Sets `SOMEVAR` to 1:_
 <b>@endmacro</b>
 </pre>
 
-_<code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>._
+<code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>.
 
-Defines a code region that can take it's own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
+Defines a code region that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
 
 Macros can be used:
 
-- via <code><b>@include</b></code> directive:
+- via the <code><b>@include</b></code> directive:
 	
 	<pre>
 	<b>@include</b> macro(a, b, c)
@@ -97,10 +95,10 @@ Macros can be used:
 	
 	When macros are used inline:
 	
-	- no line control statements are generated for the output inside the macro scope
-	- trailing newline is trimmed from macro output
+	- No line-control statements are generated for the output inside the macro scope.
+	- Trailing newlines are trimmed from macro output.
 
-Examples:
+#### Examples
 
 <pre>
 <b>@macro</b> some_macro(a, b, c)
@@ -116,7 +114,7 @@ Then <code>some_macro</code> can be used as:
 <b>@include</b> some_macro("username", "red")
 </pre>
 
-which will produce:
+This will produce:
 
 ```
 Hello, username!
@@ -124,13 +122,13 @@ Roses are red,
 And violets are of undefined color.
 ```
 
-The same macro used inline:
+Here is the same macro used inline:
 
 <pre>
 [[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
 </pre>
 
-will ouput:
+This will ouput:
 
 ```
 [[[ Hello, username!
@@ -174,14 +172,11 @@ Includes local file, external source or a macro.
 <b>@include</b> "github:<i>&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
 </pre>
 
-Where:
+- `user` is the user/organization name.
+- `repo` is the repository name.
+- `ref` is the git reference (branch name or tag, defaults to _master_).
 
-- `user` – user/organization name
-- `repo` – repository name
-- `ref` – git reference (branch name or tag, defaults to _master_)
-
-
-Examples:
+#### Examples
 
 - Head of the default branch
 
@@ -203,12 +198,12 @@ Examples:
   
 #### Authentication
   
-When using GitHub includes, authentication is optional, however:
+When using GitHub `@includes`, authentication is optional, however:
 
-- with authentication GitHub API provides much higher rate limits
-- to access private repositories authentication is required
+- If you use authentication, the GitHub API provides much higher rate limits.
+- Authentication is required to access private repositories.
  
-Apart from GitHub _username_ you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More info on how to provide those parameters is in [usage](#usage) section.
+Apart from a GitHub _username_, you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More information on how to provide those parameters is included in the [usage](#usage) section.
 
 ### @include once
 
@@ -216,8 +211,7 @@ Apart from GitHub _username_ you need to provide either a _[personal access toke
 <b>@include once</b> <i>&lt;source:expression&gt;</i>
 </pre>
 
-Acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. 
-Macros are always included.
+Acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. Macros are always included.
 
 ### @{...} (inline expressions/macros)
 
@@ -231,14 +225,14 @@ Macros are always included.
 
 Inserts the value of the enclosed expression or executes a macro.
 
-Example:
+#### Example
 
 <pre>
 <b>@set</b> name "Someone"
 Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
 </pre>
 
-results in the following output:
+This results in the following output:
 
 ```
 Hello, Someone, the result is: 56088.
@@ -246,7 +240,7 @@ Hello, Someone, the result is: 56088.
 
 ### @while
 
-While-loop. [loop](#loop) variable is available in `@while` loops.
+Invoke a while loop. The [loop](#loop) variable is available in `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
@@ -255,13 +249,13 @@ While-loop. [loop](#loop) variable is available in `@while` loops.
 <b>@endwhile</b>
 </pre>
 
-_<code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>._
+<code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>.
 
-[Example](#loop)
+[<h4>Example</h4>](#loop)
 
 ### @repeat
 
-Loop that repeats a certain number of iterations. [loop](#loop) variable is available in `@repeat` loops.
+Invoke a loop that repeats a certain number of iterations. The [loop](#loop) variable is available in `@repeat` loops.
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
@@ -270,9 +264,9 @@ Loop that repeats a certain number of iterations. [loop](#loop) variable is avai
 <b>@endrepeat</b>
 </pre>
 
-_<code><b>@endrepeat</b></code> can be replaced with <code><b>@end</b></code>._
+<code><b>@endrepeat</b></code> can be replaced with <code><b>@end</b></code>.
 
-Example:
+#### Example
 
 <pre>
 <b>@repeat</b> 3 
@@ -280,7 +274,7 @@ Example:
 <b>@end</b>
 </pre>
 
-outputs:
+This outputs:
 
 ```
   loop.iteration: 1
@@ -290,12 +284,12 @@ outputs:
 
 ### @if – @elseif – @else
 
-Conditional directive.
+Invokes a conditional directive.
 
 <pre>
 <b>@if</b> <test:expression>
 
-  // consequent code
+  // Consequent code
 
 <b>@elseif</b> <i>&lt;test:expression&gt;</i>
 
@@ -305,14 +299,14 @@ Conditional directive.
 
 <b>@else</b>
 
-  // alternate code
+  // Alternative code
 
 <b>@endif</b>
 </pre>
 
-_<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>._
+<code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>.
 
-Example:
+#### Example
 
 <pre>
 <b>@if</b> __FILE__ == 'abc.ext'
@@ -332,7 +326,7 @@ Example:
 
 Emits an error.
 
-Example:
+#### Example
 
 <pre>
 <b>@if</b> PLATFORM == "platform1"
@@ -348,31 +342,31 @@ Example:
 
 ## Filters
 
-"Filter" `|` operator allows to pass a value through any of supported functions.
+The `|` operator (filter) allows you to pass a value through any of the supported functions.
 
 <pre>
 <b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
 </pre>
 
-which is equivalent to:
+This is equivalent to:
 
 <pre>
 <b>@{</b><i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
 </pre>
 
-Example:
+#### Example
 
 <pre>
-// include external HTML to a string
+// Include external HTML to a string
 a = "<b>@{</b>include('index.html')|escape<b>}</b>"
 
-// include external binary file to a base64-encoded string
+// Include external binary file to a base64-encoded string
 b = "<b>@{</b>include('file.bin')|base64<b>}</b>"
 </pre>
 
 ## Expressions
 
-Directives that have parameters allow usage of _expression_ syntax.
+Directives that take parameters allow the usage of _expression_ syntax.
 
 For example:
 
@@ -386,8 +380,8 @@ For example:
 
 The following types are supported in expressions:
 
-- _numbers_ (eg: `1`,`1E6`, `1e-6`, `1.567`)
-- _strings_ (eg: `"abc"`, `'abc'`)
+- _numbers_ (eg. `1`, `1E6`, `1e-6`, `1.567`)
+- _strings_ (eg. `"abc"`, `'abc'`)
 - `null`
 - `true`
 - `false`
@@ -416,13 +410,13 @@ The following types are supported in expressions:
 
 - Variables defined by <code><b>@set</b></code> statements are available in expressions.
 - Undefined variables are evaluated as `null`.
-- Variable names can contain `$`, `_`, latin letters and digits and can start only with a non-digit.
+- Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
 
 #### \_\_LINE\_\_
 
 Line number (relative to the file in which this variable appears).
 
-Example:
+**Example**
 
 <pre>
 Hi from line <b>@{</b>__LINE__<b>}</b>!
@@ -432,7 +426,7 @@ Hi from line <b>@{</b>__LINE__<b>}</b>!
 
 Name of the file in which this variable appears.
 
-Example:
+**Example**
 
 <pre>
 Hi from file <b>@{</b>__FILE__<b>}</b>!
@@ -440,10 +434,9 @@ Hi from file <b>@{</b>__FILE__<b>}</b>!
 
 #### \_\_PATH\_\_
 
-Absolute path (not including file name) to the file where this variable appears.
-Contains url for remote includes.
+Absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes.
 
-Example:
+**Example**
 
 <pre>
 Hi from file <b>@{</b>__PATH__<b>}</b>!
@@ -451,14 +444,12 @@ Hi from file <b>@{</b>__PATH__<b>}</b>!
 
 #### loop
 
-Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops.
+Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops. Contains information about the current loop:
  
- Contains information about the current loop:
- 
- - `loop.index` – 0-indexed iteration counter
- - `loop.iteration` – 1-indexed iteration counter
+ - `loop.index` &mdash; 0-indexed iteration counter
+ - `loop.iteration` &mdash; 1-indexed iteration counter
 
-Example:
+**Example**
 
 <pre>
 <b>@set</b> myvar = 12
@@ -470,7 +461,7 @@ Example:
 <b>@end</b>
 </pre>
 
-outputs:
+This outputs:
 
 ```
 myvar: 11
@@ -483,10 +474,10 @@ loop.index: 2
 
 ### Functions
 
-- <code>defined(<i>&lt;variable_name&gt;</i>)</code> – returns `true` if a variable is defined, `false` otherwise.
-- <code>include(<i>&lt;source&gt;</i>)</code> – includes external source
-- <code>escape(<i>&lt;value&gt;</i>)</code> – escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`)
-- <code>base64(<i>&lt;value&gt;</i>)</code> – encodes value as base64
+- <code>defined(<i>&lt;variable_name&gt;</i>)</code> &mdash; returns `true` if a variable is defined, `false` otherwise.
+- <code>include(<i>&lt;source&gt;</i>)</code> &mdash; includes external source.
+- <code>escape(<i>&lt;value&gt;</i>)</code> &mdash; escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`).
+- <code>base64(<i>&lt;value&gt;</i>)</code> &mdash; encodes value as base64.
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
@@ -495,7 +486,7 @@ loop.index: 2
 
 Lines starting with `@` followed by space or a line break are treated as comments and not added to the output.
 
-Example:
+#### Example
 
 <pre>
 <i>@ something about platform #1</i>
@@ -504,7 +495,7 @@ Example:
 
 # Usage
 
-_Please note that Builder requires Node.js 4.0 and above._
+**Note** Builder requires Node.js 4.0 and above.
 
 - As _npm_ library:
 
@@ -517,7 +508,7 @@ _Please note that Builder requires Node.js 4.0 and above._
   ```js
   const builder = require('Builder');
   
-  // provide GitHub credentials (optional)
+  // Provide GitHub credentials (optional)
   builder.machine.readers.github.username = "<usename>";
   builder.machine.readers.github.token = "<personal access token>";
   
@@ -535,10 +526,10 @@ _Please note that Builder requires Node.js 4.0 and above._
   
   where:
   
-  * `-l` – generate line control statements
-  * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> – define a variable
-  * <code>--github-user</code> – GitHub username
-  * <code>--github-token</code> – GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended)
+  * `-l` – generate line control statements.
+  * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
+  * <code>--github-user</code> &mdash; GitHub username.
+  * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
     
 # Testing
 
