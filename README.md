@@ -44,7 +44,7 @@ _Builder_ language combines a preprocessor with an expression language and advan
 
 ## Directives
 
-Directives start with <code><b>@</b></code> symbol.
+Directives start with the <code><b>@</b></code> symbol.
 
 ### @set
 
@@ -56,11 +56,11 @@ Directives start with <code><b>@</b></code> symbol.
 <b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> = <i>&lt;value:expression&gt;</i>
 </pre>
 
-Assigns a value of an _expression_ to a _variable_. Variables are defined in a _global_ context.
+This directive assigns the value of an _expression_ to a _variable_. Variables are defined in a global context.
 
 #### Example
 
-_Sets `SOMEVAR` to 1:_
+Sets *SOMEVAR* to 1:
 
 <pre>
 <b>@set</b> SOMEVAR min(1, 2, 3)
@@ -76,9 +76,7 @@ _Sets `SOMEVAR` to 1:_
 
 <code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>.
 
-Defines a code region that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
-
-Macros can be used:
+This directive defines a code block that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them). Macros can be used:
 
 - via the <code><b>@include</b></code> directive:
 	
@@ -92,10 +90,10 @@ Macros can be used:
 	<b>@{</b>macro(a, b, c)<b>}</b>
 	</pre>
 	
-	When macros are used inline:
+When macros are used inline:
 	
 	- No line-control statements are generated for the output inside the macro scope.
-	- Trailing newlines are trimmed from macro output.
+	- Trailing newlines are trimmed from the macro output.
 
 #### Examples
 
@@ -137,7 +135,7 @@ And violets are blue. ]]]
 
 ### @include
 
-Includes local file, external source or a macro.
+Use this directive to includes local files, external sources, or macros.
 
 <pre>
 <b>@include</b> <i>&lt;source:expression&gt;</i>
@@ -197,7 +195,7 @@ Includes local file, external source or a macro.
   
 #### Authentication
   
-When using GitHub `@includes`, authentication is optional, however:
+When using GitHub `@includes`, authentication is optional. However, you should bear in mind that:
 
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
@@ -210,7 +208,7 @@ Apart from a GitHub _username_, you need to provide either a _[personal access t
 <b>@include once</b> <i>&lt;source:expression&gt;</i>
 </pre>
 
-Acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. Macros are always included.
+This acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. Macros are always included.
 
 <h3 id="-inline-expressionsmacros">@{...} (inline expressions/macros)</h3>
 
@@ -222,7 +220,7 @@ Acts the same as <code><b>@include</b></code> but has no effect if _source_ has 
 <b>@{</b>macro(a, b, c)<b>}</b>
 </pre>
 
-Inserts the value of the enclosed expression or executes a macro.
+This directive inserts the value of the enclosed expression or executes a macro.
 
 #### Example
 
@@ -239,7 +237,7 @@ Hello, Someone, the result is: 56088.
 
 ### @while
 
-Invoke a while loop. The [loop](#loop) variable is available in `@while` loops.
+This invokes a `while` loop. You can access the [loop](#loop) variable in `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
@@ -254,7 +252,7 @@ Invoke a while loop. The [loop](#loop) variable is available in `@while` loops.
 
 ### @repeat
 
-Invoke a loop that repeats a certain number of iterations. The [loop](#loop) variable is available in `@repeat` loops.
+This invokes a loop that repeats over a certain number of iterations. You can access the [loop](#loop) variable in `@repeat` loops.
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
@@ -283,7 +281,7 @@ This outputs:
 
 ### @if – @elseif – @else
 
-Invokes a conditional directive.
+This directive invokes conditional branching.
 
 <pre>
 <b>@if</b> <test:expression>
@@ -365,9 +363,7 @@ b = "<b>@{</b>include('file.bin')|base64<b>}</b>"
 
 ## Expressions
 
-Directives that take parameters allow the usage of _expression_ syntax.
-
-For example:
+Directives that take parameters allow the usage of _expression_ syntax. For example:
 
 - <code><b>@include</b> <i>&lt;source:expression&gt;</i></code>
 - <code><b>@set</b> <i>&lt;variable:identifier&gt; &lt;value:expression&gt;</i></code>
@@ -496,7 +492,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 **Note** Builder requires Node.js 4.0 and above.
 
-- As _npm_ library:
+- As an _npm_ library:
 
   ```sh
   npm i --save Builder
@@ -514,9 +510,9 @@ Lines starting with `@` followed by space or a line break are treated as comment
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
-- As CLI:
+- As a CLI:
 
-  _Bullder_ provides `pleasebuild` command when installed globally:
+  _Bullder_ provides the `pleasebuild` command when installed globally. For example:
 
   <pre>
   npm i -g Builder
@@ -525,7 +521,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   
   where:
   
-  * `-l` – generate line control statements.
+  * `-l` &mdash; generate line control statements.
   * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
