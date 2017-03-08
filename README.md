@@ -5,13 +5,12 @@
     - [@set](#set)
     - [@macro](#macro)
     - [@include](#include)
-      - [Macro](#macro)
+      - [A Macro](#a-macro)
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From GitHub](#from-github)
-        - [Authentication](#authentication)
     - [@include once](#include-once)
-    - [@{...} – inlines](#-inline-expressions-macros)
+    - [@{...} – inlines](#-inline-expressionsmacros)
     - [@while](#while)
     - [@repeat](#repeat)
     - [@if – @elseif – @else](#if--elseif--else)
@@ -144,7 +143,7 @@ Includes local file, external source or a macro.
 <b>@include</b> <i>&lt;source:expression&gt;</i>
 </pre>
 
-#### Macro
+#### A Macro
 
 <pre>
 <b>@include</b> some_macro("username", 123)
@@ -213,7 +212,7 @@ Apart from a GitHub _username_, you need to provide either a _[personal access t
 
 Acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. Macros are always included.
 
-### @{...} (inline expressions/macros)
+<h3 id="-inline-expressionsmacros">@{...} (inline expressions/macros)</h3>
 
 <pre>
 <b>@{</b><i>&lt;expression&gt;</i><b>}</b>
