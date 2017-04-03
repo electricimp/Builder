@@ -207,7 +207,7 @@ class AstParser {
     let matches;
 
     // extract source fragments and inline expressions
-    while (matches = /@{(.*?)}/.exec(fragment)) {
+    while (matches = /@{([^@\r\n]*)}/.exec(fragment)) {
 
       // push source fragment
       if (matches.index > 0) {

@@ -197,4 +197,55 @@ describe('AstParser', () => {
       }
     ]);
   });
+
+  it('should parse enclosed curly brackets', () => {
+    const res = p.parse
+(`@macro set(val)
+local var1 = @{val};
+@end
+@{set('{}')}
+`);
+   //console.log(JSON.stringify(res, null, '    '));
+
+   expect(res).toEqual([
+    {
+        "_line": 1,
+        "type": "macro",
+        "declaration": "set(val)",
+        "body": [
+            {
+                "_line": 2,
+                "type": "output",
+                "value": "local var1 = ",
+                "computed": true
+            },
+            {
+                "_line": 2,
+                "type": "output",
+                "value": "val",
+                "computed": false
+            },
+            {
+                "_line": 2,
+                "type": "output",
+                "value": ";\n",
+                "computed": true
+            }
+        ]
+    },
+    {
+        "_line": 4,
+        "type": "output",
+        "value": "set('{}')",
+        "computed": false
+    },
+    {
+        "_line": 4,
+        "type": "output",
+        "value": "\n",
+        "computed": true
+    }
+    ]);
+  });
+
 });
