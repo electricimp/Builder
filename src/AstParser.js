@@ -248,7 +248,7 @@ class AstParser {
         argLen--;
       }
 
-      if (!parsed) {
+      if (!parsed || fragment.charAt(matches.index + 2 + argLen) != '}') {
         throw new Errors.SyntaxError(`Syntax error in the inline instruction at (${this.file}:${line})`);
       }
 
