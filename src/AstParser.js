@@ -4,6 +4,8 @@
 
 'use strict';
 
+const jsep = require('jsep');
+
 // instruction types
 const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 
@@ -38,7 +40,7 @@ const TOKENS = {
 };
 
 // lines gobbling regex
-const LINES = /(.*(?:\n|\r\n)?)/g;
+const LINES = /(.*(?:\r\n|\n)?)/g;
 
 // regex to detect if fragment is a directive
 const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end|while|endwhile|repeat|endrepeat)\b(.*?)\s*$/;
@@ -57,6 +59,10 @@ const Errors = {
  */
 class AstParser {
 
+  constructor() {
+    this._initParser();
+  }
+
   /**
    * Parse source into AST
    *
@@ -67,6 +73,22 @@ class AstParser {
     return this._parse(
       this._tokenize(source), [], STATES.OK
     );
+  }
+
+  _initParser() {
+    this._jsep = jsep;
+
+    // remove binary ops
+    this._jsep.removeBinaryOp('!==');
+    this._jsep.removeBinaryOp('===');
+    this._jsep.removeBinaryOp('>>');
+    this._jsep.removeBinaryOp('<<');
+    this._jsep.removeBinaryOp('>>>');
+    this._jsep.removeBinaryOp('&');
+    this._jsep.removeBinaryOp('^');
+
+    // remove unary ops
+    this._jsep.removeUnaryOp('~');
   }
 
   /**
@@ -191,7 +213,7 @@ class AstParser {
         // do nothing
       } else {
         // split source fragment into computed/uncomputed chunks
-        yield* AstParser._tokenizeSourceFragment(text, 1 + i);
+        yield* this._tokenizeSourceFragment(text, 1 + i);
       }
     }
   }
@@ -202,12 +224,33 @@ class AstParser {
    * @param {number} line #
    * @private
    */
-  static * _tokenizeSourceFragment(fragment, line) {
+  * _tokenizeSourceFragment(fragment, line) {
 
     let matches;
 
     // extract source fragments and inline expressions
     while (matches = /@{(.*?)}/.exec(fragment)) {
+
+      let expArg = null;
+      let parsed = false;
+      let argLen = fragment.length - matches.index - 3; // 3 = length("@{}")
+
+      // find a sequence of a maximum length that is a valid expression
+      while (argLen >= 0) {
+        try {
+          expArg = fragment.substr(matches.index + 2, argLen); // 2 = length("@{")
+          this._jsep(expArg);
+          parsed = true;
+          break;
+        } catch (e) {
+          // take it easy and keep trying
+        }
+        argLen--;
+      }
+
+      if (!parsed || fragment.charAt(matches.index + 2 + argLen) != '}') {
+        throw new Errors.SyntaxError(`Syntax error in the inline instruction at (${this.file}:${line})`);
+      }
 
       // push source fragment
       if (matches.index > 0) {
@@ -222,10 +265,10 @@ class AstParser {
       yield {
         _line: line,
         type: TOKENS.INLINE_EXPRESSION,
-        args: [matches[1]]
+        args: [expArg]
       };
 
-      fragment = fragment.substr(matches.index + matches[0].length);
+      fragment = fragment.substr(matches.index + 2 + argLen + 1); // match.index + length("@{") + length(arg) + length("}")
     }
 
     // push last source fragment
