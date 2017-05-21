@@ -40,12 +40,11 @@ class AbstractReader {
    * @return {{__FILE__, __PATH__}}
    */
   parsePath(source) {
-
     const __FILE__ = path.basename(source);
     let __PATH__;
 
     let parsedURL = url.parse(source);
-    if (parsedURL.protocol) {
+    if (parsedURL.protocol && !parsedURL.protocol.match(/^(\w\:)?$/i)) {
       // URL
       __PATH__ = path.dirname(source);
     } else {

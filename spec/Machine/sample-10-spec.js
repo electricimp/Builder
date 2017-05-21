@@ -17,10 +17,10 @@ describe('Machine', () => {
     result = init.getResult();
     resultWithLC = init.getResultWithLineControl();
   });
-
+  // replace for compatibility with Windows
   it('should do something alright #1', () => {
-    expect(machine.execute('@include "input.nut"')).toBe(result);
+    expect(machine.execute('@include "input.nut"').replace(/\\/g, '/')).toBe(result);
     machine.generateLineControlStatements = true;
-    expect(machine.execute('@include "input.nut"')).toBe(resultWithLC);
+    expect(machine.execute('@include "input.nut"').replace(/\\/g, '/')).toBe(resultWithLC);
   });
 });
