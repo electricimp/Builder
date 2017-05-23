@@ -222,6 +222,8 @@ class Machine {
       this._includeMacro(macro, context, buffer);
     } else {
       // source inclusion
+
+      // replace for compatibility with Windows
       instruction.value = instruction.value.replace(/\\/g, "/");
       this._includeSource(instruction.value, context, buffer, instruction.once);
     }
@@ -259,7 +261,7 @@ class Machine {
     this.logger.info(`Including source "${includePath}"`);
     let content = reader.read(includePath);
 
-    //if content don't have line separator at the end, then add it
+    // if content don't have line separator at the end, then add it
     if (content[content.length - 1] != '\n') {
         content += '\n';
     }

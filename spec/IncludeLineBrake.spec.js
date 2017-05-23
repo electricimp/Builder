@@ -6,6 +6,7 @@
 
 const Builder = require('../src');
 const Machine = require('../src/Machine');
+const Log = require('log');
 const fs = require('fs');
 
 describe('Builder', () => {
@@ -16,14 +17,37 @@ describe('Builder', () => {
     builder = new Builder();
     builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
     builder.machine.readers.github.password = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+
+    // @see https://www.npmjs.com/package/log#log-levels
+    builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
+
   });
 
   it('should add LineBrake at the end of the file ', () => {
-    const output = builder.machine.execute(`
+    let output = builder.machine.execute(`
+      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
+      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
       @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
     `);
-    expect(output.split('\n').length).toBe(4);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
+      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
+      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
+      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
+    `);
+
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
   });
 
 });
