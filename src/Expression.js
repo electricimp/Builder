@@ -316,6 +316,7 @@ class Expression {
           res = context[node.name];
         } else /* environment */ {
           res = process.env[node.name];
+          if (!res) res = null;
         }
 
         break;
