@@ -312,9 +312,10 @@ class Expression {
           context.hasOwnProperty(node.name) && typeof context[node.name] === 'function'
         ) {
           res = node.name;
-        } else /* variable */ {
-          res = context.hasOwnProperty(node.name)
-            ? context[node.name] : null;
+        } else /* variable */ if (context.hasOwnProperty(node.name)) {
+          res = context[node.name];
+        } else /* environment */ {
+          res = process.env[node.name];
         }
 
         break;
