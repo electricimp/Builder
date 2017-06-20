@@ -353,8 +353,12 @@ class Expression {
         const object = this._evaluate(node.object, context);
         const property = node.computed ? this._evaluate(node.property, context) : node.property.name;
 
+        if (!object) {
+          throw new Errors.ExpressionError(`Owner of "${property}" property is undefined`);
+        }
+
         if (!object.hasOwnProperty(property)) {
-          throw new Errors.ExpressionError(`Property "${property} is not defined`);
+          throw new Errors.ExpressionError(`Property "${property}" is not defined`);
         }
 
         res = object[property];
