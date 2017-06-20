@@ -402,6 +402,7 @@ The following types are supported in expressions:
 
 ### Variables
 
+- Variable can be defined by `-DMyVarName MyVarValue` command line parameter, read from [runtime environment](#environment-variables), or defined by <code><b>@set</b></code> statements.
 - Variables defined by <code><b>@set</b></code> statements are available in expressions.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
@@ -465,6 +466,16 @@ loop.index: 1
 myvar: 9
 loop.index: 2
 ```
+
+#### Environment variables
+
+There is no special predicate to use environment variables. **Builder** tries to resolve macro from context provided by command line defines or from process environment variables. [`Command line defines`](#usage) has higher priority then environment variables.
+
+```
+server.log("Host home path is @{HOME}");
+```
+
+This will print home folder of current logged user at the system where **Builder** was executed.
 
 ### Functions
 
