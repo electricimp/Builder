@@ -222,9 +222,6 @@ class Machine {
       this._includeMacro(macro, context, buffer);
     } else {
       // source inclusion
-
-      // replace for compatibility with Windows
-      instruction.value = instruction.value.replace(/\\/g, "/");
       this._includeSource(instruction.value, context, buffer, instruction.once);
     }
   }

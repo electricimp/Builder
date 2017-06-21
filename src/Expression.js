@@ -107,9 +107,6 @@ class Expression {
    */
   evaluate(expression, context) {
     try {
-      if (expression.match(/include\(\'.*\'\)/)) {
-        expression = expression.replace(/\\/g, '/');
-      }
       return this._evaluate(this._jsep(expression), context || {});
     } catch (e) {
 
