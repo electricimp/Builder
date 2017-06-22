@@ -23,7 +23,7 @@ describe('Builder', () => {
 
   });
 
-  it('should add LineBrake at the end of the local file ', () => {
+  it('should add end of file symbol at the end of local files', () => {
 
     let output = builder.machine.execute(`
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
@@ -51,7 +51,7 @@ describe('Builder', () => {
   });
 
 
-  it('should add LineBrake at the end of the github file ', () => {
+  it('should add end of line symbol at the end of files included from GitHub', () => {
     const githubPrefix = "github:nobitlost/Builder/spec";
 
     let output = builder.machine.execute(`
@@ -79,7 +79,7 @@ describe('Builder', () => {
     expect(output.split('\n').length).toBe(6);
   });
 
-   it('should add LineBrake at the end of the file from websites ', () => {
+   it('should have empty lines at the end of the files included from http', () => {
     const websitePrefix = "https://raw.githubusercontent.com/nobitlost/Builder/develop/spec";
 
     let output = builder.machine.execute(`

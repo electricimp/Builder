@@ -259,8 +259,7 @@ class Machine {
     let content = reader.read(includePath);
 
     // if content don't have line separator at the end, then add it
-    if (content.length > 0 &&
-        content[content.length - 1] != '\n') {
+    if (content.length > 0 && content[content.length - 1] != '\n') {
         content += '\n';
     }
 
