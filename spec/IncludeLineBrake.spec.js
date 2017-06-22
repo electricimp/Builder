@@ -23,7 +23,8 @@ describe('Builder', () => {
 
   });
 
-  it('should add LineBrake at the end of the file ', () => {
+  it('should add LineBrake at the end of the local file ', () => {
+
     let output = builder.machine.execute(`
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
       @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
@@ -38,7 +39,6 @@ describe('Builder', () => {
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
     `);
-
     expect(output.split('\n').length).toBe(6);
 
     output = builder.machine.execute(`
@@ -49,5 +49,63 @@ describe('Builder', () => {
     `);
     expect(output.split('\n').length).toBe(6);
   });
+
+
+  it('should add LineBrake at the end of the github file ', () => {
+    const githubPrefix = "github:nobitlost/Builder/spec";
+
+    let output = builder.machine.execute(`
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+  });
+
+   it('should add LineBrake at the end of the file from websites ', () => {
+    const websitePrefix = "https://raw.githubusercontent.com/nobitlost/Builder/develop/spec";
+
+    let output = builder.machine.execute(`
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+  });
+
 
 });
