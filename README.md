@@ -78,19 +78,19 @@ Sets *SOMEVAR* to 1:
 This directive defines a code block that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them). Macros can be used:
 
 - via the <code><b>@include</b></code> directive:
-	
+
 	<pre>
 	<b>@include</b> macro(a, b, c)
 	</pre>
-	
+
 - inline:
 
 	<pre>
 	<b>@{</b>macro(a, b, c)<b>}</b>
 	</pre>
-	
+
 When macros are used inline:
-	
+
 	- No line-control statements are generated for the output inside the macro scope.
 	- Trailing newlines are trimmed from the macro output.
 
@@ -191,14 +191,14 @@ Use this directive to includes local files, external sources, or macros.
   <pre>
   <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
   </pre>
-  
+
 #### Authentication
-  
+
 When using GitHub `@includes`, authentication is optional. However, you should bear in mind that:
 
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
- 
+
 Apart from a GitHub _username_, you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More information on how to provide those parameters is included in the [usage](#usage) section.
 
 ### @include once
@@ -265,7 +265,7 @@ This invokes a loop that repeats over a certain number of iterations. You can ac
 #### Example
 
 <pre>
-<b>@repeat</b> 3 
+<b>@repeat</b> 3
   loop.iteration: <b>@{</b>loop.iteration<b>}</b>
 <b>@end</b>
 </pre>
@@ -406,6 +406,8 @@ The following types are supported in expressions:
 - Variables defined by <code><b>@set</b></code> statements are available in expressions.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
+- Variables defined as command line parameter `-DMyVarName MyVarValue` override all other variable definitions
+- Environment variables has lowest priority in search procedure
 
 #### \_\_LINE\_\_
 
@@ -440,7 +442,7 @@ Hi from file <b>@{</b>__PATH__<b>}</b>!
 #### loop
 
 Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops. Contains information about the current loop:
- 
+
  - `loop.index` &mdash; 0-indexed iteration counter
  - `loop.iteration` &mdash; 1-indexed iteration counter
 
@@ -469,7 +471,7 @@ loop.index: 2
 
 #### Environment variables
 
-There is no special predicate to use environment variables. **Builder** tries to resolve macro from context provided by command line defines or from process environment variables. [`Command line defines`](#usage) has higher priority then environment variables.
+There is no special predicate to use environment variables. **Builder** tries to resolve macro from context provided by command line defines or from process environment variables.
 
 ```
 server.log("Host home path is @{HOME}");
@@ -512,11 +514,11 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   ```js
   const builder = require('Builder');
-  
+
   // Provide GitHub credentials (optional)
   builder.machine.readers.github.username = "<usename>";
   builder.machine.readers.github.token = "<personal access token>";
-  
+
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
@@ -528,14 +530,14 @@ Lines starting with `@` followed by space or a line break are treated as comment
   npm i -g Builder
   pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
   </pre>
-  
+
   where:
-  
+
   * `-l` &mdash; generate line control statements.
   * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
-    
+
 # Testing
 
 ```
