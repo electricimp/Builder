@@ -411,11 +411,14 @@ Variables can be used in `Builder` expressions evaluation.
 
 #### Variables Definition
 
-1. When resolving a variable value, *Builder* first looks it up in the command line `-D` parameters 
-(`-D<variable name> <variable value>`). 
-1. If no variable definition is found in the `-D` parameters then `@set` statements are scanned. 
-1. Finally, if no such variable definition is found on the previous steps, 
-`Builder` looks for it's definition in the host environment variables.
+1. When resolving a variable value, *Builder* first looks for its 
+definition in command line `-D` parameters (`-D<variable name> <variable value>`) 
+passed to the `pleasebuild` command. 
+1. Then, if no such variable definition is found among the `-D` 
+parameters then Squirrel code is scanned for `@set` statements 
+preceding the variable usage. 
+1. And finally, if no such variable definition is found on the previous steps, 
+`Builder` looks for it in the host environment variables.
 
 #### \_\_LINE\_\_
 
