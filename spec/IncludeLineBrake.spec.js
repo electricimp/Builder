@@ -52,7 +52,7 @@ describe('Builder', () => {
 
 
   it('should add end of line symbol at the end of files included from GitHub', () => {
-    const githubPrefix = "github:nobitlost/Builder/spec";
+    const githubPrefix = "github:electricimp/Builder/spec";
 
     let output = builder.machine.execute(`
       @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
@@ -80,7 +80,7 @@ describe('Builder', () => {
   });
 
    it('should have empty lines at the end of the files included from http', () => {
-    const websitePrefix = "https://raw.githubusercontent.com/nobitlost/Builder/develop/spec";
+    const websitePrefix = "https://raw.githubusercontent.com/electricimp/Builder/develop/spec";
 
     let output = builder.machine.execute(`
       @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
