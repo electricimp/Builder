@@ -23,7 +23,8 @@ describe('Builder', () => {
 
   });
 
-  it('should add LineBrake at the end of the file ', () => {
+  it('should add end of file symbol at the end of local files', () => {
+
     let output = builder.machine.execute(`
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
       @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
@@ -38,7 +39,6 @@ describe('Builder', () => {
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
       @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
     `);
-
     expect(output.split('\n').length).toBe(6);
 
     output = builder.machine.execute(`
@@ -49,5 +49,63 @@ describe('Builder', () => {
     `);
     expect(output.split('\n').length).toBe(6);
   });
+
+
+  it('should add end of line symbol at the end of files included from GitHub', () => {
+    const githubPrefix = "github:electricimp/Builder/spec";
+
+    let output = builder.machine.execute(`
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/OneLineSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${githubPrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+  });
+
+   it('should have empty lines at the end of the files included from http', () => {
+    const websitePrefix = "https://raw.githubusercontent.com/electricimp/Builder/develop/spec";
+
+    let output = builder.machine.execute(`
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/OneLineSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+
+    output = builder.machine.execute(`
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${websitePrefix}/fixtures/sample-11/LineBrakeSample.nut"
+    `);
+    expect(output.split('\n').length).toBe(6);
+  });
+
 
 });
