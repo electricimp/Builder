@@ -402,12 +402,19 @@ The following types are supported in expressions:
 
 ### Variables
 
-- Variable can be defined by `-DMyVarName MyVarValue` command line parameter, read from [runtime environment](#environment-variables), or defined by <code><b>@set</b></code> statements.
-- Variables defined by <code><b>@set</b></code> statements are available in expressions.
+Variables can be used in `Builder` expressions evaluation. 
+
+- Variable can be defined by `-D<variable name> <variable value>` command line parameter, read from [runtime environment](#environment-variables), or defined by <code><b>@set</b></code> statements.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
-- Variables defined as command line parameter `-DMyVarName MyVarValue` override all other variable definitions
-- Environment variables has lowest priority in search procedure
+
+#### Variable resolution process
+
+1. When resolving a variable value, *Builder* first looks it up in the command line `-D` parameters 
+(`-D<variable name> <variable value>`). 
+1. If no variable definition is found in the `-D` parameters then `@set` statements are scanned. 
+1. Finally if no such variable is found, `Builder looks for it's definition in 
+the host environment variables.
 
 #### \_\_LINE\_\_
 
