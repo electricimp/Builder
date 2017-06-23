@@ -313,6 +313,7 @@ class Expression {
           res = context[node.name];
         } else /* environment */ {
           res = process.env[node.name];
+          // return null in case of undefined
           if (!res) res = null;
         }
 

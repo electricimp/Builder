@@ -1,1 +1,1 @@
-server.log("Haven't end of line");
+server.log("Doesn't have end of line");
