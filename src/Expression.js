@@ -309,9 +309,12 @@ class Expression {
           context.hasOwnProperty(node.name) && typeof context[node.name] === 'function'
         ) {
           res = node.name;
-        } else /* variable */ {
-          res = context.hasOwnProperty(node.name)
-            ? context[node.name] : null;
+        } else /* variable */ if (context.hasOwnProperty(node.name)) {
+          res = context[node.name];
+        } else /* environment */ {
+          res = process.env[node.name];
+          // return null in case of undefined
+          if (!res) res = null;
         }
 
         break;
@@ -348,8 +351,12 @@ class Expression {
         const object = this._evaluate(node.object, context);
         const property = node.computed ? this._evaluate(node.property, context) : node.property.name;
 
+        if (!object) {
+          throw new Errors.ExpressionError(`Owner of "${property}" property is undefined`);
+        }
+
         if (!object.hasOwnProperty(property)) {
-          throw new Errors.ExpressionError(`Property "${property} is not defined`);
+          throw new Errors.ExpressionError(`Property "${property}" is not defined`);
         }
 
         res = object[property];
