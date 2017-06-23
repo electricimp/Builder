@@ -24,6 +24,7 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
+      - [Variables Definition](#variables-definition)
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
@@ -408,13 +409,13 @@ Variables can be used in `Builder` expressions evaluation.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
 
-#### Variable resolution process
+#### Variables Definition
 
 1. When resolving a variable value, *Builder* first looks it up in the command line `-D` parameters 
 (`-D<variable name> <variable value>`). 
 1. If no variable definition is found in the `-D` parameters then `@set` statements are scanned. 
-1. Finally if no such variable is found, `Builder looks for it's definition in 
-the host environment variables.
+1. Finally, if no such variable definition is found on the previous steps, 
+`Builder` looks for it's definition in the host environment variables.
 
 #### \_\_LINE\_\_
 
