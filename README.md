@@ -24,6 +24,7 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
+      - [Variable Definition Order](#variables-definition-order)
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
@@ -37,7 +38,9 @@
 [![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)
 <br/>
 
-_Builder_ language combines a preprocessor with an expression language and advanced imports.
+_Builder_ combines a preprocessor with an expression language and advanced imports.
+
+#### Current version: 2.1.0
 
 # Syntax
 
@@ -78,19 +81,19 @@ Sets *SOMEVAR* to 1:
 This directive defines a code block that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them). Macros can be used:
 
 - via the <code><b>@include</b></code> directive:
-	
+
 	<pre>
 	<b>@include</b> macro(a, b, c)
 	</pre>
-	
+
 - inline:
 
 	<pre>
 	<b>@{</b>macro(a, b, c)<b>}</b>
 	</pre>
-	
+
 When macros are used inline:
-	
+
 	- No line-control statements are generated for the output inside the macro scope.
 	- Trailing newlines are trimmed from the macro output.
 
@@ -124,7 +127,7 @@ Here is the same macro used inline:
 [[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
 </pre>
 
-This will ouput:
+This will output:
 
 ```
 [[[ Hello, username!
@@ -191,14 +194,14 @@ Use this directive to includes local files, external sources, or macros.
   <pre>
   <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
   </pre>
-  
+
 #### Authentication
-  
+
 When using GitHub `@includes`, authentication is optional. However, you should bear in mind that:
 
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
- 
+
 Apart from a GitHub _username_, you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More information on how to provide those parameters is included in the [usage](#usage) section.
 
 ### @include once
@@ -265,7 +268,7 @@ This invokes a loop that repeats over a certain number of iterations. You can ac
 #### Example
 
 <pre>
-<b>@repeat</b> 3 
+<b>@repeat</b> 3
   loop.iteration: <b>@{</b>loop.iteration<b>}</b>
 <b>@end</b>
 </pre>
@@ -402,9 +405,17 @@ The following types are supported in expressions:
 
 ### Variables
 
-- Variables defined by <code><b>@set</b></code> statements are available in expressions.
+Variables can be used in `Builder` expressions evaluation. 
+
+- Variables can be defined by `-D<variable name> <variable value>` command line parameter, read from the [runtime environment](#environment-variables), or defined by <code><b>@set</b></code> statements.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
+
+#### Variable Definition Order
+
+1. When resolving a variable’s value, *Builder* first looks for its definition in the command line `-D` parameters (`-D <variable name> <variable value>`) passed to the *pleasebuild* command. 
+1. If no such variable definition is found, Squirrel code is scanned for `@set` statements preceding the variable usage. 
+1. If no variable definitions are found in the previous steps, *Builder* looks for it in the host environment variables.
 
 #### \_\_LINE\_\_
 
@@ -439,7 +450,7 @@ Hi from file <b>@{</b>__PATH__<b>}</b>!
 #### loop
 
 Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops. Contains information about the current loop:
- 
+
  - `loop.index` &mdash; 0-indexed iteration counter
  - `loop.iteration` &mdash; 1-indexed iteration counter
 
@@ -466,6 +477,16 @@ myvar: 9
 loop.index: 2
 ```
 
+#### Environment Variables
+
+There is no special predicate required to make use of environment variables. *Builder* tries to resolve the macro from the context provided via the command line defines or from process environment variables. For example:
+
+```
+server.log("Host home path is @{HOME}");
+```
+
+will print the home directory path of the current user of the system where *Builder* was executed.
+
 ### Functions
 
 - <code>defined(<i>&lt;variable_name&gt;</i>)</code> &mdash; returns `true` if a variable is defined, `false` otherwise.
@@ -491,7 +512,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 **Note** Builder requires Node.js 4.0 and above.
 
-- As an _npm_ library:
+- It can be installed and used as an _npm_ library:
 
   ```sh
   npm i --save Builder
@@ -501,30 +522,30 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   ```js
   const builder = require('Builder');
-  
+
   // Provide GitHub credentials (optional)
-  builder.machine.readers.github.username = "<usename>";
-  builder.machine.readers.github.token = "<personal access token>";
-  
+  builder.machine.readers.github.username = "<username>";
+  builder.machine.readers.github.token = "<personal_access_token>";
+
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
-- As a CLI:
+- Or as a CLI:
 
-  _Bullder_ provides the `pleasebuild` command when installed globally. For example:
+  _Builder_ provides the `pleasebuild` command when installed globally. For example:
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
   </pre>
-  
+
   where:
-  
+
   * `-l` &mdash; generate line control statements.
-  * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
+  * <code>-D <i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
-    
+
 # Testing
 
 ```

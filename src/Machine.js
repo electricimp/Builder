@@ -256,7 +256,12 @@ class Machine {
 
     // read
     this.logger.info(`Including source "${includePath}"`);
-    const content = reader.read(includePath);
+    let content = reader.read(includePath);
+
+    // if content don't have line separator at the end, then add it
+    if (content.length > 0 && content[content.length - 1] != '\n') {
+        content += '\n';
+    }
 
     // parse
     const ast = this.parser.parse(content);
