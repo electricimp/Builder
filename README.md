@@ -127,7 +127,7 @@ Here is the same macro used inline:
 [[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
 </pre>
 
-This will ouput:
+This will output:
 
 ```
 [[[ Hello, username!
@@ -524,8 +524,8 @@ Lines starting with `@` followed by space or a line break are treated as comment
   const builder = require('Builder');
 
   // Provide GitHub credentials (optional)
-  builder.machine.readers.github.username = "<usename>";
-  builder.machine.readers.github.token = "<personal access token>";
+  builder.machine.readers.github.username = "<username>";
+  builder.machine.readers.github.token = "<personal_access_token>";
 
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
@@ -536,7 +536,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
   </pre>
 
   where:
