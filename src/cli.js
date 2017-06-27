@@ -55,7 +55,7 @@ where:
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, lineControl: false, input: null, gh: {user: null, token: null}};
+  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false};
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -63,6 +63,10 @@ function readArgs() {
 
     if ('-l' === arg) {
       res.lineControl = true;
+    } else if ('-c' === arg) {
+      res.cache = true;
+    } else if ('--clean-cache' === arg) {
+      res.clean = true;
     } else if (m = arg.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
     } else if (arg === '--github-user') {
@@ -95,8 +99,11 @@ try {
 // ctreate builder
   const builder = new Builder();
   builder.machine.generateLineControlStatements = args.lineControl;
+  builder.machine.useCache = args.cache;
   builder.logger = new NullLogger();
-
+  if (args.clean) {
+    builder.machine.cleanCache();
+  }
 
   // set the directory of the input file as first search dir
   builder.machine.readers.file.searchDirs.unshift(path.dirname(path.resolve(args.input)));

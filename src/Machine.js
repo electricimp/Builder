@@ -8,7 +8,10 @@ const url = require('url');
 const path = require('path');
 const clone = require('clone');
 const Expression = require('./Expression');
+const fs = require('fs');
 const AbstractReader = require('./Readers/AbstractReader');
+const HttpReader = require('./Readers/HttpReader');
+const GithubReader = require('./Readers/GithubReader');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -37,6 +40,13 @@ const Errors = {
 
 // maximum nesting depth
 const MAX_EXECUTION_DEPTH = 256;
+
+// cache params
+const CACHED_READERS = [GithubReader, HttpReader];
+const CACHE_DIR = './cache';
+const GITHUB_DIR = '/github';
+const HTTP_DIR = '/http';
+let useCache = false;
 
 /**
  * Builder VM
@@ -235,10 +245,10 @@ class Machine {
    * @param {boolean=false} evaluated - is source ref already evaluated?
    * @private
    */
-  _includeSource(source, context, buffer, once, evaluated) {
+   _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    const includePath = evaluated ? source : this.expression.evaluate(
+    let includePath = evaluated ? source : this.expression.evaluate(
         source, this._mergeContexts(this._globalContext, context)
       );
 
@@ -248,7 +258,18 @@ class Machine {
       return;
     }
 
-    const reader = this._getReader(includePath);
+    let reader = this._getReader(includePath);
+    let needCache = false;
+    if (this.useCache && this._isCachedReader(reader)) {
+        if (Machine.existFile(includePath)) {
+          // change reader to local reader
+          const fileName = Machine._normalizePath(includePath);
+          includePath = fileName.dirPath + '/' + fileName.fileName;
+          reader = this.readers.file;
+        } else {
+          needCache = true;
+        }
+    }
     const includePathParsed = reader.parsePath(includePath);
 
     // provide filename for correct error messages
@@ -258,9 +279,14 @@ class Machine {
     this.logger.info(`Including source "${includePath}"`);
     let content = reader.read(includePath);
 
-    // if content don't have line separator at the end, then add it
+    // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {
         content += '\n';
+    }
+
+    if (needCache && this.useCache) {
+      this.logger.debug(`Caching file "${includePath}"`)
+      this.cacheFile(includePath, content);
     }
 
     // parse
@@ -584,6 +610,108 @@ class Machine {
     }
   }
 
+  _mkdirSync(dirPath) {
+    try {
+      fs.mkdirSync(dirPath);
+    } catch (err) {
+      if (err.code !== 'EEXIST') this.logger.error(err);
+    }
+  }
+
+  _mkdirpSync(dirPath) {
+    const parts = dirPath.split(/[\\|\/]/);
+
+    // For every part of our path, call our wrapped mkdirSync()
+    // on the full path until and including that part
+    for (let i = 1; i <= parts.length; i++) {
+      this._mkdirSync(path.join.apply(null, parts.slice(0, i)));
+    }
+  }
+
+  _createFile(fileName, fileContent) {
+    try {
+      fs.writeFileSync(fileName, fileContent);
+    } catch (err) {
+       this.logger.error(err)
+    }
+  }
+
+   static _normalizePath(path) {
+    const ghRes = GithubReader._parse(path);
+    if (ghRes !== false) {
+      return this._normalizeGithubPath(ghRes);
+    }
+    if (new HttpReader().supports(path)) { // CHANGE THIS
+      return this._normalizeHttpPath(path);
+    }
+  }
+
+  static _normalizeHttpPath(httpPath) {
+    const adress = (/^((http[s]?):\/)?\/?([^:\/\s]+)((\/[\w\-\.]+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/.exec(httpPath));
+    const domen = adress[3].split('.');
+    const newPath = CACHE_DIR + HTTP_DIR + '/' + domen.filter((elem) => elem != 'www').reverse().join('/') +  (adress[4] ? adress[4] : '');
+    const fileName = adress[6];
+    return { "dirPath" : newPath,
+             "fileName" : fileName};
+  }
+
+  static _normalizeGithubPath(ghRes) {
+    const i = ghRes.path.lastIndexOf('/');
+    let newPath;
+    let fileName;
+    if (i != -1) {
+      newPath = ghRes.path.substr(0, i);
+      fileName = ghRes.path.substr(i + 1);
+    }
+    return {
+      "dirPath" : CACHE_DIR + GITHUB_DIR + '/' + ghRes.user + '/' + ghRes.repo + (ghRes.ref ? '/' + ghRes.ref : '') + (i != -1 ? '/' + newPath : ''),
+      "fileName" : (i != -1 ? fileName : ghRes.path)
+    };
+  }
+
+  cacheFile(path, content) {
+    const file = Machine._normalizePath(path);
+    const finalPath = file.dirPath + '/' + file.fileName;
+    if (!fs.existsSync(finalPath)) {
+      this._mkdirpSync(file.dirPath);
+      this._createFile(finalPath, content);
+    }
+  }
+
+  static existFile(path) {
+    const file = Machine._normalizePath(path);
+    const finalPath = file.dirPath + '/' + file.fileName;
+    return fs.existsSync(finalPath);
+  }
+
+  _isCachedReader(reader) {
+    return CACHED_READERS.some((cachedReader) => (reader instanceof cachedReader));
+  }
+
+  _deleteFolderRecursive(path) {
+    try {
+      if( fs.existsSync(path) ) {
+        fs.readdirSync(path).forEach(function (file, index) {
+          var curPath = path + '/' + file;
+          if(fs.lstatSync(curPath).isDirectory()) { // recurse
+            this._deleteFolderRecursive(curPath);
+          } else { // delete file
+            fs.unlinkSync(curPath);
+          }
+        }.bind(this));
+        fs.rmdirSync(path);
+      } else {
+        this.logger.error(`Can't delete ${path}, because it does not exist`);
+      }
+    } catch (err) {
+       this.logger.error(err)
+    }
+  };
+
+  cleanCache() {
+    this._deleteFolderRecursive(CACHE_DIR);
+  }
+
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
@@ -665,6 +793,22 @@ class Machine {
    */
   set generateLineControlStatements(value) {
     this._generateLineControlStatements = value;
+  }
+
+  /**
+   * Generate line control statements?
+   * @see https://gcc.gnu.org/onlinedocs/cpp/Line-Control.html
+   * @return {boolean}
+   */
+  get useCache() {
+    return this._useCache || false;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  set useCache(value) {
+    this._useCache = value;
   }
 
   /**
