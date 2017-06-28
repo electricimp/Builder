@@ -4,10 +4,10 @@
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
-    "pleasebuild": "src/cli.js"
+    "pleasebuild": "node src/cli.js"
   },
   "scripts": {
-    "test": "node_modules/jasmine/bin/jasmine.js"
+    "test": "node node_modules/jasmine/bin/jasmine.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,8 @@
     "clone": "^1.0.2",
     "github": "^0.2.4",
     "jsep": "^0.3.0",
-    "request": "^2.71.0"
+    "request": "^2.71.0",
+    "minimatch": "^3.0.4"
   },
   "devDependencies": {
     "jasmine": "^2.4.1",

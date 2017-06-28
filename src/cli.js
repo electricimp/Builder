@@ -55,7 +55,7 @@ where:
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false};
+  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : ''};
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -63,9 +63,9 @@ function readArgs() {
 
     if ('-l' === arg) {
       res.lineControl = true;
-    } else if ('-c' === arg) {
+    } else if ('--cache-all' === arg) {
       res.cache = true;
-    } else if ('--clean-cache' === arg) {
+    } else if ('--clear-cache' === arg) {
       res.clean = true;
     } else if (m = arg.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
@@ -74,6 +74,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + arg);
       }
       res.gh.user = args.shift();
+    } else if (m = arg.match(/^--cache-exclude-list=(.*)$/)) {
+      if (!m[1]) {
+        throw Error('Expected filename after ' + arg);
+      }
+      res.excludeFile = m[1];
     } else if (arg === '--github-token') {
       if (!args.length) {
         throw Error('Expected argument value after ' + arg);
@@ -111,7 +116,8 @@ try {
   // set GH credentials
   builder.machine.readers.github.username = args.gh.user;
   builder.machine.readers.github.token = args.gh.token;
-
+  //set cache settings
+  builder.machine.excludeList = args.excludeFile;
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);
   process.stdout.write(res);
