@@ -4,10 +4,10 @@
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
-    "pleasebuild": "node src/cli.js"
+    "pleasebuild": "src/cli.js"
   },
   "scripts": {
-    "test": "node node_modules/jasmine/bin/jasmine.js"
+    "test": "node_modules/jasmine/bin/jasmine.js"
   },
   "repository": {
     "type": "git",

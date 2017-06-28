@@ -248,7 +248,7 @@ class Machine {
    * @param {boolean=false} evaluated - is source ref already evaluated?
    * @private
    */
-   _includeSource(source, context, buffer, once, evaluated) {
+  _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
     let includePath = evaluated ? source : this.expression.evaluate(
@@ -263,7 +263,7 @@ class Machine {
 
     let reader = this._getReader(includePath);
     let needCache = false;
-    if (this._isCached(includePath) && this._isCachedReader(reader)) {
+    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
         if (Machine._existFile(includePath)) {
           // change reader to local reader
           const fileName = Machine._normalizePath(includePath);
@@ -673,7 +673,7 @@ class Machine {
     }
   }
 
-   /**
+  /**
    * Transform github link to path and filename
    * @param {string} path to the file
    * @return {{dirPath, fileName}} folder and name, where can cache file can be found
@@ -785,7 +785,7 @@ class Machine {
     return this._excludeList.some((regexp) => regexp.test(includedPath));
   }
 
-  _isCached(includePath) {
+  _toBeCached(includePath) {
     return this.useCache && !this._isExcludedFromCache(includePath);
   }
 
