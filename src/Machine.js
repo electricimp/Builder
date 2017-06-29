@@ -622,6 +622,7 @@ class Machine {
     try {
       fs.mkdirSync(dirPath);
     } catch (err) {
+      // if it is not "Exist error" then log it
       if (err.code !== 'EEXIST') this.logger.error(err);
     }
   }
@@ -660,7 +661,7 @@ class Machine {
    * It is important, that path and filename are unique,
    * because collision can break the build
    * @param {string} path to the file
-   * @return {{dirPath, fileName}} folder and name, where can cache file can be found
+   * @return {{dirPath, fileName}} folder and name, where cache file can be found
    * @private
    */
   static _normalizePath(path) {
@@ -676,7 +677,7 @@ class Machine {
   /**
    * Transform github link to path and filename
    * @param {string} path to the file
-   * @return {{dirPath, fileName}} folder and name, where can cache file can be found
+   * @return {{dirPath, fileName}} folder and name, where cache file can be found
    * @private
    */
   static _normalizeHttpPath(httpPath) {
@@ -693,7 +694,7 @@ class Machine {
   /**
    * Transform url link to path and filename
    * @param {{user, repo, path, ref}} github parsed link to the file
-   * @return {{dirPath, fileName}} folder and name, where can cache file can be found
+   * @return {{dirPath, fileName}} folder and name, where cache file can be found
    * @private
    */
   static _normalizeGithubPath(ghRes) {
@@ -716,7 +717,6 @@ class Machine {
    * Create all subfolders and write file to them
    * @param {string} path to the file
    * @param {string} content of the file
-   * @return {{dirPath, fileName}} folder and name, where can cache file can be found
    * @private
    */
   _cacheFile(path, content) {
@@ -741,7 +741,7 @@ class Machine {
   }
 
   /**
-   * Check, is reader shoul be cached
+   * Check, has reader to be cached
    * @param {AbstractReader} reader
    * @return {boolean} result
    * @private
@@ -776,7 +776,7 @@ class Machine {
   };
 
   /**
-   * Check, should file be excluded from cache
+   * Check, has file to be excluded from cache
    * @param {string} path to the file
    * @return {boolean} result
    * @private
@@ -951,7 +951,9 @@ class Machine {
     const content = fs.readFileSync(newPath, 'utf8');
     const filenames = content.split(/\n|\r\n/);
     // filters not empty strings, and makes regular expression from template
-    const patterns = filenames.filter((value) => value != '').map((value) => minimatch.makeRe(value));
+    const patterns = filenames.map((value) => value.trimLeft()) // trim for "is commented" check
+                              .filter((value) => (value != '' && value[0] != '#'))
+                              .map((value) => minimatch.makeRe(value));
     this._excludeList = patterns;
   }
   // </editor-fold>
