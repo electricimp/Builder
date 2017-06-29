@@ -60,7 +60,7 @@ class Machine {
     this.readers = {};
     this.globals = {};
     this._useCache = false;
-    this.cacheDir = './cache';
+    this._cacheDir = './cache';
     this._excludeList = [];
     this._initBuiltinFunctions();
   }
@@ -265,9 +265,9 @@ class Machine {
     let reader = this._getReader(includePath);
     let needCache = false;
     if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
-        if (Machine._isFileExist(includePath)) {
+        if (this._isFileExist(includePath)) {
           // change reader to local reader
-          const fileName = Machine._normalizePath(includePath);
+          const fileName = this._normalizePath(includePath);
           includePath = fileName.dirPath + '/' + fileName.fileName;
           reader = this.readers.file;
         } else {
@@ -673,7 +673,7 @@ class Machine {
    * @return {NormalizedPath} folder and name, where cache file can be found
    * @private
    */
-  static _normalizePath(link) {
+ _normalizePath(link) {
     const ghRes = GithubReader._parse(link);
     if (ghRes !== false) {
       return this._normalizeGithubPath(ghRes);
@@ -689,7 +689,7 @@ class Machine {
    * @return {NormalizedPath} folder and name, where cache file can be found
    * @private
    */
-  static _normalizeHttpPath(httpLink) {
+ _normalizeHttpPath(httpLink) {
     // parse url parts
     const parsedUrl = (/^((http[s]?):\/)?\/?([^:\/\s]+)((\/[\w\-\.]+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/.exec(httpLink));
     const domen = parsedUrl[3].split('.'); // it is web-site name
@@ -706,7 +706,7 @@ class Machine {
    * @return {NormalizedPath} folder and name, where cache file can be found
    * @private
    */
-  static _normalizeGithubPath(ghRes) {
+ _normalizeGithubPath(ghRes) {
     // find, where fileName starts
     const i = ghRes.path.lastIndexOf('/');
     let newPath;
@@ -729,7 +729,7 @@ class Machine {
    * @private
    */
   _cacheFile(path, content) {
-    const file = Machine._normalizePath(path);
+    const file = this._normalizePath(path);
     const finalPath = file.dirPath + '/' + file.fileName;
     if (!fs.existsSync(finalPath)) {
       this._mkdirpSync(file.dirPath);
@@ -743,8 +743,8 @@ class Machine {
    * @return {boolean} result
    * @private
    */
-  static _isFileExist(link) {
-    const file = Machine._normalizePath(link);
+  _isFileExist(link) {
+    const file = this._normalizePath(link);
     const finalPath = file.dirPath + '/' + file.fileName;
     return fs.existsSync(finalPath);
   }
