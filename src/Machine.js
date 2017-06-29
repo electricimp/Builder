@@ -138,7 +138,7 @@ class Machine {
   /**
    * Execute AST
    * @param {[]} ast
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer - output buffer
    * @private
    */
@@ -219,7 +219,7 @@ class Machine {
   /**
    * Execute "include" instruction
    * @param {{type, value}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -243,7 +243,7 @@ class Machine {
   /**
    * Include source
    * @param {string} source
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @param {boolean=false} once
    * @param {boolean=false} evaluated - is source ref already evaluated?
@@ -313,10 +313,8 @@ class Machine {
 
   /**
    * Include macro
-   * @param {Object} macro
-   * @property {string[]} name
-   * @property {string[]} args
-   * @param {Context} context
+   * @param {{name, args: []}} macro
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -348,7 +346,7 @@ class Machine {
   /**
    * Execute "output" instruction
    * @param {{type, value, computed}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -381,7 +379,7 @@ class Machine {
   /**
    * Execute "set" instruction
    * @param {{type, variable, value}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -394,7 +392,7 @@ class Machine {
   /**
    * Execute "error: instruction
    * @param {{type, value}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -408,7 +406,7 @@ class Machine {
   /**
    * Execute "conditional" instruction
    * @param {{type, test, consequent, alternate, elseifs}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -448,7 +446,7 @@ class Machine {
   /**
    * Execute macro declaration instruction
    * @param {{type, declaration, body: []}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -499,7 +497,7 @@ class Machine {
   /**
    * Execute loop instruction
    * @param {{type, while, rereat, body: []}} instruction
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -540,7 +538,7 @@ class Machine {
   /**
    * Perform outoput operation
    * @param {string|string[]} output
-   * @param {Context} context
+   * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
@@ -569,7 +567,7 @@ class Machine {
 
   /**
    * Merge local context with global
-   * @param {...Context} - contexts
+   * @param {...{}} - contexts
    * @private
    */
   _mergeContexts() {
