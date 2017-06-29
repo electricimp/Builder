@@ -45,7 +45,7 @@ const MAX_EXECUTION_DEPTH = 256;
 // cache params
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
-const CACHE_DIR = './cache';
+
 const GITHUB_DIR = '/github';
 const HTTP_DIR = '/http';
 
@@ -60,6 +60,7 @@ class Machine {
     this.readers = {};
     this.globals = {};
     this._useCache = false;
+    this.cacheDir = './cache';
     this._excludeList = [];
     this._initBuiltinFunctions();
   }
@@ -137,7 +138,7 @@ class Machine {
   /**
    * Execute AST
    * @param {[]} ast
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer - output buffer
    * @private
    */
@@ -218,7 +219,7 @@ class Machine {
   /**
    * Execute "include" instruction
    * @param {{type, value}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -242,7 +243,7 @@ class Machine {
   /**
    * Include source
    * @param {string} source
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @param {boolean=false} once
    * @param {boolean=false} evaluated - is source ref already evaluated?
@@ -264,7 +265,7 @@ class Machine {
     let reader = this._getReader(includePath);
     let needCache = false;
     if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
-        if (Machine._existFile(includePath)) {
+        if (Machine._isFileExist(includePath)) {
           // change reader to local reader
           const fileName = Machine._normalizePath(includePath);
           includePath = fileName.dirPath + '/' + fileName.fileName;
@@ -312,8 +313,10 @@ class Machine {
 
   /**
    * Include macro
-   * @param {{name, args: []}} macro
-   * @param {{}} context
+   * @param {Object} macro
+   * @property {string[]} name
+   * @property {string[]} args
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -345,7 +348,7 @@ class Machine {
   /**
    * Execute "output" instruction
    * @param {{type, value, computed}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -378,7 +381,7 @@ class Machine {
   /**
    * Execute "set" instruction
    * @param {{type, variable, value}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -391,7 +394,7 @@ class Machine {
   /**
    * Execute "error: instruction
    * @param {{type, value}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -405,7 +408,7 @@ class Machine {
   /**
    * Execute "conditional" instruction
    * @param {{type, test, consequent, alternate, elseifs}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -445,7 +448,7 @@ class Machine {
   /**
    * Execute macro declaration instruction
    * @param {{type, declaration, body: []}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -496,7 +499,7 @@ class Machine {
   /**
    * Execute loop instruction
    * @param {{type, while, rereat, body: []}} instruction
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -537,7 +540,7 @@ class Machine {
   /**
    * Perform outoput operation
    * @param {string|string[]} output
-   * @param {{}} context
+   * @param {Context} context
    * @param {string[]} buffer
    * @private
    */
@@ -566,7 +569,7 @@ class Machine {
 
   /**
    * Merge local context with global
-   * @param {{}} ... - contexts
+   * @param {...Context} - contexts
    * @private
    */
   _mergeContexts() {
@@ -583,7 +586,7 @@ class Machine {
   /**
    * Find reader
    *
-   * @param source
+   * @param {*} source
    * @return {AbstractReader}
    * @private
    */
@@ -601,7 +604,7 @@ class Machine {
 
   /**
    * Trim last buffer line
-   * @param {[string]} buffer
+   * @param {string[]} buffer
    * @private
    */
   _trimLastLine(buffer) {
@@ -615,7 +618,7 @@ class Machine {
 
   /**
    * Create folder if path exists
-   * @param {string} path to directory
+   * @param {string} dirPath path to directory
    * @private
    */
   _mkdirSync(dirPath) {
@@ -629,7 +632,7 @@ class Machine {
 
   /**
    * Create all missing folders in the current path
-   * @param {string} path to directory
+   * @param {string} dirPath path to directory
    * @private
    */
   _mkdirpSync(dirPath) {
@@ -644,8 +647,8 @@ class Machine {
 
   /**
    * Create file with fileName path
-   * @param {string} path to the file
-   * @param {string} content of the file
+   * @param {string} fileName path to file
+   * @param {string} fileContent Content of the file
    * @private
    */
   _createFile(fileName, fileContent) {
@@ -657,35 +660,41 @@ class Machine {
   }
 
   /**
+   * @typedef {Object} NormalizedPath
+   * @property {string} fileName
+   * @property {string} dirPath
+   */
+
+  /**
    * Transform url or github link to path and filename
    * It is important, that path and filename are unique,
    * because collision can break the build
-   * @param {string} path to the file
-   * @return {{dirPath, fileName}} folder and name, where cache file can be found
+   * @param {string} link link to the file
+   * @return {NormalizedPath} folder and name, where cache file can be found
    * @private
    */
-  static _normalizePath(path) {
-    const ghRes = GithubReader._parse(path);
+  static _normalizePath(link) {
+    const ghRes = GithubReader._parse(link);
     if (ghRes !== false) {
       return this._normalizeGithubPath(ghRes);
     }
-    if (new HttpReader().supports(path)) { // CHANGE THIS
-      return this._normalizeHttpPath(path);
+    if (new HttpReader().supports(link)) { // CHANGE THIS
+      return this._normalizeHttpPath(link);
     }
   }
 
   /**
    * Transform github link to path and filename
-   * @param {string} path to the file
-   * @return {{dirPath, fileName}} folder and name, where cache file can be found
+   * @param {string} link link to the file
+   * @return {NormalizedPath} folder and name, where cache file can be found
    * @private
    */
-  static _normalizeHttpPath(httpPath) {
+  static _normalizeHttpPath(httpLink) {
     // parse url parts
-    const parsedUrl = (/^((http[s]?):\/)?\/?([^:\/\s]+)((\/[\w\-\.]+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/.exec(httpPath));
+    const parsedUrl = (/^((http[s]?):\/)?\/?([^:\/\s]+)((\/[\w\-\.]+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/.exec(httpLink));
     const domen = parsedUrl[3].split('.'); // it is web-site name
     // create new path from url
-    const newPath = CACHE_DIR + HTTP_DIR + '/' + domen.filter((elem) => elem != 'www').reverse().join('/') +  (parsedUrl[4] ? parsedUrl[4] : '');
+    const newPath = this.cacheDir + HTTP_DIR + '/' + domen.filter((elem) => elem != 'www').reverse().join('/') +  (parsedUrl[4] ? parsedUrl[4] : '');
     const fileName = parsedUrl[6];
     return { 'dirPath' : newPath,
              'fileName' : fileName};
@@ -693,8 +702,8 @@ class Machine {
 
   /**
    * Transform url link to path and filename
-   * @param {{user, repo, path, ref}} github parsed link to the file
-   * @return {{dirPath, fileName}} folder and name, where cache file can be found
+   * @param {{user, repo, path, ref}} ghRes github parsed link to the file
+   * @return {NormalizedPath} folder and name, where cache file can be found
    * @private
    */
   static _normalizeGithubPath(ghRes) {
@@ -708,15 +717,15 @@ class Machine {
       fileName = ghRes.path.substr(i + 1);
     }
     return {
-      'dirPath' : CACHE_DIR + GITHUB_DIR + '/' + ghRes.user + '/' + ghRes.repo + (ghRes.ref ? '/' + ghRes.ref : '') + (i != -1 ? '/' + newPath : ''),
+      'dirPath' : this.cacheDir + GITHUB_DIR + '/' + ghRes.user + '/' + ghRes.repo + (ghRes.ref ? '/' + ghRes.ref : '') + (i != -1 ? '/' + newPath : ''),
       'fileName' : (i != -1 ? fileName : ghRes.path)
     };
   }
 
   /**
    * Create all subfolders and write file to them
-   * @param {string} path to the file
-   * @param {string} content of the file
+   * @param {string} path path to the file
+   * @param {string} content content of the file
    * @private
    */
   _cacheFile(path, content) {
@@ -729,13 +738,13 @@ class Machine {
   }
 
   /**
-   * Check, is file exist
-   * @param {string} path to the file
+   * Check, is file exist by link
+   * @param {string} link link to the file
    * @return {boolean} result
    * @private
    */
-  static _existFile(path) {
-    const file = Machine._normalizePath(path);
+  static _isFileExist(link) {
+    const file = Machine._normalizePath(link);
     const finalPath = file.dirPath + '/' + file.fileName;
     return fs.existsSync(finalPath);
   }
@@ -790,7 +799,7 @@ class Machine {
   }
 
   cleanCache() {
-    this._deleteFolderRecursive(CACHE_DIR);
+    this._deleteFolderRecursive(this.cacheDir);
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
@@ -917,6 +926,14 @@ class Machine {
 
   get globals() {
     return this._globals;
+  }
+
+  set cacheDir(value) {
+    this._cacheDir = value;
+  }
+
+   get cacheDir() {
+    return this._cacheDir;
   }
 
   set globals(value) {
