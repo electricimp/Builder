@@ -107,7 +107,7 @@ try {
   builder.machine.useCache = args.cache;
   builder.logger = new NullLogger();
   if (args.clean) {
-    builder.machine.cleanCache();
+    builder.machine.clearCache();
   }
 
   // set the directory of the input file as first search dir

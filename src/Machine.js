@@ -796,7 +796,7 @@ class Machine {
     return this.useCache && !this._isExcludedFromCache(includePath);
   }
 
-  cleanCache() {
+  clearCache() {
     this._deleteFolderRecursive(this.cacheDir);
   }
 
