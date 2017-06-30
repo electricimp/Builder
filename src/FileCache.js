@@ -10,11 +10,13 @@ const path = require('path');
 const minimatch = require('minimatch');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+//const Date = require('Date');
 
 const GITHUB_DIR = path.sep + 'github';
 const HTTP_DIR = path.sep + 'http';
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
+const OUTDATE_DAYS = 1;
 
 class FileCache {
 
@@ -23,7 +25,7 @@ class FileCache {
     this._cacheDir = '.' + path.sep + 'cache';
     this._excludeList = [];
     this._machine = machine;
-
+    this._outdateTime = OUTDATE_DAYS;//* 86400000 // precalc milliseconds in one day
   }
 
   /**
@@ -133,6 +135,11 @@ class FileCache {
 
   clearCache() {
     fs.removeSync(this.cacheDir);
+  }
+
+  isCacheFileOutdate(pathname) {
+    const stat = fs.statSync(pathname);
+    return Date.now() - stat.mtime > this._outdateTime;
   }
 
  /**
