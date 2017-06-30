@@ -10,8 +10,6 @@ const path = require('path');
 const minimatch = require('minimatch');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
-//const Date = require('Date');
-
 const GITHUB_DIR = path.sep + 'github';
 const HTTP_DIR = path.sep + 'http';
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
@@ -25,7 +23,7 @@ class FileCache {
     this._cacheDir = '.' + path.sep + 'cache';
     this._excludeList = [];
     this._machine = machine;
-    this._outdateTime = OUTDATE_DAYS;//* 86400000 // precalc milliseconds in one day
+    this._outdateTime = OUTDATE_DAYS * 86400000; // precalc milliseconds in one day
   }
 
   /**
