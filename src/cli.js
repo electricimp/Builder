@@ -51,11 +51,11 @@ where:
 
 /**
  * Read args
- * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}}
+ * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}, cache: boolean, clean: boolean, excludeFile: string, cacheFolder: string}
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : ''};
+  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: ''};
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -79,6 +79,11 @@ function readArgs() {
         throw Error('Expected filename after ' + arg);
       }
       res.excludeFile = m[1];
+    } else if (m = arg.match(/^--cache-folder=(.*)$/)) {
+      if (!m[1]) {
+        throw Error('Expected filename after ' + arg);
+      }
+      res.cacheFolder = m[1];
     } else if (arg === '--github-token') {
       if (!args.length) {
         throw Error('Expected argument value after ' + arg);
@@ -117,6 +122,7 @@ try {
   builder.machine.readers.github.username = args.gh.user;
   builder.machine.readers.github.token = args.gh.token;
   //set cache settings
+  builder.machine.cacheDir = args.cacheFolder;
   builder.machine.excludeList = args.excludeFile;
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);

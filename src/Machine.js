@@ -7,12 +7,12 @@
 const url = require('url');
 const path = require('path');
 const clone = require('clone');
-const minimatch = require('minimatch');
-const Expression = require('./Expression');
+
 const fs = require('fs');
+
+const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
-const HttpReader = require('./Readers/HttpReader');
-const GithubReader = require('./Readers/GithubReader');
+const FileCache = require('./FileCache');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -42,13 +42,6 @@ const Errors = {
 // maximum nesting depth
 const MAX_EXECUTION_DEPTH = 256;
 
-// cache params
-const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const CACHED_READERS = [GithubReader, HttpReader];
-
-const GITHUB_DIR = '/github';
-const HTTP_DIR = '/http';
-
 /**
  * Builder VM
  */
@@ -59,9 +52,7 @@ class Machine {
     this.path = ''; // default source path
     this.readers = {};
     this.globals = {};
-    this._useCache = false;
-    this._cacheDir = './cache';
-    this._excludeList = [];
+    this.fileCache = new FileCache(this);
     this._initBuiltinFunctions();
   }
 
@@ -90,6 +81,10 @@ class Machine {
 
     // return output buffer contents
     return buffer.join('');
+  }
+
+  clearCache() {
+    this.fileCache.clearCache();
   }
 
   /**
@@ -254,7 +249,7 @@ class Machine {
     // path is an expression, evaluate it
     let includePath = evaluated ? source : this.expression.evaluate(
         source, this._mergeContexts(this._globalContext, context)
-      );
+      ).trim();
 
     // if once flag is set, then check if source has alredy been included
     if (once && this._includedSources.has(includePath)) {
@@ -264,11 +259,11 @@ class Machine {
 
     let reader = this._getReader(includePath);
     let needCache = false;
-    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
-        if (this._isFileExist(includePath)) {
+    if (this.fileCache.toBeCached(includePath) && this.fileCache.isCachedReader(reader)) {
+        let result;
+        if (result = this.fileCache.isFileExist(includePath)) {
           // change reader to local reader
-          const fileName = this._normalizePath(includePath);
-          includePath = fileName.dirPath + '/' + fileName.fileName;
+          includePath = result;
           reader = this.readers.file;
         } else {
           needCache = true;
@@ -290,7 +285,7 @@ class Machine {
 
     if (needCache && this.useCache) {
       this.logger.debug(`Caching file "${includePath}"`);
-      this._cacheFile(includePath, content);
+      this.fileCache.cacheFile(includePath, content);
     }
 
     // parse
@@ -614,192 +609,6 @@ class Machine {
     }
   }
 
-  /**
-   * Create folder if path exists
-   * @param {string} dirPath path to directory
-   * @private
-   */
-  _mkdirSync(dirPath) {
-    try {
-      fs.mkdirSync(dirPath);
-    } catch (err) {
-      // if it is not "Exist error" then log it
-      if (err.code !== 'EEXIST') this.logger.error(err);
-    }
-  }
-
-  /**
-   * Create all missing folders in the current path
-   * @param {string} dirPath path to directory
-   * @private
-   */
-  _mkdirpSync(dirPath) {
-    const parts = dirPath.split(/[\\|\/]/);
-
-    // For every part of our path, call our wrapped _mkdirSync()
-    // on the full path until and including that part
-    for (let i = 1; i <= parts.length; i++) {
-      this._mkdirSync(path.join.apply(null, parts.slice(0, i)));
-    }
-  }
-
-  /**
-   * Create file with fileName path
-   * @param {string} fileName path to file
-   * @param {string} fileContent Content of the file
-   * @private
-   */
-  _createFile(fileName, fileContent) {
-    try {
-      fs.writeFileSync(fileName, fileContent);
-    } catch (err) {
-       this.logger.error(err);
-    }
-  }
-
-  /**
-   * @typedef {Object} NormalizedPath
-   * @property {string} fileName
-   * @property {string} dirPath
-   */
-
-  /**
-   * Transform url or github link to path and filename
-   * It is important, that path and filename are unique,
-   * because collision can break the build
-   * @param {string} link link to the file
-   * @return {NormalizedPath} folder and name, where cache file can be found
-   * @private
-   */
- _normalizePath(link) {
-    const ghRes = GithubReader._parse(link);
-    if (ghRes !== false) {
-      return this._normalizeGithubPath(ghRes);
-    }
-    if (new HttpReader().supports(link)) { // CHANGE THIS
-      return this._normalizeHttpPath(link);
-    }
-  }
-
-  /**
-   * Transform github link to path and filename
-   * @param {string} link link to the file
-   * @return {NormalizedPath} folder and name, where cache file can be found
-   * @private
-   */
- _normalizeHttpPath(httpLink) {
-    // parse url parts
-    const parsedUrl = (/^((http[s]?):\/)?\/?([^:\/\s]+)((\/[\w\-\.]+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/.exec(httpLink));
-    const domen = parsedUrl[3].split('.'); // it is web-site name
-    // create new path from url
-    const newPath = this.cacheDir + HTTP_DIR + '/' + domen.filter((elem) => elem != 'www').reverse().join('/') +  (parsedUrl[4] ? parsedUrl[4] : '');
-    const fileName = parsedUrl[6];
-    return { 'dirPath' : newPath,
-             'fileName' : fileName};
-  }
-
-  /**
-   * Transform url link to path and filename
-   * @param {{user, repo, path, ref}} ghRes github parsed link to the file
-   * @return {NormalizedPath} folder and name, where cache file can be found
-   * @private
-   */
- _normalizeGithubPath(ghRes) {
-    // find, where fileName starts
-    const i = ghRes.path.lastIndexOf('/');
-    let newPath;
-    let fileName;
-    // check case, when filename goes after user and repo
-    if (i != -1) {
-      newPath = ghRes.path.substr(0, i);
-      fileName = ghRes.path.substr(i + 1);
-    }
-    return {
-      'dirPath' : this.cacheDir + GITHUB_DIR + '/' + ghRes.user + '/' + ghRes.repo + (ghRes.ref ? '/' + ghRes.ref : '') + (i != -1 ? '/' + newPath : ''),
-      'fileName' : (i != -1 ? fileName : ghRes.path)
-    };
-  }
-
-  /**
-   * Create all subfolders and write file to them
-   * @param {string} path path to the file
-   * @param {string} content content of the file
-   * @private
-   */
-  _cacheFile(path, content) {
-    const file = this._normalizePath(path);
-    const finalPath = file.dirPath + '/' + file.fileName;
-    if (!fs.existsSync(finalPath)) {
-      this._mkdirpSync(file.dirPath);
-      this._createFile(finalPath, content);
-    }
-  }
-
-  /**
-   * Check, is file exist by link
-   * @param {string} link link to the file
-   * @return {boolean} result
-   * @private
-   */
-  _isFileExist(link) {
-    const file = this._normalizePath(link);
-    const finalPath = file.dirPath + '/' + file.fileName;
-    return fs.existsSync(finalPath);
-  }
-
-  /**
-   * Check, has reader to be cached
-   * @param {AbstractReader} reader
-   * @return {boolean} result
-   * @private
-   */
-  _isCachedReader(reader) {
-    return CACHED_READERS.some((cachedReader) => (reader instanceof cachedReader));
-  }
-
-  /**
-   * Delete folder and all subfolders and files
-   * @param {string} path
-   * @private
-   */
-  _deleteFolderRecursive(path) {
-    try {
-      if( fs.existsSync(path) ) {
-        fs.readdirSync(path).forEach(function (file, index) {
-          var curPath = path + '/' + file;
-          if(fs.lstatSync(curPath).isDirectory()) { // recurse
-            this._deleteFolderRecursive(curPath);
-          } else { // delete file
-            fs.unlinkSync(curPath);
-          }
-        }.bind(this));
-        fs.rmdirSync(path); // delete directory
-      } else {
-        this.logger.error(`Can't delete ${path}, because it does not exist`);
-      }
-    } catch (err) {
-       this.logger.error(err);
-    }
-  };
-
-  /**
-   * Check, has file to be excluded from cache
-   * @param {string} path to the file
-   * @return {boolean} result
-   * @private
-   */
-  _isExcludedFromCache(includedPath) {
-    return this._excludeList.some((regexp) => regexp.test(includedPath));
-  }
-
-  _toBeCached(includePath) {
-    return this.useCache && !this._isExcludedFromCache(includePath);
-  }
-
-  clearCache() {
-    this._deleteFolderRecursive(this.cacheDir);
-  }
-
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
@@ -884,19 +693,18 @@ class Machine {
   }
 
   /**
-   * Generate line control statements?
-   * @see https://gcc.gnu.org/onlinedocs/cpp/Line-Control.html
+   * Use cache?
    * @return {boolean}
    */
   get useCache() {
-    return this._useCache || false;
+    return this.fileCache.useCache;
   }
 
   /**
    * @param {boolean} value
    */
   set useCache(value) {
-    this._useCache = value;
+     this.fileCache.useCache = value;
   }
 
   /**
@@ -926,20 +734,21 @@ class Machine {
     return this._globals;
   }
 
-  set cacheDir(value) {
-    this._cacheDir = value;
-  }
-
-   get cacheDir() {
-    return this._cacheDir;
-  }
-
   set globals(value) {
     this._globals = value;
   }
 
+
+  set cacheDir(value) {
+    this.fileCache.cacheDir = value;
+  }
+
+  get cacheDir() {
+    return this.fileCache.cacheDir;
+  }
+
   get excludeList() {
-    return this._excludeList;
+    return this.fileCache.excludeList;
   }
 
   /**
@@ -947,29 +756,7 @@ class Machine {
    * @param {string} name of exclude file. '' for default
    */
   set excludeList(fileName) {
-    if (fileName == '') {
-      fileName = DEFAULT_EXCLUDE_FILE_NAME;
-    }
-
-    const newPath = fileName;
-    // check is fileName exist
-    if (!fs.existsSync(newPath)) {
-      if (fileName == DEFAULT_EXCLUDE_FILE_NAME) {
-        // if it isn't exist and it is default, then put empty list
-        this._excludeList = [];
-        return;
-      } else {
-        throw new Error(`${newPath} file does not exist`);
-      }
-    }
-
-    const content = fs.readFileSync(newPath, 'utf8');
-    const filenames = content.split(/\n|\r\n/);
-    // filters not empty strings, and makes regular expression from template
-    const patterns = filenames.map((value) => value.trimLeft()) // trim for "is commented" check
-                              .filter((value) => (value != '' && value[0] != '#'))
-                              .map((value) => minimatch.makeRe(value));
-    this._excludeList = patterns;
+    this.fileCache.excludeList = fileName;
   }
   // </editor-fold>
 }
