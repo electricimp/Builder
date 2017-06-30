@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -24,7 +24,8 @@
     "github": "^0.2.4",
     "jsep": "^0.3.0",
     "request": "^2.71.0",
-    "minimatch": "^3.0.4"
+    "minimatch": "^3.0.4",
+    "fs-extra": "^3.0.1"
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
