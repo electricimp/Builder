@@ -261,7 +261,7 @@ class Machine {
     let needCache = false;
     if (this.fileCache.toBeCached(includePath) && this.fileCache.isCachedReader(reader)) {
         let result;
-        if (result = this.fileCache.isFileExist(includePath)) {
+        if (result = this.fileCache.findFile(includePath)) {
           // change reader to local reader
           includePath = result;
           reader = this.readers.file;

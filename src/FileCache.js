@@ -34,13 +34,13 @@ class FileCache {
    * @return {string} folder and name, where cache file can be found
    * @private
    */
- _normalizePath(link) {
-    const ghRes = GithubReader._parse(link);
+ _getCachedPath(link) {
+    const ghRes = GithubReader.parseUrl(link);
     if (ghRes !== false) {
-      return this._normalizeGithubPath(ghRes);
+      return this._getCachedGithubPath(ghRes);
     }
     if (new HttpReader().supports(link)) {
-      return this._normalizeHttpPath(link);
+      return this._getCachedHttpPath(link);
     }
   }
 
@@ -50,7 +50,7 @@ class FileCache {
    * @return {string} folder and name, where cache file can be found
    * @private
    */
- _normalizeHttpPath(httpLink) {
+ _getCachedHttpPath(httpLink) {
     // parse url parts
     const parsedUrl = url.parse(httpLink);
     const domain = parsedUrl.hostname.split('.'); // it is web-site name
@@ -66,7 +66,7 @@ class FileCache {
    * @return {string} folder and name, where cache file can be found
    * @private
    */
- _normalizeGithubPath(ghRes) {
+ _getCachedGithubPath(ghRes) {
     // find, where fileName starts
     const i = ghRes.path.lastIndexOf('/');
     let newPath;
@@ -87,7 +87,7 @@ class FileCache {
    * @param {string} content content of the file
    */
  cacheFile(filePath, content) {
-   const finalPath = this._normalizePath(filePath);
+   const finalPath = this._getCachedPath(filePath);
    try {
      if (!fs.existsSync(finalPath)) {
        fs.ensureDirSync(path.dirname(finalPath));
@@ -103,8 +103,8 @@ class FileCache {
    * @param {{dirPath : string, fileName : string} | false} link link to the file
    * @return {string|false} result
    */
-  isFileExist(link) {
-    const finalPath = this._normalizePath(link);
+  findFile(link) {
+    const finalPath = this._getCachedPath(link);
     return fs.existsSync(finalPath) ? finalPath : false;
   }
 
