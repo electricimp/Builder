@@ -51,7 +51,7 @@ where:
 
 /**
  * Read args
- * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}, cache: boolean, clean: boolean, excludeFile: string, cacheFolder: string}
+ * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}, cache: boolean, clean: boolean, excludeFile: string}
  */
 function readArgs() {
   let m;
@@ -65,7 +65,7 @@ function readArgs() {
       res.lineControl = true;
     } else if ('--cache-all' === arg) {
       res.cache = true;
-    } else if ('--clear-cache' === arg) {
+    } else if ('--invalidate-cache' === arg) {
       res.clean = true;
     } else if (m = arg.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
@@ -79,11 +79,6 @@ function readArgs() {
         throw Error('Expected filename after ' + arg);
       }
       res.excludeFile = m[1];
-    } else if (m = arg.match(/^--cache-folder=(.*)$/)) {
-      if (!m[1]) {
-        throw Error('Expected filename after ' + arg);
-      }
-      res.cacheFolder = m[1];
     } else if (arg === '--github-token') {
       if (!args.length) {
         throw Error('Expected argument value after ' + arg);
@@ -106,7 +101,7 @@ try {
     process.exit(1);
   }
 
-// ctreate builder
+// create builder
   const builder = new Builder();
   builder.machine.generateLineControlStatements = args.lineControl;
   builder.machine.useCache = args.cache;
@@ -122,7 +117,6 @@ try {
   builder.machine.readers.github.username = args.gh.user;
   builder.machine.readers.github.token = args.gh.token;
   //set cache settings
-  builder.machine.cacheDir = args.cacheFolder;
   builder.machine.excludeList = args.excludeFile;
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);

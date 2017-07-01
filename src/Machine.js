@@ -738,15 +738,6 @@ class Machine {
     this._globals = value;
   }
 
-
-  set cacheDir(value) {
-    this.fileCache.cacheDir = value;
-  }
-
-  get cacheDir() {
-    return this.fileCache.cacheDir;
-  }
-
   get excludeList() {
     return this.fileCache.excludeList;
   }

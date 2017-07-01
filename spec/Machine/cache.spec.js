@@ -15,11 +15,11 @@ describe('FileCache', () => {
 
   beforeEach(() => {
     machine = init.createMachine();
-    machine.cacheDir = './test-cache';
+    machine.fileCache.cacheDir = './test-cache';
   });
 
   afterEach(() => {
-    if (fs.existsSync(machine.cacheDir)) {
+    if (fs.existsSync(machine.fileCache.cacheDir)) {
       machine.clearCache();
     }
   });
