@@ -42,6 +42,7 @@ class FileCache {
     if (new HttpReader().supports(link)) {
       return this._getCachedHttpPath(link);
     }
+    throw new Error(`Source "${link}" is not supported`);
   }
 
   /**
@@ -92,6 +93,8 @@ class FileCache {
       if (!fs.existsSync(finalPath)) {
         fs.ensureDirSync(path.dirname(finalPath));
         fs.writeFileSync(finalPath, content);
+      } else {
+        this._machine.logger.error(`File "${filePath}" already exist and can't be cached`);
       }
     } catch (err) {
       this._machine.logger.error(err);
