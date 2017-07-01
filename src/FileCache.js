@@ -56,7 +56,7 @@ class FileCache {
     const parsedUrl = url.parse(httpLink);
     const domain = parsedUrl.hostname.split('.'); // it is web-site name
     // create new path from url
-    const newPath = this.cacheDir + HTTP_DIR + path.join.apply(domain.filter((elem) => elem != 'www').reverse())
+    const newPath = this.cacheDir + HTTP_DIR + path.sep + path.join.apply(this, domain.filter((elem) => elem != 'www').reverse())
       + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\//g, path.sep) : '');
     return newPath;
   }
