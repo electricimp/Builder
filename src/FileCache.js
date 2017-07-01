@@ -14,16 +14,16 @@ const GITHUB_DIR = path.sep + 'github';
 const HTTP_DIR = path.sep + 'http';
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
-const OUTDATE_DAYS = 1;
+const CACHE_LIFETIME = 1; // in days
 
 class FileCache {
 
   constructor(machine) {
     this._useCache = false;
-    this._cacheDir = '.' + path.sep + 'cache';
+    this._cacheDir = '.' + path.sep + '.builder-cache';
     this._excludeList = [];
     this._machine = machine;
-    this._outdateTime = OUTDATE_DAYS * 86400000; // precalc milliseconds in one day
+    this._outdateTime = CACHE_LIFETIME * 86400000; // precalc milliseconds in one day
   }
 
   /**
@@ -34,7 +34,7 @@ class FileCache {
    * @return {string} folder and name, where cache file can be found
    * @private
    */
- _getCachedPath(link) {
+  _getCachedPath(link) {
     const ghRes = GithubReader.parseUrl(link);
     if (ghRes !== false) {
       return this._getCachedGithubPath(ghRes);
@@ -50,13 +50,13 @@ class FileCache {
    * @return {string} folder and name, where cache file can be found
    * @private
    */
- _getCachedHttpPath(httpLink) {
+  _getCachedHttpPath(httpLink) {
     // parse url parts
     const parsedUrl = url.parse(httpLink);
     const domain = parsedUrl.hostname.split('.'); // it is web-site name
     // create new path from url
-    const newPath = this.cacheDir + HTTP_DIR + path.sep + domain.filter((elem) => elem != 'www').reverse().join(path.sep)
-                  + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\//g, path.sep) : '');
+    const newPath = this.cacheDir + HTTP_DIR + path.join.apply(domain.filter((elem) => elem != 'www').reverse())
+      + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\//g, path.sep) : '');
     return newPath;
   }
 
@@ -66,7 +66,7 @@ class FileCache {
    * @return {string} folder and name, where cache file can be found
    * @private
    */
- _getCachedGithubPath(ghRes) {
+  _getCachedGithubPath(ghRes) {
     // find, where fileName starts
     const i = ghRes.path.lastIndexOf('/');
     let newPath;
@@ -77,7 +77,7 @@ class FileCache {
       fileName = ghRes.path.substr(i + 1);
     }
     const filePath = this.cacheDir + GITHUB_DIR + path.sep + ghRes.user + path.sep + ghRes.repo
-                  + (ghRes.ref ? path.sep + ghRes.ref : '') +  path.sep + (i != -1 ? newPath + path.sep + fileName : ghRes.path.replace(/\//g, path.sep));
+      + (ghRes.ref ? path.sep + ghRes.ref : '') + path.sep + (i != -1 ? newPath + path.sep + fileName : ghRes.path.replace(/\//g, path.sep));
     return filePath;
   }
 
@@ -86,17 +86,17 @@ class FileCache {
    * @param {string} path path to the file
    * @param {string} content content of the file
    */
- cacheFile(filePath, content) {
-   const finalPath = this._getCachedPath(filePath);
-   try {
-     if (!fs.existsSync(finalPath)) {
-       fs.ensureDirSync(path.dirname(finalPath));
-       fs.writeFileSync(finalPath, content);
-     }
-   } catch (err) {
-     this._machine.logger.error(err);
-   }
- }
+  cacheFile(filePath, content) {
+    const finalPath = this._getCachedPath(filePath);
+    try {
+      if (!fs.existsSync(finalPath)) {
+        fs.ensureDirSync(path.dirname(finalPath));
+        fs.writeFileSync(finalPath, content);
+      }
+    } catch (err) {
+      this._machine.logger.error(err);
+    }
+  }
 
   /**
    * Check, is file exist by link and return path if exist
@@ -140,7 +140,7 @@ class FileCache {
     return Date.now() - stat.mtime > this._outdateTime;
   }
 
- /**
+  /**
    * Use cache?
    * @return {boolean}
    */
@@ -192,8 +192,8 @@ class FileCache {
     const filenames = content.split(/\n|\r\n/);
     // filters not empty strings, and makes regular expression from template
     const patterns = filenames.map((value) => value.trimLeft()) // trim for "is commented" check
-                              .filter((value) => (value != '' && value[0] != '#'))
-                              .map((value) => minimatch.makeRe(value));
+      .filter((value) => (value != '' && value[0] != '#'))
+      .map((value) => minimatch.makeRe(value));
     this._excludeList = patterns;
   }
 }

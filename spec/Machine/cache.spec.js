@@ -15,7 +15,7 @@ describe('FileCache', () => {
 
   beforeEach(() => {
     machine = init.createMachine();
-    machine.cacheDir = './test/cache';
+    machine.cacheDir = './test-cache';
   });
 
   afterEach(() => {
