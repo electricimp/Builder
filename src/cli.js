@@ -46,6 +46,9 @@ where:
 \t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
 \t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
 \t\u001b[34m--github-token <token>\u001b[39m - personal access token or password for GitHub
+\t\u001b[34m--cache-all>\u001b[39m - enable cache for remote files
+\t\u001b[34m--invalidate-cache\u001b[39m - delete cache folder before running
+\t\u001b[34m--cache-exclude-list=<path_to_file>\u001b[39m - path to exclude list file with filename
     `.trim());
 }
 

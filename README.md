@@ -513,6 +513,29 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 # Usage
 
+## FileCache
+ Builder provides cache of remote files. Builder can download your remote files at the local storage (`.builder-cache` by default) and use it, everytime you want to include file. 
+ 
+**Note** Builder automatically invalidate cached files older than 24 hours.
+
+Option `-c` or `--cache-all` allows you to cache all remote files, that will be included. In `.exclude-list.builder` file can be specified filenames or masks, that will never be cached.
+
+#### Example
+```sh
+# .exclude-list.builder
+# exclude direct file that will be excluded
+github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut
+# exclude all electricimp repos 
+github:electicimp/**
+# exclude all not tagget files from github
+!github:**/*@*
+```
+
+Option `--cache-exclude-list=<path_to_file>` allows to define exclude list file and folder.
+
+Option `--invalidate-cache` will delete all cache files before Builder starts running. With `-c` option it will completelly update cache. 
+
+## Running
 **Note** Builder requires Node.js 4.0 and above.
 
 - As an _npm_ library:
@@ -529,7 +552,11 @@ Lines starting with `@` followed by space or a line break are treated as comment
   // Provide GitHub credentials (optional)
   builder.machine.readers.github.username = "<usename>";
   builder.machine.readers.github.token = "<personal access token>";
-
+  
+  // Set up cache params (optional)
+  builder.machine.useCache = "<boolean>";
+  builder.machine.excludeList = "<path to exclude file>" // or "" for default name
+  builder.machine.clearCache() // delete 
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
@@ -539,16 +566,19 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache-all] [--invalidate-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
   </pre>
 
   where:
 
-  * `-l` &mdash; generate line control statements.
+  * <code> `-l` </code> &mdash; generate line control statements.
   * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
-
+  * <code>--cache-all</code> or <code>-c</code> &mdash; cache all files.
+  * <code>--invalidate-cache</code> &mdash; remove cache before builder starts running.
+  * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
+  
 # Testing
 
 ```
