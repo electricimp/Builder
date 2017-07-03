@@ -61,4 +61,14 @@ describe('FileCache', () => {
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
   });
 
+  it('should shorten filenames if they are longer then 256 symbols', () => {
+    const longUrl = 'https://longlonglonglongurl.com/longlonglonglongurl/'
+    + 'longlonglonglongurl/longlonglonglongurl/longlonglonglongurl/longlonglonglongurl/'
+    + 'longlonglonglongurl/longlonglonglongurl/longlonglonglongurl/longlonglonglongurl/'
+    + 'longlonglonglongurl/longlonglonglongurl/longlonglonglongurl/longlonglonglongurl/'
+    + 'longlonglonglongurl/longlonglonglongurl/longesturl.js';
+    expect(longUrl.length > 256).toEqual(true);
+    expect(machine.fileCache._getCachedPath(longUrl).length < 256).toEqual(true);
+  });
+
 });

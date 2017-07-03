@@ -63,7 +63,7 @@ function readArgs() {
 
     if ('-l' === arg) {
       res.lineControl = true;
-    } else if ('--cache-all' === arg) {
+    } else if ('--cache-all' === arg || '-c' === arg) {
       res.cache = true;
     } else if ('--invalidate-cache' === arg) {
       res.clean = true;

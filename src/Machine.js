@@ -278,7 +278,7 @@ class Machine {
     );
 
     // store included source
-    this._includedSources.add(res.includePath);
+    this._includedSources.add(includePath);
 
     // execute included AST
     this._execute(ast, context, buffer);

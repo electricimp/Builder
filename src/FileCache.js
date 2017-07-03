@@ -10,6 +10,7 @@ const path = require('path');
 const minimatch = require('minimatch');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const md5 = require('md5');
 const GITHUB_DIR = path.sep + 'github';
 const HTTP_DIR = path.sep + 'http';
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
@@ -35,83 +36,18 @@ class FileCache {
    * @private
    */
   _getCachedPath(link) {
-    const ghRes = GithubReader.parseUrl(link);
-    if (ghRes !== false) {
-      return this._getCachedGithubPath(ghRes);
+    link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
+    link = link.replace(/\:\/\//, '#'); // repalce '://' for '#' in url
+    link = link.replace(/\./g, '_');
+    link = link.replace(/\//g, '-'); // replace '/' for '-'
+    link = link.replace(/\?(.*)/g, ''); // delete get parameters from url
+    if (link.length > 250) {
+      const startPart = link.substr(0, 100);
+      const endPart = link.substr(link.length - 100);
+      const middlePart = md5(link);
+      link = startPart + endPart + middlePart;
     }
-    if (new HttpReader().supports(link)) {
-      return this._getCachedHttpPath(link);
-    }
-    throw new Error(`Source "${link}" is not supported`);
-  }
-
-  /**
-   * Transform github link to path and filename
-   * @param {string} link link to the file
-   * @return {string} folder and name, where cache file can be found
-   * @private
-   */
-  _getCachedHttpPath(httpLink) {
-    // parse url parts
-    const parsedUrl = url.parse(httpLink);
-    const domain = parsedUrl.hostname.split('.'); // it is web-site name
-    // create new path from url
-    const newPath = this.cacheDir + HTTP_DIR + path.sep + path.join.apply(this, domain.filter((elem) => elem != 'www').reverse())
-      + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\//g, path.sep) : '');
-    return newPath;
-  }
-
-  /**
-   * Transform url link to path and filename
-   * @param {{user, repo, path, ref}} ghRes github parsed link to the file
-   * @return {string} folder and name, where cache file can be found
-   * @private
-   */
-  _getCachedGithubPath(ghRes) {
-    // find, where fileName starts
-    const i = ghRes.path.lastIndexOf('/');
-    let newPath;
-    let fileName;
-    // check case, when filename goes after user and repo
-    if (i != -1) {
-      newPath = ghRes.path.substr(0, i).replace(/\//g, path.sep);
-      fileName = ghRes.path.substr(i + 1);
-    }
-    const filePath = this.cacheDir + GITHUB_DIR + path.sep + ghRes.user + path.sep + ghRes.repo
-      + (ghRes.ref ? path.sep + ghRes.ref : '') + path.sep + (i != -1 ? newPath + path.sep + fileName : ghRes.path.replace(/\//g, path.sep));
-    return filePath;
-  }
-
-  read(reader, includePath) {
-    let needCache = false;
-    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
-        let result;
-        if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
-          // change reader to local reader
-          includePath = result;
-          this.machine.logger.info(`Read source from local path "${includePath}"`);
-          reader = this.machine.readers.file;
-        } else {
-          needCache = true;
-        }
-    }
-    const includePathParsed = reader.parsePath(includePath);
-    let content = reader.read(includePath);
-
-    // if content doesn't have line separator at the end, then add it
-    if (content.length > 0 && content[content.length - 1] != '\n') {
-        content += '\n';
-    }
-
-    if (needCache && this.useCache) {
-      this.machine.logger.debug(`Caching file "${includePath}"`);
-      this._cacheFile(includePath, content);
-    }
-    return {
-             'includePath' : includePath,
-             'content' : content,
-             'includePathParsed' : includePathParsed
-           };
+    return this._cacheDir + path.sep + link;
   }
 
   /**
@@ -166,11 +102,53 @@ class FileCache {
     return this.useCache && !this._isExcludedFromCache(includePath);
   }
 
+  /**
+   * Check, is file outdated
+   * @param {string} path to the file
+   * @return {boolean} result
+   */
   _isCacheFileOutdate(pathname) {
     const stat = fs.statSync(pathname);
     return Date.now() - stat.mtime > this._outdateTime;
   }
 
+  /**
+   * Read includePath and use cache if needed
+   * @param {string} includePath link to the source
+   * @param {AbstractReader} reader reader
+   * @return {content: string, includePathParsed} content and parsed path
+   * @private
+   */
+  read(reader, includePath) {
+    let needCache = false;
+    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
+        let result;
+        if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
+          // change reader to local reader
+          includePath = result;
+          this.machine.logger.info(`Read source from local path "${includePath}"`);
+          reader = this.machine.readers.file;
+        } else {
+          needCache = true;
+        }
+    }
+    const includePathParsed = reader.parsePath(includePath);
+    let content = reader.read(includePath);
+
+    // if content doesn't have line separator at the end, then add it
+    if (content.length > 0 && content[content.length - 1] != '\n') {
+        content += '\n';
+    }
+
+    if (needCache && this.useCache) {
+      this.machine.logger.debug(`Caching file "${includePath}"`);
+      this._cacheFile(includePath, content);
+    }
+    return {
+             'content' : content,
+             'includePathParsed' : includePathParsed
+           };
+  }
 
   clearCache() {
     fs.removeSync(this.cacheDir);
