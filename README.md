@@ -571,15 +571,19 @@ To turn the cache on, pass the `--cache-all` option to the builder. You may also
  the short version `-c`. 
 
 If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
-One can use wildcard character to mask the file names:
+One can use wildcard character to mask file names.
+
+TODO: add description of the wildcard syntax here.
 
 ### Example of `exclude-list.builder` 
 ```sh
-# exclude direct file that will be excluded
-github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut
-# exclude all electricimp repos 
+# Avoid caching a specific file
+github:electricimp/MessageManager/MessageManager.lib.nut
+
+# Exclude all electricimp repos 
 github:electicimp/**
-# exclude all not tagget files from github
+
+# Exclude all untagged files or files from the specific branches from the cache
 !github:**/*@*
 ```
 
