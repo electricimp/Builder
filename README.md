@@ -32,6 +32,8 @@
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
+  - [Running](#running)
+  - [Cache for Remote Includes](#cache-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
 
@@ -513,28 +515,6 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 # Usage
 
-## FileCache
- Builder provides cache of remote files. Builder can download your remote files at the local storage (`.builder-cache` by default) and use it, everytime you want to include file. 
- 
-**Note** Builder automatically invalidate cached files older than 24 hours.
-
-Option `-c` or `--cache-all` allows you to cache all remote files, that will be included. In `.exclude-list.builder` file can be specified filenames or masks, that will never be cached.
-
-#### Example
-```sh
-# .exclude-list.builder
-# exclude direct file that will be excluded
-github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut
-# exclude all electricimp repos 
-github:electicimp/**
-# exclude all not tagget files from github
-!github:**/*@*
-```
-
-Option `--cache-exclude-list=<path_to_file>` allows to define exclude list file and folder.
-
-Option `--invalidate-cache` will delete all cache files before Builder starts running. With `-c` option it will completelly update cache. 
-
 ## Running
 **Note** Builder requires Node.js 4.0 and above.
 
@@ -578,7 +558,38 @@ Option `--invalidate-cache` will delete all cache files before Builder starts ru
   * <code>--cache-all</code> or <code>-c</code> &mdash; cache all files.
   * <code>--invalidate-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
+
+## Cache for Remote Includes
+For the sake of reducing compilation time Builder can optionally cache files 
+included from a remote resource (GitHub or remote HTTP/HTTPs servers).
   
+If file cache is enabled remote files are cached locally in the `.builder-cache`
+folder. Cache for every resource expires and gets automatically invalidated 
+in 24 hours after creation.
+
+To turn the cache on, pass the `--cache-all` option to the builder. You may also use
+ the short version `-c`. 
+
+If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
+One can use wildcard character to mask the file names:
+
+### Example of `exclude-list.builder` 
+```sh
+# exclude direct file that will be excluded
+github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut
+# exclude all electricimp repos 
+github:electicimp/**
+# exclude all not tagget files from github
+!github:**/*@*
+```
+
+### Command Line Options
+
+| Option Name | Short Version | Description |
+--------------| ------------| --------------|
+|`--cache-exclude-list=<path_to_file>` | `-c` | Allows to exclude files from the cache |
+| `--invalidate-cache` | `-i` | Clears the cache before Builder starts |
+
 # Testing
 
 ```
