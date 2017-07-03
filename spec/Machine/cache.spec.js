@@ -71,4 +71,42 @@ describe('FileCache', () => {
     expect(machine.fileCache._getCachedPath(longUrl).length < 256).toEqual(true);
   });
 
+  it('should generate unique paths for different github links', () => {
+    const linksSet = new Set();
+    const links = ['github:a/b/c.js',
+                   'github:b/a/c.js',
+                   'github:a/b/c.js@a',
+                   'github:a/b/c.j@s',
+                   'github:a/b/a-b-c.js',
+                   'github:a/b-c_js/c.js',
+                   'github:a/b/c_js.js',
+                   'github:a/b/c/js'
+                  ];
+    links.forEach(link => {
+      const path = machine.fileCache._getCachedPath(link);
+      expect(linksSet.has(path)).toEqual(false);
+      linksSet.add(path);
+    });
+  });
+
+   it('should generate unique paths for different url links', () => {
+    const linksSet = new Set();
+    const links = ['http://a/b/c.js',
+                   'https://a/b/c.js',
+                   'http://b/a/c.js',
+                   'http://a.b/c.js',
+                   'http://a.b/c.j?s=2',
+                   'http://a/b/a-b-c.js',
+                   'http://a/b-c_js/c.js',
+                   'http://a/b/c_js.js',
+                   'http://a/b/c/js',
+                   'http://a.b.c/js'
+                  ];
+    links.forEach(link => {
+      const path = machine.fileCache._getCachedPath(link);
+      expect(linksSet.has(path)).toEqual(false);
+      linksSet.add(path);
+    });
+   });
+
 });
