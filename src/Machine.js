@@ -247,7 +247,7 @@ class Machine {
   _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    let includePath = evaluated ? source : this.expression.evaluate(
+    const includePath = evaluated ? source : this.expression.evaluate(
         source, this._mergeContexts(this._globalContext, context)
       ).trim();
 
@@ -257,50 +257,28 @@ class Machine {
       return;
     }
 
-    let reader = this._getReader(includePath);
-    let needCache = false;
-    if (this.fileCache.toBeCached(includePath) && this.fileCache.isCachedReader(reader)) {
-        let result;
-        if ((result = this.fileCache.findFile(includePath)) && !this.fileCache.isCacheFileOutdate(result)) {
-          // change reader to local reader
-          includePath = result;
-          reader = this.readers.file;
-        } else {
-          needCache = true;
-        }
-    }
-    const includePathParsed = reader.parsePath(includePath);
-
-    // provide filename for correct error messages
-    this.parser.file = includePathParsed.__FILE__;
+    const reader = this._getReader(includePath);
+    this.logger.info(`Including source "${includePath}"`);
 
     // read
-    this.logger.info(`Including source "${includePath}"`);
-    let content = reader.read(includePath);
+    const res = this.fileCache.read(reader, includePath);
 
-    // if content doesn't have line separator at the end, then add it
-    if (content.length > 0 && content[content.length - 1] != '\n') {
-        content += '\n';
-    }
-
-    if (needCache && this.useCache) {
-      this.logger.debug(`Caching file "${includePath}"`);
-      this.fileCache.cacheFile(includePath, content);
-    }
+    // provide filename for correct error messages
+    this.parser.file = res.includePathParsed.__FILE__;
 
     // parse
-    const ast = this.parser.parse(content);
+    const ast = this.parser.parse(res.content);
 
     // update context
 
     // __FILE__/__PATH__
     context = this._mergeContexts(
       context,
-      includePathParsed
+      res.includePathParsed
     );
 
     // store included source
-    this._includedSources.add(includePath);
+    this._includedSources.add(res.includePath);
 
     // execute included AST
     this._execute(ast, context, buffer);

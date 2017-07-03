@@ -82,12 +82,44 @@ class FileCache {
     return filePath;
   }
 
+  read(reader, includePath) {
+    let needCache = false;
+    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
+        let result;
+        if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
+          // change reader to local reader
+          includePath = result;
+          this.machine.logger.info(`Read source from local path "${includePath}"`);
+          reader = this.machine.readers.file;
+        } else {
+          needCache = true;
+        }
+    }
+    const includePathParsed = reader.parsePath(includePath);
+    let content = reader.read(includePath);
+
+    // if content doesn't have line separator at the end, then add it
+    if (content.length > 0 && content[content.length - 1] != '\n') {
+        content += '\n';
+    }
+
+    if (needCache && this.useCache) {
+      this.machine.logger.debug(`Caching file "${includePath}"`);
+      this._cacheFile(includePath, content);
+    }
+    return {
+             'includePath' : includePath,
+             'content' : content,
+             'includePathParsed' : includePathParsed
+           };
+  }
+
   /**
    * Create all subfolders and write file to them
    * @param {string} path path to the file
    * @param {string} content content of the file
    */
-  cacheFile(filePath, content) {
+  _cacheFile(filePath, content) {
     const finalPath = this._getCachedPath(filePath);
     try {
       if (!fs.existsSync(finalPath)) {
@@ -106,7 +138,7 @@ class FileCache {
    * @param {{dirPath : string, fileName : string} | false} link link to the file
    * @return {string|false} result
    */
-  findFile(link) {
+  _findFile(link) {
     const finalPath = this._getCachedPath(link);
     return fs.existsSync(finalPath) ? finalPath : false;
   }
@@ -117,7 +149,7 @@ class FileCache {
    * @return {boolean} result
    * @private
    */
-  isCachedReader(reader) {
+  _isCachedReader(reader) {
     return CACHED_READERS.some((cachedReader) => (reader instanceof cachedReader));
   }
 
@@ -126,21 +158,22 @@ class FileCache {
    * @param {string} path to the file
    * @return {boolean} result
    */
-  isExcludedFromCache(includedPath) {
+  _isExcludedFromCache(includedPath) {
     return this._excludeList.some((regexp) => regexp.test(includedPath));
   }
 
-  toBeCached(includePath) {
-    return this.useCache && !this.isExcludedFromCache(includePath);
+  _toBeCached(includePath) {
+    return this.useCache && !this._isExcludedFromCache(includePath);
   }
+
+  _isCacheFileOutdate(pathname) {
+    const stat = fs.statSync(pathname);
+    return Date.now() - stat.mtime > this._outdateTime;
+  }
+
 
   clearCache() {
     fs.removeSync(this.cacheDir);
-  }
-
-  isCacheFileOutdate(pathname) {
-    const stat = fs.statSync(pathname);
-    return Date.now() - stat.mtime > this._outdateTime;
   }
 
   /**
@@ -164,6 +197,14 @@ class FileCache {
 
   get cacheDir() {
     return this._cacheDir;
+  }
+
+  set machine(value) {
+    this._machine = value;
+  }
+
+  get machine() {
+    return this._machine;
   }
 
   get excludeList() {
