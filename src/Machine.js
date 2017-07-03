@@ -8,8 +8,6 @@ const url = require('url');
 const path = require('path');
 const clone = require('clone');
 
-const fs = require('fs');
-
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 const FileCache = require('./FileCache');

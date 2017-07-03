@@ -5,14 +5,12 @@
 'use strict';
 
 const fs = require('fs-extra');
-const url = require('url');
 const path = require('path');
 const minimatch = require('minimatch');
+const md5 = require('md5');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
-const md5 = require('md5');
-const GITHUB_DIR = path.sep + 'github';
-const HTTP_DIR = path.sep + 'http';
+
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
