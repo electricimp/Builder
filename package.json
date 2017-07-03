@@ -25,7 +25,8 @@
     "jsep": "^0.3.0",
     "request": "^2.71.0",
     "minimatch": "^3.0.4",
-    "fs-extra": "^3.0.1"
+    "fs-extra": "^3.0.1",
+    "md5": "^2.2.1"
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
