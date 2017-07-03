@@ -587,8 +587,9 @@ github:electicimp/**
 
 | Option Name | Short Version | Description |
 --------------| ------------| --------------|
-|`--cache-exclude-list=<path_to_file>` | `-c` | Allows to exclude files from the cache |
-| `--invalidate-cache` | `-i` | Clears the cache before Builder starts |
+| `--cache-all` | `-c` | Turns on file cache for all files included from remote resources | 
+|`--cache-exclude-list=<path_to_file>` | | Allows to exclude files from the cache |
+| `--invalidate-cache` |  | Clears the cache before Builder starts |
 
 # Testing
 
