@@ -96,9 +96,6 @@ describe('FileCache', () => {
     for (let i = 0; i < testFilesList.length; i++) {
       machine.excludeList = path + testFilesList[i];
       linkList.forEach((link) => {
-        if (machine.fileCache._isExcludedFromCache(link) != (answerList[i].test(link) || false)) {
-          console.log(link, testFilesList[i]);
-        }
         expect(machine.fileCache._isExcludedFromCache(link)).toEqual(answerList[i].test(link) || false);
       });
     }
