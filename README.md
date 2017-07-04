@@ -573,7 +573,14 @@ To turn the cache on, pass the `--cache-all` option to the builder. You may also
 If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
 One can use wildcard character to mask file names.
 
-TODO: add description of the wildcard syntax here.
+## Wildcard pattern matching
+Pattern matching is a similar with `.gitignore` syntax. A string is a wildcard pattern if it contains '?' or '&ast;' characters. Empty strings or strings that starts with '#' are ignored.
+
+A '?' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
+
+A '&ast;' matches any string, that is limited by slashes, including the empty string. For example, `/foo/`&ast;`ar` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+
+A '&ast;&ast;' matches any string despite of slashes. For example, '&ast;&ast;' matches any string, &ast;&ast;`/bar` matches /foo/bar, /get/foo/bar etc. 
 
 ### Example of `exclude-list.builder` 
 ```sh
