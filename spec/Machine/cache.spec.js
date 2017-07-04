@@ -49,7 +49,7 @@ describe('FileCache', () => {
     expect(machine.fileCache._findFile(linkName) ? true : false).toEqual(true);
   });
 
-  it('should exclude files from cache', () => {
+  it('should exclude remote files from cache', () => {
     machine.useCache = true;
     let linkName = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
@@ -59,6 +59,49 @@ describe('FileCache', () => {
     linkName = 'https://raw.githubusercontent.com/nobitlost/Builder/develop/spec/Builder.spec.js';
     machine.execute(`@include '${linkName}'`);
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
+  });
+
+  it('should exclude files from cache by name', () => {
+    machine.useCache = true;
+    const path = __dirname + '/../fixtures/config/';
+    machine.excludeList = __dirname + '/../fixtures/config/exclude-all.exclude';
+    const linkList = [
+      'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.js',
+      'github:electricimp/Builder/spec/fixtures/sample-11/OneLineSample.nut@v1.0.1',
+      'github:electricimp/MessageManager/MessageManager.lib.nut',
+      'github:electricimp/MessageManager/MessageManager.lib.js',
+      'https://raw.githubusercontent.com/nobitlost/Builder/v2.0.0/src/AstParser.js',
+      'https://raw.githubusercontent.com/nobitlost/Builder/v2.0.0/src/AstParser.js?nut=2',
+      'http://raw.githubusercontent.com/nobitlost/Builder/src/AstParser.js',
+      'http://raw.githubusercontent.com/nobitlost/Builder/src/AstParser.nut'
+    ];
+    const testFilesList = [
+      'exclude-all.exclude',
+      'exclude-nothing.exclude',
+      'exclude-http.exclude',
+      'exclude-js.exclude',
+      'exclude-Builder.exclude',
+      'exclude-tagged.exclude',
+      'comment-exclude.exclude'
+    ];
+    const answerList = [
+      /^(.*)$/,
+      /^$/,
+      /^http[^s](.*)$/,
+      /^(.*)\.js(.*)$/,
+      /^(.*)\/Builder\/(.*)$/,
+      /^(.*)v\d\.\d\.\d(.*)$/,
+      /^github(.*)v\d\.\d\.\d(.*)$/
+    ];
+    for (let i = 0; i < testFilesList.length; i++) {
+      machine.excludeList = path + testFilesList[i];
+      linkList.forEach((link) => {
+        if (machine.fileCache._isExcludedFromCache(link) != (answerList[i].test(link) || false)) {
+          console.log(link, testFilesList[i]);
+        }
+        expect(machine.fileCache._isExcludedFromCache(link)).toEqual(answerList[i].test(link) || false);
+      });
+    }
   });
 
   it('should shorten filenames if they are longer then 256 symbols', () => {
