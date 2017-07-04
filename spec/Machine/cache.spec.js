@@ -89,9 +89,12 @@ describe('FileCache', () => {
     });
   });
 
-   it('should generate unique paths for different url links', () => {
+  it('should generate unique paths for different url links', () => {
     const linksSet = new Set();
     const links = ['http://a/b/c.js',
+                   'http://a/b/c.js?1',
+                   'http://a/b/c.js?2',
+                   'http://a/b/c.js?t=12',
                    'https://a/b/c.js',
                    'http://b/a/c.js',
                    'http://a.b/c.js',
@@ -107,6 +110,6 @@ describe('FileCache', () => {
       expect(linksSet.has(path)).toEqual(false);
       linksSet.add(path);
     });
-   });
+  });
 
 });

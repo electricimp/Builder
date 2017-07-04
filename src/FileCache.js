@@ -7,13 +7,15 @@
 const fs = require('fs-extra');
 const path = require('path');
 const minimatch = require('minimatch');
-const md5 = require('md5');
+const XXHash = require('xxhashjs');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
+const HASH_SEED = 0xE1EC791C;
+
 
 class FileCache {
 
@@ -36,16 +38,18 @@ class FileCache {
   _getCachedPath(link) {
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
     link = link.replace(/\:\/\//, '#'); // repalce '://' for '#' in url
-    link = link.replace(/\./g, '_');
     link = link.replace(/\//g, '-'); // replace '/' for '-'
-    link = link.replace(/\?(.*)/g, ''); // delete get parameters from url
+    const parts = link.match(/^([^\?]*)(\?(.*))?$/); // delete get parameters from url
+    if (parts && parts[3]) {
+      link = parts[1] + XXHash.h64(parts[3], HASH_SEED);
+    }
     if (link.length > 250) {
       const startPart = link.substr(0, 100);
       const endPart = link.substr(link.length - 100);
-      const middlePart = md5(link);
+      const middlePart = XXHash.h64(link, HASH_SEED);
       link = startPart + endPart + middlePart;
     }
-    return this._cacheDir + path.sep + link;
+    return path.join(this._cacheDir, link);
   }
 
   /**
@@ -54,14 +58,10 @@ class FileCache {
    * @param {string} content content of the file
    */
   _cacheFile(filePath, content) {
-    const finalPath = this._getCachedPath(filePath);
+    const cachedPath = this._getCachedPath(filePath);
     try {
-      if (!fs.existsSync(finalPath)) {
-        fs.ensureDirSync(path.dirname(finalPath));
-        fs.writeFileSync(finalPath, content);
-      } else {
-        this._machine.logger.error(`File "${filePath}" already exist and can't be cached`);
-      }
+      fs.ensureDirSync(path.dirname(cachedPath));
+      fs.writeFileSync(cachedPath, content);
     } catch (err) {
       this._machine.logger.error(err);
     }
