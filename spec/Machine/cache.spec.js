@@ -39,6 +39,13 @@ describe('FileCache', () => {
     expect(fs.existsSync(ghRes)).toEqual(true);
   });
 
+  it('should not read cached files when cache option is off', () => {
+    const link = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
+    machine.useCache = false;
+    machine.fileCache._cacheFile(link, 'cached');
+    expect(machine.execute(`@include '${link}'`)).not.toEqual('cached');
+  });
+
   it('should cache files in machine', () => {
     let linkName = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
     machine.useCache = true;

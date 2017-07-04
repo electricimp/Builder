@@ -15,6 +15,7 @@ const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const HASH_SEED = 0xE1EC791C;
+const MAX_FILENAME_LENGTH = 250;
 
 
 class FileCache {
@@ -43,7 +44,7 @@ class FileCache {
     if (parts && parts[3]) {
       link = parts[1] + XXHash.h64(parts[3], HASH_SEED);
     }
-    if (link.length > 250) {
+    if (link.length > MAX_FILENAME_LENGTH) {
       const startPart = link.substr(0, 100);
       const endPart = link.substr(link.length - 100);
       const middlePart = XXHash.h64(link, HASH_SEED);

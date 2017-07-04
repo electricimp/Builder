@@ -536,7 +536,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   // Set up cache params (optional)
   builder.machine.useCache = "<boolean>";
   builder.machine.excludeList = "<path to exclude file>" // or "" for default name
-  builder.machine.clearCache() // delete 
+  builder.machine.clearCache() // delete cache folder
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
@@ -546,7 +546,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache-all] [--invalidate-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache-all] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
   </pre>
 
   where:
@@ -556,7 +556,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
   * <code>--cache-all</code> or <code>-c</code> &mdash; cache all files.
-  * <code>--invalidate-cache</code> &mdash; remove cache before builder starts running.
+  * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
 
 ## Cache for Remote Includes
@@ -568,7 +568,7 @@ folder. Cache for every resource expires and gets automatically invalidated
 in 24 hours after creation.
 
 To turn the cache on, pass the `--cache-all` option to the builder. You may also use
- the short version `-c`. 
+ the short version `-c`. If this option is not passed, builder will not use cache, even if it has cached files. 
 
 If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
 One can use wildcard character to mask file names.
@@ -590,8 +590,8 @@ github:electricimp/MessageManager/MessageManager.lib.nut
 # Exclude all electricimp repos 
 github:electicimp/**
 
-# Exclude all untagged files or files from the specific branches from the cache
-!github:**/*@*
+# Exclude all tagged files or files from the specific branches from the cache
+github:**/*@*
 ```
 
 ### Command Line Options
@@ -600,7 +600,7 @@ github:electicimp/**
 --------------| ------------| --------------|
 | `--cache-all` | `-c` | Turns on file cache for all files included from remote resources | 
 |`--cache-exclude-list=<path_to_file>` | | Allows to exclude files from the cache |
-| `--invalidate-cache` |  | Clears the cache before Builder starts |
+| `--clear-cache` |  | Clears the cache before Builder starts |
 
 # Testing
 
