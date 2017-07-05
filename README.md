@@ -568,7 +568,7 @@ folder. Cache for every resource expires and gets automatically invalidated
 in 24 hours after creation.
 
 To turn the cache on, pass the `--cache-all` option to the builder. You may also use
- the short version `-c`. If this option is not passed, builder will not use cache, even if it has cached files. 
+ the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid - it will query remote resources on every execution.
 
 If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
 One can use wildcard character to mask file names.
