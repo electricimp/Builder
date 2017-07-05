@@ -127,7 +127,7 @@ Here is the same macro used inline:
 [[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
 </pre>
 
-This will ouput:
+This will output:
 
 ```
 [[[ Hello, username!
@@ -542,7 +542,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 - As a CLI:
 
-  _Bullder_ provides the `pleasebuild` command when installed globally. For example:
+  _Builder_ provides the `pleasebuild` command when installed globally. For example:
 
   <pre>
   npm i -g Builder
