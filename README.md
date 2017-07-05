@@ -24,7 +24,7 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
-      - [Variables Definition](#variables-definition)
+      - [Variable Definition Order](#variables-definition-order)
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
@@ -40,7 +40,9 @@
 [![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)
 <br/>
 
-_Builder_ language combines a preprocessor with an expression language and advanced imports.
+_Builder_ combines a preprocessor with an expression language and advanced imports.
+
+#### Current version: 2.1.0
 
 # Syntax
 
@@ -407,20 +409,15 @@ The following types are supported in expressions:
 
 Variables can be used in `Builder` expressions evaluation. 
 
-- Variable can be defined by `-D<variable name> <variable value>` command line parameter, read from [runtime environment](#environment-variables), or defined by <code><b>@set</b></code> statements.
+- Variables can be defined by `-D<variable name> <variable value>` command line parameter, read from the [runtime environment](#environment-variables), or defined by <code><b>@set</b></code> statements.
 - Undefined variables are evaluated as `null`.
 - Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
 
-#### Variables Definition
+#### Variable Definition Order
 
-1. When resolving a variable value, *Builder* first looks for its 
-definition in command line `-D` parameters (`-D<variable name> <variable value>`) 
-passed to the `pleasebuild` command. 
-1. Then, if no such variable definition is found among the `-D` 
-parameters then Squirrel code is scanned for `@set` statements 
-preceding the variable usage. 
-1. And finally, if no such variable definition is found on the previous steps, 
-`Builder` looks for it in the host environment variables.
+1. When resolving a variable’s value, *Builder* first looks for its definition in the command line `-D` parameters (`-D <variable name> <variable value>`) passed to the *pleasebuild* command. 
+1. If no such variable definition is found, Squirrel code is scanned for `@set` statements preceding the variable usage. 
+1. If no variable definitions are found in the previous steps, *Builder* looks for it in the host environment variables.
 
 #### \_\_LINE\_\_
 
@@ -482,15 +479,15 @@ myvar: 9
 loop.index: 2
 ```
 
-#### Environment variables
+#### Environment Variables
 
-There is no special predicate to use environment variables. **Builder** tries to resolve macro from context provided by command line defines or from process environment variables.
+There is no special predicate required to make use of environment variables. *Builder* tries to resolve the macro from the context provided via the command line defines or from process environment variables. For example:
 
 ```
 server.log("Host home path is @{HOME}");
 ```
 
-This will print home folder of current logged user at the system where **Builder** was executed.
+will print the home directory path of the current user of the system where *Builder* was executed.
 
 ### Functions
 
@@ -518,7 +515,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 ## Running
 **Note** Builder requires Node.js 4.0 and above.
 
-- As an _npm_ library:
+- It can be installed and used as an _npm_ library:
 
   ```sh
   npm i --save Builder
@@ -530,8 +527,8 @@ Lines starting with `@` followed by space or a line break are treated as comment
   const builder = require('Builder');
 
   // Provide GitHub credentials (optional)
-  builder.machine.readers.github.username = "<usename>";
-  builder.machine.readers.github.token = "<personal access token>";
+  builder.machine.readers.github.username = "<username>";
+  builder.machine.readers.github.token = "<personal_access_token>";
   
   // Set up cache params (optional)
   builder.machine.useCache = "<boolean>";
@@ -540,19 +537,19 @@ Lines starting with `@` followed by space or a line break are treated as comment
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
-- As a CLI:
+- Or as a CLI:
 
   _Builder_ provides the `pleasebuild` command when installed globally. For example:
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;usename&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache-all] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache-all] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
   </pre>
 
   where:
 
-  * <code> `-l` </code> &mdash; generate line control statements.
-  * <code>-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
+  * `-l` &mdash; generate line control statements.
+  * <code>-D <i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
   * <code>--cache-all</code> or <code>-c</code> &mdash; cache all files.
