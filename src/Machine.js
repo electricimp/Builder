@@ -249,7 +249,7 @@ class Machine {
         source, this._mergeContexts(this._globalContext, context)
       ).trim();
 
-    // if once flag is set, then check if source has alredy been included
+    // if once flag is set, then check if source has already been included
     if (once && this._includedSources.has(includePath)) {
       this.logger.debug(`Skipping source "${includePath}": has already been included`);
       return;
@@ -438,7 +438,7 @@ class Machine {
     this._macros[macro.name] = {
       file: context.__FILE__, // file at declaration
       path: context.__PATH__, // path at declaration
-      line: context.__LINE__, // line of eclaration
+      line: context.__LINE__, // line of declaration
       args: macro.args,
       body: instruction.body
     };
@@ -467,32 +467,32 @@ class Machine {
 
   /**
    * Execute loop instruction
-   * @param {{type, while, rereat, body: []}} instruction
+   * @param {{type, while, repeat, body: []}} instruction
    * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
-  _executeLoop(insruction, context, buffer) {
+  _executeLoop(instruction, context, buffer) {
 
     let index = 0;
 
     while (true) {
       // evaluate test expression
       const test = this._expression.evaluate(
-        insruction.while || insruction.repeat,
+        instruction.while || instruction.repeat,
         this._mergeContexts(this._globalContext, context)
       );
 
       // check break condition
-      if (insruction.while && !test) {
+      if (instruction.while && !test) {
         break;
-      } else if (insruction.repeat && test === index) {
+      } else if (instruction.repeat && test === index) {
         break;
       }
 
       // execute body
       this._execute(
-        insruction.body,
+        instruction.body,
         this._mergeContexts(
           context,
           {loop: {index, iteration: index + 1}}
@@ -507,7 +507,7 @@ class Machine {
   }
 
   /**
-   * Perform outoput operation
+   * Perform output operation
    * @param {string|string[]} output
    * @param {{}} context
    * @param {string[]} buffer
