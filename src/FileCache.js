@@ -38,7 +38,7 @@ class FileCache {
    */
   _getCachedPath(link) {
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
-    link = link.replace(/\:\/\//, '#'); // repalce '://' for '#' in url
+    link = link.replace(/\:\/\//, '#'); // replace '://' for '#' in url
     link = link.replace(/\//g, '-'); // replace '/' for '-'
     const parts = link.match(/^([^\?]*)(\?(.*))?$/); // delete get parameters from url
     if (parts && parts[3]) {
