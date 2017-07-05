@@ -42,7 +42,7 @@
 
 _Builder_ combines a preprocessor with an expression language and advanced imports.
 
-#### Current version: 2.1.0
+#### Current version: 2.2.0
 
 # Syntax
 
