@@ -19,7 +19,7 @@ describe('Machine', () => {
     __dirname = __dirname.replace(/\\/g, '/');
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + "lib/a.builder" // comment`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures//" + '//lib/a.builder' // comment`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures/" + "lib/a.builder//" // comment`)).toEqual(ans);
+    expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder//"//comment+/comment`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + 'lib/a.builder' // comment with //`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder" // comment with some expr (1 | 0)`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + 'lib/a.builder' // comment with " ' ( ] {`)).toEqual(ans);
