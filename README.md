@@ -9,6 +9,7 @@
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From GitHub](#from-github)
+      - [Single Line Comments](#single-line-cgtomments)
     - [@include once](#include-once)
     - [@{...} – inlines](#-inline-expressionsmacros)
     - [@while](#while)
@@ -42,7 +43,7 @@
 
 _Builder_ combines a preprocessor with an expression language and advanced imports.
 
-#### Current version: 2.2.0
+#### Current version: 2.2.1
 
 # Syntax
 
@@ -165,6 +166,14 @@ Use this directive to includes local files, external sources, or macros.
 
 <pre>
 <b>@include</b> "https://example.com/file.ext"
+</pre>
+
+#### Single Line Comments
+
+Any text after `include` between `//` and the end of the line will be ignored by Builder and will not come to preprocessed file.
+
+<pre>
+<b>@include</b> "https://example.com/file.ext" // need update to file2.ext
 </pre>
 
 #### From GitHub
