@@ -114,6 +114,7 @@ class AstParser {
         switch (type) {
 
           case 'include':
+            // remove single line comments from arg
             arg = decomment.text(arg);
             // detect "once" flag
             if (/^once\b/.test(arg)) {
