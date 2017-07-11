@@ -16,7 +16,6 @@ describe('Machine', () => {
 
   it('should handle include-once corectly #1', () => {
     const ans = 'a.builder\n';
-    __dirname = __dirname.replace(/\\/g, '/');
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + "lib/a.builder" // comment`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures//" + '//lib/a.builder' // comment`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder//"//comment+/comment`)).toEqual(ans);

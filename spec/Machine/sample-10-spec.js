@@ -5,6 +5,7 @@
 'use strict';
 
 require('jasmine-expect');
+const path = require('path');
 
 const FILE = __dirname + '/../fixtures/sample-10/input.nut';
 const init = require('./init')(FILE);
@@ -19,8 +20,8 @@ describe('Machine', () => {
   });
 
   it('should do something alright #1', () => {
-    expect(machine.execute('@include "input.nut"')).toBe(result);
+    expect(machine.execute('@include "input.nut"').replace(/\\/g, '/')).toBe(result);
     machine.generateLineControlStatements = true;
-    expect(machine.execute('@include "input.nut"')).toBe(resultWithLC);
+    expect(machine.execute('@include "input.nut"').replace(/\\/g, '/')).toBe(resultWithLC);
   });
 });
