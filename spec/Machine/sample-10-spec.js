@@ -5,7 +5,6 @@
 'use strict';
 
 require('jasmine-expect');
-const path = require('path');
 
 const FILE = __dirname + '/../fixtures/sample-10/input.nut';
 const init = require('./init')(FILE);
