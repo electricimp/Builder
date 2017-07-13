@@ -26,7 +26,12 @@ module.exports = (sampleFile) => {
     },
 
     getResultWithLineControl: () => {
-      return fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
+      const content = fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
+      // replace for files, that have predefined line control
+      // with char '$' instead of slash for compatibility with Unix and Windows
+      // for example, line control "#line 1 1$2$test" will be
+      // "#line 1 1/2/test" on Unix and "#line 1 1\2\test" on Windows
+      return content.replace(/\$/g, path.sep);
     }
   };
 };
