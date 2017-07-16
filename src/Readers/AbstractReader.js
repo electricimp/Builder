@@ -44,10 +44,8 @@ class AbstractReader {
     const __FILE__ = path.basename(source);
     let __PATH__;
 
-    const parsedURL = url.parse(source);
-
     // url parse can find protocol in Windows-style path, so we check it
-    if (parsedURL.protocol && !path.parse(source).root) {
+    if (url.parse(source).protocol && !path.parse(source).root) {
       // URL
       __PATH__ = path.dirname(source);
     } else {

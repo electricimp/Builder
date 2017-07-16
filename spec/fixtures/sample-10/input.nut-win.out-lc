@@ -2,7 +2,7 @@
 // included file a
 #line 1 "inc-b.nut"
 // included file b
-#line 1 "1$2$inc-c.nut"
+#line 1 "1\2\inc-c.nut"
 // included file c
-#line 1 "1$inc-d.nut"
+#line 1 "1\inc-d.nut"
 // included file d

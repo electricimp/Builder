@@ -26,12 +26,28 @@ module.exports = (sampleFile) => {
     },
 
     getResultWithLineControl: () => {
-      const content = fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
-      // replace for files, that have predefined line control
-      // with char '$' instead of slash for compatibility with Unix and Windows
-      // for example, line control "#line 1 1$2$test" will be
-      // "#line 1 1/2/test" on Unix and "#line 1 1\2\test" on Windows
-      return content.replace(/\$/g, path.sep);
+      let content;
+      try {
+        content = fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
+      } catch (err) {
+        if (err.code == 'ENOENT') {
+          let platform;
+          switch (path.sep) {
+            case '/':
+              platform = '-unix';
+              break;
+            case '\\':
+              platform = '-win';
+              break;
+            default:
+              throw Error('Unknown platform');
+          }
+          content = fs.readFileSync(sampleFile + platform + '.out-lc', 'utf-8');
+        } else {
+          throw err;
+        }
+      }
+      return content;
     }
   };
 };
