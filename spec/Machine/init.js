@@ -31,18 +31,8 @@ module.exports = (sampleFile) => {
         content = fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
       } catch (err) {
         if (err.code == 'ENOENT') {
-          let platform;
-          switch (path.sep) {
-            case '/':
-              platform = '-unix';
-              break;
-            case '\\':
-              platform = '-win';
-              break;
-            default:
-              throw Error('Unknown platform');
-          }
-          content = fs.readFileSync(sampleFile + platform + '.out-lc', 'utf-8');
+          const platform = /^win/.test(process.platform) ? '-win' : '-unix';
+          content = fs.readFileSync(sampleFile + '.out-lc' + platform, 'utf-8');
         } else {
           throw err;
         }
