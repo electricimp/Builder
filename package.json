@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -22,7 +22,7 @@
   "dependencies": {
     "clone": "^1.0.2",
     "github": "^0.2.4",
-    "jsep": "^0.3.0",
+    "jsep": "^0.3.1",
     "request": "^2.71.0",
     "minimatch": "^3.0.4",
     "fs-extra": "^3.0.1",
