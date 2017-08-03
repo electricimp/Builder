@@ -14,7 +14,7 @@ describe('Machine', () => {
     machine = init.createMachine();
   });
 
-  it('should handle include-once corectly #1', () => {
+  it('should handle comments in include corectly', () => {
     const ans = 'a.builder\n';
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + "lib/a.builder" // comment`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures//" + '//lib/a.builder' // comment`)).toEqual(ans);
