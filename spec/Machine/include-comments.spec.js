@@ -18,7 +18,7 @@ describe('Machine', () => {
     const ans = 'a.builder\n';
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + "lib/a.builder" // comment`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures//" + '//lib/a.builder' // comment`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder//"//comment+/comment`)).toEqual(ans);
+    expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder"//comment+/comment+"some more comment"`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + 'lib/a.builder' // comment with //`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder" // comment with some expr (1 | 0)`)).toEqual(ans);
     expect(machine.execute(`@include "${__dirname}/../fixtures/" + 'lib/a.builder' // comment with " ' ( ] {`)).toEqual(ans);
