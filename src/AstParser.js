@@ -5,7 +5,7 @@
 'use strict';
 
 const jsep = require('jsep');
-
+const decomment = require('decomment');
 // instruction types
 const INSTRUCTIONS = require('./Machine').INSTRUCTIONS;
 
@@ -114,6 +114,8 @@ class AstParser {
         switch (type) {
 
           case 'include':
+            // remove single line comments from arg
+            arg = decomment.text(arg);
             // detect "once" flag
             if (/^once\b/.test(arg)) {
               token.args.push('once');
