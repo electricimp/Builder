@@ -573,20 +573,28 @@ If file cache is enabled remote files are cached locally in the `.builder-cache`
 folder. Cache for every resource expires and gets automatically invalidated 
 in 24 hours after creation.
 
-To turn the cache on, pass the `--cache-all` option to the builder. You may also use
- the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid - it will query remote resources on every execution.
-
-If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
-One can use wildcard character to mask file names.
+To turn the cache on, pass the `--cache-all` option to the builder. 
+You may also use the short version `-c`. If the option is not specified, 
+Builder will not use file cache even if the cached data exist and is valid 
+- it will query remote resources on every execution.
 
 ### Wildcard pattern matching
-Pattern matching is a similar with `.gitignore` syntax. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
 
-A '```?```' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
+If a resource should never be cached it needs to be added to the 
+`exclude-list.builder` file. One can use wildcard character to mask file names.
 
-A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+Pattern matching syntax is a similar to that of `.gitignore`. 
+A string is a wildcard pattern if it contains '```?```' or '```*```' 
+characters. Empty strings or strings that starts with '```#```' are ignored.
 
-A '```**```' matches any string despite of slashes. For example, ```**``` matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar` etc. 
+A '```?```' symbol matches any single character. For example, `bo?t.js` matches 
+`boot.js` and `boat.js`, but doesn't match `bot.js`.
+
+A '```*```' matches any string, that is limited by slashes, including 
+the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+
+A '```**```' matches any string despite of slashes. For example, ```**``` 
+matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar` etc. 
 
 ### Example of `exclude-list.builder` 
 ```sh
