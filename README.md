@@ -191,19 +191,19 @@ Any text after `include` between `//` and the end of the line will be ignored by
 - Head of the default branch
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut"
   </pre>
 
 - Head of the _develop_ branch
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@develop"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"
   </pre>
 
-- Tag _v2.0.0_:
+- Tag _v3.0.1_:
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"
   </pre>
 
 #### Authentication
