@@ -77,11 +77,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + arg);
       }
       res.gh.user = args.shift();
-    } else if (m = arg.match(/^--cache-exclude-list=(.*)$/)) {
-      if (!m[1]) {
+    } else if (arg === "--cache-exclude-list") {
+      if (!args.length) {
         throw Error('Expected filename after ' + arg);
       }
-      res.excludeFile = m[1];
+      res.excludeFile = args.shift();
     } else if (arg === '--github-token') {
       if (!args.length) {
         throw Error('Expected argument value after ' + arg);
