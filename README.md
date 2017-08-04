@@ -574,7 +574,7 @@ folder. Cache for every resource expires and gets automatically invalidated
 in 24 hours after creation.
 
 To turn the cache on, pass the `--cache` option to the builder. You may also use
- the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid --- it will query remote resources on every execution.
+ the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
 
 To reset cache use both `-c` and `--clear-cache` options.
 
