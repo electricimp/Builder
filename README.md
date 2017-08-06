@@ -574,7 +574,7 @@ folder. Cache for every resource expires and gets automatically invalidated
 in 24 hours after creation.
 
 To turn the cache on, pass the `--cache` option to the builder. You may also use
- the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
+ the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid --- it will query remote resources on every execution.
 
 To reset cache use both `-c` and `--clear-cache` options.
 
@@ -588,7 +588,7 @@ A '```?```' symbol matches any single character. For example, `bo?t.js` matches 
 
 A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
 
-A '```**```' matches any string despite of slashes. If the pattern is followed by a ```/```, only directories and subdirectories will match. For example, ```**``` matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar`, ```/foo**``` will not match any string neither `/foobar/` nor `/foo/bar/`. 
+A '```**```' matches any sequence of characters including slashes, when nothing is followed. If the pattern is followed by a ```/```, only directories and subdirectories will match. If they followed by another symbol, pattern works like ```*```. For example, ```**``` matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar`, ```/foo**``` will match `/foobar/`, but will not match `/foo/bar/`. 
 
 ### Example of `exclude-list.builder` 
 ```sh

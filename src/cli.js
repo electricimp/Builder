@@ -62,33 +62,33 @@ function readArgs() {
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
-    const arg = args.shift();
+    const argument = args.shift();
 
-    if ('-l' === arg) {
+    if ('-l' === argument) {
       res.lineControl = true;
-    } else if ('--cache' === arg || '-c' === arg) {
+    } else if ('--cache' === argument || '-c' === argument) {
       res.cache = true;
-    } else if ('--clear-cache' === arg) {
+    } else if ('--clear-cache' === argument) {
       res.clean = true;
-    } else if (m = arg.match(/^-D(.+)$/)) {
+    } else if (m = argument.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
-    } else if (arg === '--github-user') {
+    } else if (argument === '--github-user') {
       if (!args.length) {
-        throw Error('Expected argument value after ' + arg);
+        throw Error('Expected argument value after ' + argument);
       }
       res.gh.user = args.shift();
-    } else if (arg === "--cache-exclude-list") {
+    } else if (argument === '--cache-exclude-list') {
       if (!args.length) {
-        throw Error('Expected filename after ' + arg);
+        throw Error('Expected filename after ' + argument);
       }
       res.excludeFile = args.shift();
-    } else if (arg === '--github-token') {
+    } else if (argument === '--github-token') {
       if (!args.length) {
-        throw Error('Expected argument value after ' + arg);
+        throw Error('Expected argument value after ' + argument);
       }
       res.gh.token = args.shift();
     } else {
-      res.input = arg;
+      res.input = argument;
     }
   }
 
