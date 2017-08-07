@@ -573,7 +573,6 @@ If file cache is enabled remote files are cached locally in the `.builder-cache`
 folder. Cache for every resource expires and gets automatically invalidated 
 in 24 hours after creation.
 
-<<<<<<< HEAD
 To turn the cache on, pass the `--cache` option to the builder. You may also use
  the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid --- it will query remote resources on every execution.
 
@@ -581,12 +580,6 @@ To reset cache use both `-c` and `--clear-cache` options.
 
 If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
 One can use wildcard character to mask file names.
-=======
-To turn the cache on, pass the `--cache-all` option to the builder. 
-You may also use the short version `-c`. If the option is not specified, 
-Builder will not use file cache even if the cached data exist and is valid 
-- it will query remote resources on every execution.
->>>>>>> af3da357e6af1701a9d91bc8c3f32df48ad7deea
 
 ### Wildcard pattern matching
 
@@ -603,7 +596,6 @@ A '```?```' symbol matches any single character. For example, `bo?t.js` matches
 A '```*```' matches any string, that is limited by slashes, including 
 the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
 
-<<<<<<< HEAD
 Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
 
 * A leading `**` followed by a slash means match in all directories. For example, `**/foo` matches file or directory `foo` anywhere, the same as pattern `foo`. `**/foo/bar` matches file or directory `bar` anywhere that is directly under directory `foo`.
@@ -613,10 +605,6 @@ Two consecutive asterisks `**` in patterns matched against full pathname may hav
 * A slash followed by two consecutive asterisks then a slash matches zero or more directories. For example, `a/**/b` matches `a/b`, `a/x/b`, `a/x/y/b` and so on.
 
 * Other consecutive asterisks are considered invalid.
-=======
-A '```**```' matches any string despite of slashes. For example, ```**``` 
-matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar` etc. 
->>>>>>> af3da357e6af1701a9d91bc8c3f32df48ad7deea
 
 ### Example of `exclude-list.builder` 
 ```sh
