@@ -588,7 +588,15 @@ A '```?```' symbol matches any single character. For example, `bo?t.js` matches 
 
 A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
 
-A '```**```' matches any sequence of characters including slashes, when nothing is followed. If the pattern is followed by a ```/```, only directories and subdirectories will match. If they followed by another symbol, pattern works like ```*```. For example, ```**``` matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar`, ```/foo**``` will match `/foobar/`, but will not match `/foo/bar/`. 
+Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
+
+* A leading `**` followed by a slash means match in all directories. For example, `**/foo` matches file or directory `foo` anywhere, the same as pattern `foo`. `**/foo/bar` matches file or directory `bar` anywhere that is directly under directory `foo`.
+
+* A trailing `/**` matches everything inside. For example, `abc/**` matches all files inside directory `abc`.
+
+* A slash followed by two consecutive asterisks then a slash matches zero or more directories. For example, `a/**/b` matches `a/b`, `a/x/b`, `a/x/y/b` and so on.
+
+* Other consecutive asterisks are considered invalid.
 
 ### Example of `exclude-list.builder` 
 ```sh
