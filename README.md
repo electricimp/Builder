@@ -191,19 +191,19 @@ Any text after `include` between `//` and the end of the line will be ignored by
 - Head of the default branch
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut"
   </pre>
 
 - Head of the _develop_ branch
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@develop"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"
   </pre>
 
-- Tag _v2.0.0_:
+- Tag _v3.0.1_:
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"
   </pre>
 
 #### Authentication
@@ -582,11 +582,19 @@ If a resource should never be cached it needs to be added to the `exclude-list.b
 One can use wildcard character to mask file names.
 
 ### Wildcard pattern matching
-Pattern matching is a similar with `.gitignore` syntax. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
 
-A '```?```' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
+If a resource should never be cached it needs to be added to the 
+`exclude-list.builder` file. One can use wildcard character to mask file names.
 
-A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+Pattern matching syntax is a similar to that of `.gitignore`. 
+A string is a wildcard pattern if it contains '```?```' or '```*```' 
+characters. Empty strings or strings that starts with '```#```' are ignored.
+
+A '```?```' symbol matches any single character. For example, `bo?t.js` matches 
+`boot.js` and `boat.js`, but doesn't match `bot.js`.
+
+A '```*```' matches any string, that is limited by slashes, including 
+the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
 
 Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
 
