@@ -552,7 +552,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache-all] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
   </pre>
 
   where:
@@ -561,7 +561,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>-D <i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
-  * <code>--cache-all</code> or <code>-c</code> &mdash; cache all files.
+  * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
 
@@ -573,10 +573,13 @@ If file cache is enabled remote files are cached locally in the `.builder-cache`
 folder. Cache for every resource expires and gets automatically invalidated 
 in 24 hours after creation.
 
-To turn the cache on, pass the `--cache-all` option to the builder. 
-You may also use the short version `-c`. If the option is not specified, 
-Builder will not use file cache even if the cached data exist and is valid 
-- it will query remote resources on every execution.
+To turn the cache on, pass the `--cache` option to the builder. You may also use
+ the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid --- it will query remote resources on every execution.
+
+To reset cache use both `-c` and `--clear-cache` options.
+
+If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
+One can use wildcard character to mask file names.
 
 ### Wildcard pattern matching
 
@@ -593,8 +596,15 @@ A '```?```' symbol matches any single character. For example, `bo?t.js` matches
 A '```*```' matches any string, that is limited by slashes, including 
 the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
 
-A '```**```' matches any string despite of slashes. For example, ```**``` 
-matches any string, ```**/bar``` matches `/foo/bar`, `/get/foo/bar` etc. 
+Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
+
+* A leading `**` followed by a slash means match in all directories. For example, `**/foo` matches file or directory `foo` anywhere, the same as pattern `foo`. `**/foo/bar` matches file or directory `bar` anywhere that is directly under directory `foo`.
+
+* A trailing `/**` matches everything inside. For example, `abc/**` matches all files inside directory `abc`.
+
+* A slash followed by two consecutive asterisks then a slash matches zero or more directories. For example, `a/**/b` matches `a/b`, `a/x/b`, `a/x/y/b` and so on.
+
+* Other consecutive asterisks are considered invalid.
 
 ### Example of `exclude-list.builder` 
 ```sh
@@ -605,14 +615,14 @@ github:electricimp/MessageManager/MessageManager.lib.nut
 github:electicimp/**
 
 # Exclude all tagged files or files from the specific branches from the cache
-github:**/*@*
+github:*/**/*@*
 ```
 
 ### Command Line Options
 
 | Option Name | Short Version | Description |
 --------------| ------------| --------------|
-| `--cache-all` | `-c` | Turns on file cache for all files included from remote resources | 
+| `--cache` | `-c` | Turns on file cache for all files included from remote resources | 
 |`--cache-exclude-list=<path_to_file>` | | Allows to exclude files from the cache |
 | `--clear-cache` |  | Clears the cache before Builder starts |
 

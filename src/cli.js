@@ -46,7 +46,7 @@ where:
 \t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
 \t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
 \t\u001b[34m--github-token <token>\u001b[39m - personal access token or password for GitHub
-\t\u001b[34m--cache-all>\u001b[39m - enable cache for remote files
+\t\u001b[34m--cache>\u001b[39m - enable cache for remote files
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list=<path_to_file>\u001b[39m - path to exclude list file with filename
     `.trim());
@@ -62,33 +62,33 @@ function readArgs() {
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
-    const arg = args.shift();
+    const argument = args.shift();
 
-    if ('-l' === arg) {
+    if ('-l' === argument) {
       res.lineControl = true;
-    } else if ('--cache-all' === arg || '-c' === arg) {
+    } else if ('--cache' === argument || '-c' === argument) {
       res.cache = true;
-    } else if ('--clear-cache' === arg) {
+    } else if ('--clear-cache' === argument) {
       res.clean = true;
-    } else if (m = arg.match(/^-D(.+)$/)) {
+    } else if (m = argument.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
-    } else if (arg === '--github-user') {
+    } else if (argument === '--github-user') {
       if (!args.length) {
-        throw Error('Expected argument value after ' + arg);
+        throw Error('Expected argument value after ' + argument);
       }
       res.gh.user = args.shift();
-    } else if (m = arg.match(/^--cache-exclude-list=(.*)$/)) {
-      if (!m[1]) {
-        throw Error('Expected filename after ' + arg);
-      }
-      res.excludeFile = m[1];
-    } else if (arg === '--github-token') {
+    } else if (argument === '--cache-exclude-list') {
       if (!args.length) {
-        throw Error('Expected argument value after ' + arg);
+        throw Error('Expected filename after ' + argument);
+      }
+      res.excludeFile = args.shift();
+    } else if (argument === '--github-token') {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
       }
       res.gh.token = args.shift();
     } else {
-      res.input = arg;
+      res.input = argument;
     }
   }
 
