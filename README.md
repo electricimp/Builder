@@ -614,7 +614,7 @@ github:*/**/*@*
 | Option Name | Short Version | Description |
 | --- | --- | --- |
 | `--cache` | `-c` | Turns on file cache for all files included from remote resources | 
-| `--cache-exclude-list=<path_to_file>` |  | Allows to exclude files from the cache |
+| `--cache-exclude-list=<path_to_file>` |  | Excludes the named file(s) from the cache |
 | `--clear-cache` |  | Clears the cache before Builder starts |
 
 # Testing
