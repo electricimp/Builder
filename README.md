@@ -553,7 +553,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list <i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i>
   </pre>
 
   where:
@@ -564,7 +564,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
-  * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
+  * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
 
 ## Cache for Remote Includes
 
@@ -614,7 +614,7 @@ github:*/**/*@*
 | Option Name | Short Version | Description |
 | --- | --- | --- |
 | `--cache` | `-c` | Turns on file cache for all files included from remote resources | 
-| `--cache-exclude-list=<path_to_file>` |  | Excludes the named file(s) from the cache |
+| `--cache-exclude-list <path_to_file>` |  | Excludes the named file(s) from the cache |
 | `--clear-cache` |  | Clears the cache before Builder starts |
 
 # Testing
