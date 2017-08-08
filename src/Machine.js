@@ -7,8 +7,10 @@
 const url = require('url');
 const path = require('path');
 const clone = require('clone');
+
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
+const FileCache = require('./FileCache');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -48,6 +50,7 @@ class Machine {
     this.path = ''; // default source path
     this.readers = {};
     this.globals = {};
+    this.fileCache = new FileCache(this);
     this._initBuiltinFunctions();
   }
 
@@ -76,6 +79,10 @@ class Machine {
 
     // return output buffer contents
     return buffer.join('');
+  }
+
+  clearCache() {
+    this.fileCache.clearCache();
   }
 
   /**
@@ -240,38 +247,32 @@ class Machine {
     // path is an expression, evaluate it
     const includePath = evaluated ? source : this.expression.evaluate(
         source, this._mergeContexts(this._globalContext, context)
-      );
+      ).trim();
 
-    // if once flag is set, then check if source has alredy been included
+    // if once flag is set, then check if source has already been included
     if (once && this._includedSources.has(includePath)) {
       this.logger.debug(`Skipping source "${includePath}": has already been included`);
       return;
     }
 
     const reader = this._getReader(includePath);
-    const includePathParsed = reader.parsePath(includePath);
-
-    // provide filename for correct error messages
-    this.parser.file = includePathParsed.__FILE__;
+    this.logger.info(`Including source "${includePath}"`);
 
     // read
-    this.logger.info(`Including source "${includePath}"`);
-    let content = reader.read(includePath);
+    const res = this.fileCache.read(reader, includePath);
 
-    // if content don't have line separator at the end, then add it
-    if (content.length > 0 && content[content.length - 1] != '\n') {
-        content += '\n';
-    }
+    // provide filename for correct error messages
+    this.parser.file = res.includePathParsed.__FILE__;
 
     // parse
-    const ast = this.parser.parse(content);
+    const ast = this.parser.parse(res.content);
 
     // update context
 
     // __FILE__/__PATH__
     context = this._mergeContexts(
       context,
-      includePathParsed
+      res.includePathParsed
     );
 
     // store included source
@@ -437,7 +438,7 @@ class Machine {
     this._macros[macro.name] = {
       file: context.__FILE__, // file at declaration
       path: context.__PATH__, // path at declaration
-      line: context.__LINE__, // line of eclaration
+      line: context.__LINE__, // line of declaration
       args: macro.args,
       body: instruction.body
     };
@@ -466,32 +467,32 @@ class Machine {
 
   /**
    * Execute loop instruction
-   * @param {{type, while, rereat, body: []}} instruction
+   * @param {{type, while, repeat, body: []}} instruction
    * @param {{}} context
    * @param {string[]} buffer
    * @private
    */
-  _executeLoop(insruction, context, buffer) {
+  _executeLoop(instruction, context, buffer) {
 
     let index = 0;
 
     while (true) {
       // evaluate test expression
       const test = this._expression.evaluate(
-        insruction.while || insruction.repeat,
+        instruction.while || instruction.repeat,
         this._mergeContexts(this._globalContext, context)
       );
 
       // check break condition
-      if (insruction.while && !test) {
+      if (instruction.while && !test) {
         break;
-      } else if (insruction.repeat && test === index) {
+      } else if (instruction.repeat && test === index) {
         break;
       }
 
       // execute body
       this._execute(
-        insruction.body,
+        instruction.body,
         this._mergeContexts(
           context,
           {loop: {index, iteration: index + 1}}
@@ -506,7 +507,7 @@ class Machine {
   }
 
   /**
-   * Perform outoput operation
+   * Perform output operation
    * @param {string|string[]} output
    * @param {{}} context
    * @param {string[]} buffer
@@ -537,7 +538,7 @@ class Machine {
 
   /**
    * Merge local context with global
-   * @param {{}} ... - contexts
+   * @param {...{}} - contexts
    * @private
    */
   _mergeContexts() {
@@ -554,7 +555,7 @@ class Machine {
   /**
    * Find reader
    *
-   * @param source
+   * @param {*} source
    * @return {AbstractReader}
    * @private
    */
@@ -572,7 +573,7 @@ class Machine {
 
   /**
    * Trim last buffer line
-   * @param {[string]} buffer
+   * @param {string[]} buffer
    * @private
    */
   _trimLastLine(buffer) {
@@ -668,6 +669,21 @@ class Machine {
   }
 
   /**
+   * Use cache?
+   * @return {boolean}
+   */
+  get useCache() {
+    return this.fileCache.useCache;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  set useCache(value) {
+     this.fileCache.useCache = value;
+  }
+
+  /**
    * Filename
    * @return {string}
    */
@@ -698,9 +714,21 @@ class Machine {
     this._globals = value;
   }
 
+  get excludeList() {
+    return this.fileCache.excludeList;
+  }
+
+  /**
+   * Construct exclude regexp list from filename
+   * @param {string} name of exclude file. '' for default
+   */
+  set excludeList(fileName) {
+    this.fileCache.excludeList = fileName;
+  }
   // </editor-fold>
 }
 
 module.exports = Machine;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;
 module.exports.Errors = Errors;
+

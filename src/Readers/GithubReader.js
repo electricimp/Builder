@@ -29,7 +29,7 @@ class GithubReader extends AbstractReader {
   }
 
   supports(source) {
-    return false !== GithubReader._parse(source);
+    return false !== GithubReader.parseUrl(source);
   }
 
   /**
@@ -99,7 +99,7 @@ class GithubReader extends AbstractReader {
    * @return {{__FILE__, __PATH__}}
    */
   parsePath(source) {
-    const parsed = GithubReader._parse(source);
+    const parsed = GithubReader.parseUrl(source);
     return {
       __FILE__: path.basename(parsed.path),
       __PATH__: `github:${parsed.user}/${parsed.repo}/${path.dirname(parsed.path)}`
@@ -135,7 +135,7 @@ class GithubReader extends AbstractReader {
     ;
 
     // @see http://mikedeboer.github.io/node-github/#repos.prototype.getContent
-    github.repos.getContent(this._parse(source), (err, res) => {
+    github.repos.getContent(this.parseUrl(source), (err, res) => {
       if (err) {
 
         try {
@@ -165,9 +165,8 @@ class GithubReader extends AbstractReader {
    * Parse Github reference into parts
    * @param source
    * @return {false|{user, repo, path, ref}}
-   * @private
    */
-  static _parse(source) {
+  static parseUrl(source) {
     // parse url
     const m = source.match(
       /github(?:\.com)?(?:\/|\:)([a-z0-9\-]+)\/([a-z0-9\-]+)\/(.*?)(?:@([^@]*))?$/i

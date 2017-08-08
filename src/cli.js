@@ -46,37 +46,49 @@ where:
 \t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
 \t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
 \t\u001b[34m--github-token <token>\u001b[39m - personal access token or password for GitHub
+\t\u001b[34m--cache>\u001b[39m - enable cache for remote files
+\t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
+\t\u001b[34m--cache-exclude-list=<path_to_file>\u001b[39m - path to exclude list file with filename
     `.trim());
 }
 
 /**
  * Read args
- * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}}
+ * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}, cache: boolean, clean: boolean, excludeFile: string}
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, lineControl: false, input: null, gh: {user: null, token: null}};
+  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: ''};
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
-    const arg = args.shift();
+    const argument = args.shift();
 
-    if ('-l' === arg) {
+    if ('-l' === argument) {
       res.lineControl = true;
-    } else if (m = arg.match(/^-D(.+)$/)) {
+    } else if ('--cache' === argument || '-c' === argument) {
+      res.cache = true;
+    } else if ('--clear-cache' === argument) {
+      res.clean = true;
+    } else if (m = argument.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
-    } else if (arg === '--github-user') {
+    } else if (argument === '--github-user') {
       if (!args.length) {
-        throw Error('Expected argument value after ' + arg);
+        throw Error('Expected argument value after ' + argument);
       }
       res.gh.user = args.shift();
-    } else if (arg === '--github-token') {
+    } else if (argument === '--cache-exclude-list') {
       if (!args.length) {
-        throw Error('Expected argument value after ' + arg);
+        throw Error('Expected filename after ' + argument);
+      }
+      res.excludeFile = args.shift();
+    } else if (argument === '--github-token') {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
       }
       res.gh.token = args.shift();
     } else {
-      res.input = arg;
+      res.input = argument;
     }
   }
 
@@ -92,11 +104,14 @@ try {
     process.exit(1);
   }
 
-// ctreate builder
+// create builder
   const builder = new Builder();
   builder.machine.generateLineControlStatements = args.lineControl;
+  builder.machine.useCache = args.cache;
   builder.logger = new NullLogger();
-
+  if (args.clean) {
+    builder.machine.clearCache();
+  }
 
   // set the directory of the input file as first search dir
   builder.machine.readers.file.searchDirs.unshift(path.dirname(path.resolve(args.input)));
@@ -104,7 +119,8 @@ try {
   // set GH credentials
   builder.machine.readers.github.username = args.gh.user;
   builder.machine.readers.github.token = args.gh.token;
-
+  //set cache settings
+  builder.machine.excludeList = args.excludeFile;
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);
   process.stdout.write(res);

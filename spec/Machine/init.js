@@ -26,7 +26,18 @@ module.exports = (sampleFile) => {
     },
 
     getResultWithLineControl: () => {
-      return fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
+      let content;
+      try {
+        content = fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
+      } catch (err) {
+        if (err.code == 'ENOENT') {
+          const platform = /^win/.test(process.platform) ? '-win' : '-unix';
+          content = fs.readFileSync(sampleFile + '.out-lc' + platform, 'utf-8');
+        } else {
+          throw err;
+        }
+      }
+      return content;
     }
   };
 };

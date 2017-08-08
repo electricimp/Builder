@@ -9,6 +9,7 @@
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From GitHub](#from-github)
+      - [Single Line Comments](#single-line-comments)
     - [@include once](#include-once)
     - [@{...} – inlines](#-inline-expressionsmacros)
     - [@while](#while)
@@ -32,6 +33,8 @@
     - [Functions](#functions)
   - [Comments](#comments)
 - [Usage](#usage)
+  - [Running](#running)
+  - [Cache for Remote Includes](#cache-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
 
@@ -40,7 +43,7 @@
 
 _Builder_ combines a preprocessor with an expression language and advanced imports.
 
-#### Current version: 2.1.0
+#### Current version: 2.2.2
 
 # Syntax
 
@@ -165,6 +168,14 @@ Use this directive to includes local files, external sources, or macros.
 <b>@include</b> "https://example.com/file.ext"
 </pre>
 
+#### Single Line Comments
+
+Any text after `include`, and between `//` and the end of the line, will be ignored by Builder and will not appear in the result output.
+
+<pre>
+<b>@include</b> "https://example.com/file.ext" // Need update to file2.ext
+</pre>
+
 #### From GitHub
 
 <pre>
@@ -180,19 +191,19 @@ Use this directive to includes local files, external sources, or macros.
 - Head of the default branch
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut"
   </pre>
 
 - Head of the _develop_ branch
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@develop"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"
   </pre>
 
-- Tag _v2.0.0_:
+- Tag _v3.0.1_:
 
   <pre>
-  <b>@include</b> "github:electricimp/Promise/Promise.class.nut@v2.0.0"
+  <b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"
   </pre>
 
 #### Authentication
@@ -510,6 +521,8 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 # Usage
 
+## Running
+
 **Note** Builder requires Node.js 4.0 and above.
 
 - It can be installed and used as an _npm_ library:
@@ -526,7 +539,11 @@ Lines starting with `@` followed by space or a line break are treated as comment
   // Provide GitHub credentials (optional)
   builder.machine.readers.github.username = "<username>";
   builder.machine.readers.github.token = "<personal_access_token>";
-
+  
+  // Set up cache params (optional)
+  builder.machine.useCache = <boolean>;
+  builder.machine.excludeList = "<path to exclude file>" // or "" for default name
+  builder.machine.clearCache() // delete cache folder
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
@@ -536,7 +553,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [-l] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list=<i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i> 
   </pre>
 
   where:
@@ -545,6 +562,60 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>-D <i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
   * <code>--github-user</code> &mdash; GitHub username.
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
+  * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
+  * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
+  * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
+
+## Cache for Remote Includes
+
+To reduce compilation time, Builder can optionally cache files included from a remote resource (GitHub or remote HTTP/HTTPs servers).
+  
+If this file cache is enabled, remote files are cached locally in the *.builder-cache* folder. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
+
+To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
+
+To reset the cache use both the `--cache` and the `--clear-cache` options.
+
+If a resource should never be cached, it needs to be added to the *exclude-list.builder* file. You can use wildcard characters to mask file names.
+
+### Wildcard pattern matching
+
+Pattern matching syntax is a similar to that of *.gitignore*. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
+
+A '```?```' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
+
+A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+
+Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
+
+* A leading `**` followed by a slash means match in all directories. For example, `**/foo` matches file or directory `foo` anywhere, the same as pattern `foo`. `**/foo/bar` matches file or directory `bar` anywhere that is directly under directory `foo`.
+
+* A trailing `/**` matches everything inside. For example, `abc/**` matches all files inside directory `abc`.
+
+* A slash followed by two consecutive asterisks then a slash matches zero or more directories. For example, `a/**/b` matches `a/b`, `a/x/b`, `a/x/y/b` and so on.
+
+* Other consecutive asterisks are considered invalid.
+
+### Example of 'exclude-list.builder'
+
+```sh
+# Avoid caching a specific file
+github:electricimp/MessageManager/MessageManager.lib.nut
+
+# Exclude all electricimp repos 
+github:electicimp/**
+
+# Exclude all tagged files or files from the specific branches from the cache
+github:*/**/*@*
+```
+
+### Command Line Options
+
+| Option Name | Short Version | Description |
+| --- | --- | --- |
+| `--cache` | `-c` | Turns on file cache for all files included from remote resources | 
+| `--cache-exclude-list=<path_to_file>` |  | Excludes the named file(s) from the cache |
+| `--clear-cache` |  | Clears the cache before Builder starts |
 
 # Testing
 
