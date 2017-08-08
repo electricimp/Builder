@@ -9,7 +9,7 @@
       - [Local Files](#local-files)
       - [Remote Files](#remote-files)
       - [From GitHub](#from-github)
-      - [Single Line Comments](#single-line-cgtomments)
+      - [Single Line Comments](#single-line-comments)
     - [@include once](#include-once)
     - [@{...} – inlines](#-inline-expressionsmacros)
     - [@while](#while)
@@ -170,10 +170,10 @@ Use this directive to includes local files, external sources, or macros.
 
 #### Single Line Comments
 
-Any text after `include` between `//` and the end of the line will be ignored by Builder and will not appear in the result output.
+Any text after `include`, and between `//` and the end of the line, will be ignored by Builder and will not appear in the result output.
 
 <pre>
-<b>@include</b> "https://example.com/file.ext" // need update to file2.ext
+<b>@include</b> "https://example.com/file.ext" // Need update to file2.ext
 </pre>
 
 #### From GitHub
@@ -522,6 +522,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 # Usage
 
 ## Running
+
 **Note** Builder requires Node.js 4.0 and above.
 
 - It can be installed and used as an _npm_ library:
@@ -540,7 +541,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   builder.machine.readers.github.token = "<personal_access_token>";
   
   // Set up cache params (optional)
-  builder.machine.useCache = "<boolean>";
+  builder.machine.useCache = <boolean>;
   builder.machine.excludeList = "<path to exclude file>" // or "" for default name
   builder.machine.clearCache() // delete cache folder
   const output = builder.machine.execute(`@include "${inputFile}"`);
@@ -566,35 +567,24 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--cache-exclude-list=<i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
 
 ## Cache for Remote Includes
-For the sake of reducing compilation time Builder can optionally cache files 
-included from a remote resource (GitHub or remote HTTP/HTTPs servers).
+
+To reduce compilation time, Builder can optionally cache files included from a remote resource (GitHub or remote HTTP/HTTPs servers).
   
-If file cache is enabled remote files are cached locally in the `.builder-cache`
-folder. Cache for every resource expires and gets automatically invalidated 
-in 24 hours after creation.
+If this file cache is enabled, remote files are cached locally in the *.builder-cache* folder. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
 
-To turn the cache on, pass the `--cache` option to the builder. You may also use
- the short version `-c`. If the option is not specified, Builder will not use file cache even if the cached data exist and is valid --- it will query remote resources on every execution.
+To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
 
-To reset cache use both `-c` and `--clear-cache` options.
+To reset the cache use both the `--cache` and the `--clear-cache` options.
 
-If a resource should never be cached it needs to be added to the `exclude-list.builder` file. 
-One can use wildcard character to mask file names.
+If a resource should never be cached, it needs to be added to the *exclude-list.builder* file. You can use wildcard characters to mask file names.
 
 ### Wildcard pattern matching
 
-If a resource should never be cached it needs to be added to the 
-`exclude-list.builder` file. One can use wildcard character to mask file names.
+Pattern matching syntax is a similar to that of *.gitignore*. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
 
-Pattern matching syntax is a similar to that of `.gitignore`. 
-A string is a wildcard pattern if it contains '```?```' or '```*```' 
-characters. Empty strings or strings that starts with '```#```' are ignored.
+A '```?```' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
 
-A '```?```' symbol matches any single character. For example, `bo?t.js` matches 
-`boot.js` and `boat.js`, but doesn't match `bot.js`.
-
-A '```*```' matches any string, that is limited by slashes, including 
-the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
 
 Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
 
@@ -606,7 +596,8 @@ Two consecutive asterisks `**` in patterns matched against full pathname may hav
 
 * Other consecutive asterisks are considered invalid.
 
-### Example of `exclude-list.builder` 
+### Example of 'exclude-list.builder'
+
 ```sh
 # Avoid caching a specific file
 github:electricimp/MessageManager/MessageManager.lib.nut
@@ -621,9 +612,9 @@ github:*/**/*@*
 ### Command Line Options
 
 | Option Name | Short Version | Description |
---------------| ------------| --------------|
+| --- | --- | --- |
 | `--cache` | `-c` | Turns on file cache for all files included from remote resources | 
-|`--cache-exclude-list=<path_to_file>` | | Allows to exclude files from the cache |
+| `--cache-exclude-list=<path_to_file>` |  | Allows to exclude files from the cache |
 | `--clear-cache` |  | Clears the cache before Builder starts |
 
 # Testing
