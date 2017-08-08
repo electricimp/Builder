@@ -564,7 +564,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
-  * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file with filename.
+  * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
 
 ## Cache for Remote Includes
 
