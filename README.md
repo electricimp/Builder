@@ -170,7 +170,7 @@ Use this directive to includes local files, external sources, or macros.
 
 #### Single Line Comments
 
-Any text after `include`, and between `//` and the end of the line, will be ignored by Builder and will not appear in the result output.
+Any text after any _Builder_ expression statement, starting with `//` till the end of the line, will be ignored by Builder and will not appear in the result output.
 
 <pre>
 <b>@include</b> "https://example.com/file.ext" // Need update to file2.ext
