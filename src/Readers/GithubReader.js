@@ -189,7 +189,7 @@ class GithubReader extends AbstractReader {
   static parseUrl(source) {
     // parse url
     const m = source.match(
-      /github(?:\.com)?(?:\/|\:)([a-z0-9\-]+)\/([a-z0-9\-]+)\/(.*?)(?:@([^@]*))?$/i
+      /github(?:\.com)?(?:\/|\:)([a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
     );
 
     if (m) {
