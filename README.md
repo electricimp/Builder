@@ -16,6 +16,7 @@
     - [@repeat](#repeat)
     - [@if – @elseif – @else](#if--elseif--else)
     - [@error](#error)
+    - [@warning](#warning)
   - [Filters](#filters)
   - [Expressions](#expressions)
     - [Types](#types)
@@ -347,6 +348,29 @@ Emits an error.
   // platform 3 code
 <b>@else</b>
   <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
+<b>@endif</b>
+</pre>
+
+### @warning
+
+<pre>
+<b>@warning</b> <i>&lt;message:expression&gt;</i>
+</pre>
+
+Emits a warning.
+
+#### Example
+
+<pre>
+<b>@if</b> PLATFORM == "platform1"
+  // platform 1 code
+<b>@elseif</b> PLATFORM == "platform2"
+  // platform 2 code
+<b>@elseif</b> PLATFORM == "platform3"
+  // platform 3 code
+<b>@else</b>
+  <b>@warning</b> "Building for default platform"
+  // default platform code
 <b>@endif</b>
 </pre>
 

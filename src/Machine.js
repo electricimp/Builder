@@ -37,6 +37,7 @@ const INSTRUCTIONS = {
   SET: 'set',
   LOOP: 'loop',
   ERROR: 'error',
+  WARNING: 'warning',
   MACRO: 'macro',
   OUTPUT: 'output',
   INCLUDE: 'include',
@@ -198,6 +199,10 @@ class Machine {
 
           case INSTRUCTIONS.ERROR:
             this._executeError(instruction, context, buffer);
+            break;
+
+          case INSTRUCTIONS.WARNING:
+            this._executeWarning(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.MACRO:
@@ -381,7 +386,7 @@ class Machine {
   }
 
   /**
-   * Execute "error: instruction
+   * Execute "error" instruction
    * @param {{type, value}} instruction
    * @param {{}} context
    * @param {string[]} buffer
@@ -392,6 +397,19 @@ class Machine {
       this.expression.evaluate(instruction.value,
         this._mergeContexts(this._globalContext, context))
     );
+  }
+
+  /**
+   * Execute "warning" instruction
+   * @param {{type, value}} instruction
+   * @param {{}} context
+   * @param {string[]} buffer
+   * @private
+   */
+  _executeWarning(instruction, context, buffer) {
+    const message = this.expression.evaluate(instruction.value,
+      this._mergeContexts(this._globalContext, context));
+    console.error("\x1b[33m" + message + '\u001b[39m');
   }
 
   /**

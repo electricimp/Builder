@@ -33,6 +33,7 @@
     "jasmine": "^2.4.1",
     "jasmine-diff-matchers": "^2.0.0",
     "jasmine-expect": "^2.0.2",
-    "log": "^1.4.0"
+    "log": "^1.4.0",
+    "fixture-stdout": "^0.2.1"
   }
 }
