@@ -30,8 +30,18 @@ const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
-const EscapeFilter = require('./Filters/EscapeFilter');
+const EscapeFilter = require('./Filters/EscapeFilter.js');
 const Base64Filter = require('./Filters/Base64Filter');
+const myFilters = {
+  MyFuncFilter: class {
+    constructor() {
+      this.name = "myFunc"
+    }
+    filter(input, args) {
+      return "len: " + input.length;
+    }
+  }
+}
 
 /**
  * Main Builder class
@@ -61,6 +71,11 @@ class Builder {
     const base64Filter = new Base64Filter();
     this._globals[base64Filter.name] = (args) => {
       return base64Filter.filter(args.shift(), args);
+    };
+
+    const myFuncFilter = new myFilters.MyFuncFilter();
+    this._globals[myFuncFilter.name] = (args) => {
+      return myFuncFilter.filter(args.shift(), args);
     };
 
     // arithmetic functions
