@@ -24,6 +24,9 @@
 
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const glob = require('glob');
 const Machine = require('./Machine');
 const AstParser = require('./AstParser');
 const Expression = require('./Expression');
@@ -48,7 +51,8 @@ const myFilters = {
  */
 class Builder {
 
-  constructor() {
+  constructor(opts) {
+    this._filters = opts.filters || [];
     this._initGlobals();
     this._initMachine();
   }
@@ -77,6 +81,36 @@ class Builder {
     this._globals[myFuncFilter.name] = (args) => {
       return myFuncFilter.filter(args.shift(), args);
     };
+
+    // user-defined filters
+    let filterFiles = [];
+    for (let file of this._filters) {
+      const stat = fs.lstatSync(file);
+      if (stat.isFile()) {
+        filterFiles.push(file);
+      } else if (stat.isDirectory()) {
+        filterFiles = filterFiles.concat(glob.sync(`${file}/**/*.js`));
+      } else {
+        throw "Cannot stat path for filters: " + file;
+      }
+    }
+    filterFiles = filterFiles.map(p => path.resolve(process.cwd(), p));
+    let filters = [];
+    for (let file of filterFiles) {
+      const exports = require(file);
+      if ('filters' in exports) {
+        filters = filters.concat(exports.filter);
+      }
+      if (typeof exports === 'function') {
+        filters.push(exports);
+      }
+    }
+    for (let Filter of filters) {
+      const filter = new Filter();
+      this._globals[filter.name] = (args) => {
+        return filter.filter(args.shift(), args);
+      };
+    }
 
     // arithmetic functions
 

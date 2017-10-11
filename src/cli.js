@@ -78,7 +78,7 @@ where:
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: ''};
+  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: '', filters: []};
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -107,6 +107,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.gh.token = args.shift();
+    } else if (argument === '--filters' || argument === '-f') {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.filters.push(args.shift());
     } else {
       res.input = argument;
     }
@@ -125,7 +130,7 @@ try {
   }
 
 // create builder
-  const builder = new Builder();
+  const builder = new Builder({ filters: args.filters });
   builder.machine.generateLineControlStatements = args.lineControl;
   builder.machine.useCache = args.cache;
   builder.logger = new NullLogger();
