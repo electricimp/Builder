@@ -33,18 +33,6 @@ const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
-const EscapeFilter = require('./Filters/EscapeFilter.js');
-const Base64Filter = require('./Filters/Base64Filter');
-const myFilters = {
-  MyFuncFilter: class {
-    constructor() {
-      this.name = "myFunc"
-    }
-    filter(input, args) {
-      return "len: " + input.length;
-    }
-  }
-}
 
 /**
  * Main Builder class
@@ -52,7 +40,7 @@ const myFilters = {
 class Builder {
 
   constructor(opts) {
-    this._filters = opts.filters || [];
+    this._libs = [ path.resolve(__dirname + '/Filters') + '/*.js' ].concat(opts.libs || []);
     this._initGlobals();
     this._initMachine();
   }
@@ -62,54 +50,36 @@ class Builder {
    * @private
    */
   _initGlobals() {
+
+    let libFiles = [];
+    for (let file of this._libs) {
+      let newFiles = [];
+
+      if (glob.hasMagic(file)) {
+        newFiles = newFiles.concat(glob.sync(file));
+
+      } else {
+        const stat = fs.lstatSync(file);
+
+        if (stat.isFile()) {
+          libFiles.push(file);
+
+        } else if (stat.isDirectory()) {
+          newFiles = newFiles.concat(glob.sync(`${file}/**/*.js`));
+
+        } else {
+          throw `lib path "${file}" is not a file or directory`;
+        }
+      }
+      newFiles.sort();
+      libFiles = libFiles.concat(newFiles);
+    }
+    const libs = libFiles.map(p => require(path.resolve(process.cwd(), p)));
+
     // global context
     this._globals = {};
-
-    // filters
-
-    const escapeFilter = new EscapeFilter();
-    this._globals[escapeFilter.name] = (args) => {
-      return escapeFilter.filter(args.shift(), args);
-    };
-
-    const base64Filter = new Base64Filter();
-    this._globals[base64Filter.name] = (args) => {
-      return base64Filter.filter(args.shift(), args);
-    };
-
-    const myFuncFilter = new myFilters.MyFuncFilter();
-    this._globals[myFuncFilter.name] = (args) => {
-      return myFuncFilter.filter(args.shift(), args);
-    };
-
-    // user-defined filters
-    let filterFiles = [];
-    for (let file of this._filters) {
-      const stat = fs.lstatSync(file);
-      if (stat.isFile()) {
-        filterFiles.push(file);
-      } else if (stat.isDirectory()) {
-        filterFiles = filterFiles.concat(glob.sync(`${file}/**/*.js`));
-      } else {
-        throw "Cannot stat path for filters: " + file;
-      }
-    }
-    filterFiles = filterFiles.map(p => path.resolve(process.cwd(), p));
-    let filters = [];
-    for (let file of filterFiles) {
-      const exports = require(file);
-      if ('filters' in exports) {
-        filters = filters.concat(exports.filter);
-      }
-      if (typeof exports === 'function') {
-        filters.push(exports);
-      }
-    }
-    for (let Filter of filters) {
-      const filter = new Filter();
-      this._globals[filter.name] = (args) => {
-        return filter.filter(args.shift(), args);
-      };
+    for (let lib of libs) {
+      Object.assign(this._globals, lib);
     }
 
     // arithmetic functions
