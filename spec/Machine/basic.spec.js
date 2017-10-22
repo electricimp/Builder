@@ -7,7 +7,7 @@
 require('jasmine-expect');
 
 const Fixture = require('fixture-stdout');
-const stdoutFixture = new Fixture({ stream: process.stderr });
+const stderrFixture = new Fixture({ stream: process.stderr });
 const init = require('./init')('main');
 const Machine = require('../../src/Machine');
 
@@ -90,11 +90,11 @@ describe('Machine', () => {
     const yellowTextLine = `\x1b[33m${text}\u001b[39m\n`;
     try {
       // Capture STDERR messages
-      stdoutFixture.capture(message => {
+      stderrFixture.capture(message => {
         try {
           expect(message).toBe(yellowTextLine);
           // Release STDERR
-          stdoutFixture.release();
+          stderrFixture.release();
           done();
         } catch (e) {
           fail(e);
