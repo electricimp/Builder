@@ -35,6 +35,8 @@
   - [Comments](#comments)
 - [Usage](#usage)
   - [Running](#running)
+  - [Including Javascript Libraries](#including-javascript-libraries)
+    - [limitations](#limitations)
   - [Cache for Remote Includes](#cache-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
@@ -589,6 +591,50 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
+  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to Javascript file to include as libraries
+
+## Including Javascript Libraries
+
+Builder can accept Javascript libraries to add functionality to its global namespace.  The library should export an object, the properties of which will be merged into the global namespace.  For example, to include a function to convert strings to uppercase, define your library file like so:
+
+```js
+module.exports = {
+  upper: (s) => s.toUpperCase()
+};
+```
+
+Include directives like the following in your input file:
+
+```
+@{upper("warning:")}
+@{upper(include("warning.txt"))}
+```
+
+Run builder with the option `--lib path/to/your/lib/file` included.
+
+### Limitations
+
+Due to the way nested property names are resolved, Javascript functions and methods may be called with a `this` value that is different to what you expect.  Take the following example library:
+
+```js
+class MyClass {
+  constructor(str) {
+    this._str = str;
+  }
+
+  getStr() {
+    return this._str;
+  }
+}
+
+myObject = MyClass("my text");
+
+module.exports = {
+  myObject
+};
+```
+
+Attempting to use this library with the directive `@{myObject.getStr()}` will fail due to `this` being undefined on line 7 of the Javascript file.  It is recommended not to try to call Javascript methods in your Builder input files, and to write your Javascript files such that they only export functions which can be called as "stand-alone" functions which don't depend on being called with any particular `this` value.
 
 ## Cache for Remote Includes
 

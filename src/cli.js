@@ -69,6 +69,7 @@ where:
 \t\u001b[34m--cache>\u001b[39m - enable cache for remote files
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
+\t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
     `.trim());
 }
 
