@@ -7,7 +7,8 @@
     "pleasebuild": "src/cli.js"
   },
   "scripts": {
-    "test": "node_modules/jasmine/bin/jasmine.js"
+    "test": "node_modules/jasmine/bin/jasmine.js",
+    "build": "pleasebuild input"
   },
   "repository": {
     "type": "git",
