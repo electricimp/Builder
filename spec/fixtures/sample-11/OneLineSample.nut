@@ -1,1 +1,0 @@
-server.log("Doesn't have end of line");

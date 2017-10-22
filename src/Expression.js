@@ -375,7 +375,7 @@ class Expression {
           throw new Errors.ExpressionError(`Owner of "${property}" property is undefined`);
         }
 
-        if (!object.hasOwnProperty(property)) {
+        if (!(property in object)) {
           throw new Errors.ExpressionError(`Property "${property}" is not defined`);
         }
 
@@ -422,6 +422,8 @@ class Expression {
 
           if (context.hasOwnProperty(callee) && typeof context[callee] === 'function') {
             res = context[callee](args, context);
+          } else if (typeof callee === 'function') {
+            res = callee(...args);
           } else {
 
             if (node.callee.type === 'Identifier') {
