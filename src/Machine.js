@@ -484,21 +484,23 @@ class Machine {
     };
 
     // add macro to supported function in expression expression
-    this._globalContext[macro.name] = ((macro) => {
-      return (args, context) => {
+    const that = this;
+    this._globalContext[macro.name] = (function(macro) {
+      return function(...args) {
+        const context = this;
         const buffer = [];
         macro.args = args;
 
         // include macro in inline mode
-        this._includeMacro(
+        that._includeMacro(
           macro,
           /* enable inline mode for all subsequent operations */
-          this._mergeContexts(context, {__INLINE__: true}),
+          that._mergeContexts(context, {__INLINE__: true}),
           buffer
         );
 
         // trim trailing newline (only in inline mode for macros)
-        this._trimLastLine(buffer);
+        that._trimLastLine(buffer);
 
         return buffer.join('');
       };
