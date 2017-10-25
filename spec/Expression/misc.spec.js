@@ -18,7 +18,7 @@ describe('Expression', () => {
 
     // create Math.* function
     const mathFunction = (name) => {
-      return (args, context) => {
+      return (...args) => {
         if (args.length < 1) {
           throw new Error('Wrong number of arguments for ' + name + '()');
         }

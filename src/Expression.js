@@ -421,9 +421,9 @@ class Expression {
           const args = node.arguments.map(v => this._evaluate(v, context));
 
           if (context.hasOwnProperty(callee) && typeof context[callee] === 'function') {
-            res = context[callee](args, context);
+            res = context[callee].apply(context, args);
           } else if (typeof callee === 'function') {
-            res = callee(...args);
+            res = callee.apply(context, args);
           } else {
 
             if (node.callee.type === 'Identifier') {

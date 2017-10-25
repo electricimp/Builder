@@ -15,7 +15,7 @@ describe('Expression', () => {
   beforeEach(() => {
     expression = new Expression();
     context = {};
-    context.max = (args, context) => {
+    context.max = (...args) => {
       return Math.abs.apply(Math, args);
     };
   });

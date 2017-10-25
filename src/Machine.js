@@ -114,7 +114,9 @@ class Machine {
     this._builtinFunctions = {}; // builtin functions
 
     // include()
-    this._builtinFunctions['include'] = (args, context) => {
+    const that = this;
+    this._builtinFunctions['include'] = function(...args) {
+      let context = this;
       if (args.length < 1) {
         throw Error('Wrong number of arguments for include()');
       }
@@ -122,17 +124,17 @@ class Machine {
       const buffer = [];
 
       // include macro in inline mode
-      this._includeSource(
+      that._includeSource(
         args[0],
         /* enable inline mode for all subsequent operations */
-        this._mergeContexts(context, {__INLINE__: true}),
+        that._mergeContexts(context, {__INLINE__: true}),
         buffer,
         false,
         true
       );
 
       // trim trailing newline in inline mode
-      this._trimLastLine(buffer);
+      that._trimLastLine(buffer);
 
       return buffer.join('');
     };
