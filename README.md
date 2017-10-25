@@ -26,7 +26,7 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
-      - [Variable Definition Order](#variables-definition-order)
+      - [Variable Definition Order](#variable-definition-order)
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
@@ -36,7 +36,7 @@
 - [Usage](#usage)
   - [Running](#running)
   - [Including Javascript Libraries](#including-javascript-libraries)
-    - [limitations](#limitations)
+    - ["this"](#this)
   - [Cache for Remote Includes](#cache-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
@@ -612,9 +612,11 @@ Include directives like the following in your input file:
 
 Run builder with the option `--lib path/to/your/lib/file` included.
 
-### Limitations
+### "this"
 
-Due to the way nested property names are resolved, Javascript functions and methods may be called with a `this` value that is different to what you expect.  Take the following example library:
+NB: Functions called by Builder will be called their `this` argument set to a Builder context object.  This context object exposes the useful variables `__FILE__` (string), `__PATH__` (string), and `__LINE__` (number) which can be used for debug logging, as well as the globally defined Builder functions that your directives have available.
+
+Ignoring the binding of `this` may cause you to find some behaviour unexpected, for example when calling methods on objects.  Take the following example library:
 
 ```js
 class MyClass {
@@ -634,7 +636,25 @@ module.exports = {
 };
 ```
 
-Attempting to use this library with the directive `@{myObject.getStr()}` will fail due to `this` being undefined on line 7 of the Javascript file.  It is recommended not to try to call Javascript methods in your Builder input files, and to write your Javascript files such that they only export functions which can be called as "stand-alone" functions which don't depend on being called with any particular `this` value.
+Attempting to use this library with the directive `@{myObject.getStr()}` will not do what it's "supposed" to do, because `this` in `getStr()` will be set to a Builder context object and not to `myObject`.  When calling class methods ensure they have been bound to the correct value of this in your library file, for example.
+
+```js
+class MyClass {
+  constructor(str) {
+    this._str = str;
+  }
+
+  getStr() {
+    return this._str;
+  }
+}
+
+myObject = MyClass("my text");
+
+module.exports = {
+  getStr: myObject.getStr.bind(myObject)
+};
+```
 
 ## Cache for Remote Includes
 
