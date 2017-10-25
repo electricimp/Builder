@@ -7,7 +7,7 @@
 require('jasmine-expect');
 const Fixture = require('fixture-stdout');
 
-const FILE = __dirname + '/../fixtures/sample-11/input.nut';
+const FILE = __dirname + '/../fixtures/sample-12/input.nut';
 const init = require('./init')(FILE);
 const stdoutFixture = new Fixture({ stream: process.stdout });
 
