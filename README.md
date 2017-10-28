@@ -533,6 +533,22 @@ will print the home directory path of the current user of the system where *Buil
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
+- String functions: the following string functions, based on the Javascript methods by the same names, are available under the namespace `S`.  The first argument to each function is always the string to be operated on.  For documentation on the remaining arguments see the documentation for Javascript string methods [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)
+  - <code>S.concat()</code>
+  - <code>S.endsWith()</code>
+  - <code>S.includes()</code>
+  - <code>S.padEnd()</code>
+  - <code>S.padStart()</code>
+  - <code>S.repeat()</code>
+  - <code>S.split()</code>
+  - <code>S.startsWith()</code>
+  - <code>S.substr()</code>
+  - <code>S.substring()</code>
+  - <code>S.toLowerCase()</code>
+  - <code>S.toUpperCase()</code>
+  - <code>S.trim()</code>
+  - <code>S.trimLeft()</code>
+  - <code>S.trimRight()</code>
 
 ## Comments
 
@@ -614,7 +630,7 @@ Run builder with the option `--lib path/to/your/lib/file` included.
 
 ### "this"
 
-NB: Functions called by Builder will be called their `this` argument set to a Builder context object.  Within the context object, builder [variables](#variables) like `__FILE__`, functions like `max()`, and your other included library functions will be made available at the top level.  Variables defined in your input code with `@macro` or `@set` will be available under the key `globals`.
+NB: Functions called by Builder will be called their `this` argument set to a Builder context object.  Within the context object, builder [variables](#variables) like `__FILE__`, [functions](#functions) like `max()`, and your other included library functions will be made available at the top level.  Variables defined in your input code with `@macro` or `@set` will be available under the key `globals`.
 
 Ignoring the binding of `this` may cause you to find some behaviour unexpected, for example when calling methods on objects.  Take the following example library:
 

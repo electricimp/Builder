@@ -40,7 +40,7 @@ const GithubReader = require('./Readers/GithubReader');
 class Builder {
 
   constructor(opts = {}) {
-    this._libs = [ path.resolve(__dirname + '/Filters') + '/*.js' ].concat(opts.libs || []);
+    this._libs = [ path.resolve(__dirname + '/libs') + '/*.js' ].concat(opts.libs || []);
     this._initGlobals();
     this._initMachine();
   }
