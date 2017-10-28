@@ -94,9 +94,10 @@ Errors.FunctionCallError = class FunctionCallError extends Errors.ExpressionErro
  */
 class Expression {
 
-  constructor() {
+  constructor(machine = {}) {
     this.functions = {};
     this._initParser();
+    this._machine = machine;
   }
 
   /**
@@ -207,7 +208,7 @@ class Expression {
    */
   _evaluate(node, context) {
 
-    let res;
+    let res = null;
 
     // walk through the AST
 
@@ -331,10 +332,17 @@ class Expression {
           res = node.name;
         } else /* variable */ if (context.hasOwnProperty(node.name)) {
           res = context[node.name];
-        } else /* environment */ {
+        } else if /* global call expression callee name */ (
+          'defined' === node.name ||
+          this._globalContext.hasOwnProperty(node.name) && typeof this._globalContext[node.name] === 'function'
+        ) {
+          res = node.name;
+        } else /* global variable */ if (this._globalContext.hasOwnProperty(node.name)) {
+          res = this._globalContext[node.name];
+        } else /* environment */ if (process.env.hasOwnProperty(node.name)) {
           res = process.env[node.name];
-          // return null in case of undefined
-          if (!res) res = null;
+        } else {
+          // undefined, that's fine, just leave it null
         }
 
         break;
@@ -414,7 +422,8 @@ class Expression {
             throw new Errors.ExpressionError('defined() can only be called with an identifier as an argument');
           }
 
-          res = context.hasOwnProperty(node.arguments[0].name);
+          res = context.hasOwnProperty(node.arguments[0].name)
+            || this._globalContext.hasOwnProperty(node.arguments[0].name);
 
         } else {
 
@@ -424,6 +433,8 @@ class Expression {
             res = context[callee].apply(context, args);
           } else if (typeof callee === 'function') {
             res = callee.apply(context, args);
+          } else if (this._globalContext.hasOwnProperty(callee) && typeof this._globalContext[callee] === 'function') {
+            res = this._globalContext[callee].apply(context, args);
           } else {
 
             if (node.callee.type === 'Identifier') {
@@ -445,6 +456,10 @@ class Expression {
 
     return res;
 
+  }
+
+  get _globalContext() {
+    return this._machine._globalContext || {};
   }
 }
 

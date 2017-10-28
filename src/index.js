@@ -108,9 +108,9 @@ class Builder {
     const httpReader = new HttpReader();
     const githubReader = new GithubReader();
 
-    const expression = new Expression();
     const parser = new AstParser();
     const machine = new Machine();
+    const expression = new Expression(machine);
 
     machine.readers.github = githubReader;
     machine.readers.http = httpReader;

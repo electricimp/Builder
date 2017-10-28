@@ -116,7 +116,6 @@ class Machine {
     // include()
     const that = this;
     this._builtinFunctions['include'] = function(...args) {
-      let context = this;
       if (args.length < 1) {
         throw Error('Wrong number of arguments for include()');
       }
@@ -127,7 +126,7 @@ class Machine {
       that._includeSource(
         args[0],
         /* enable inline mode for all subsequent operations */
-        that._mergeContexts(context, {__INLINE__: true}),
+        that._mergeContexts(this, {__INLINE__: true}),
         buffer,
         false,
         true
@@ -247,7 +246,7 @@ class Machine {
 
     const macro = this.expression.parseMacroCall(
       instruction.value,
-      this._mergeContexts(this._globalContext, context),
+      context,
       this._macros
     );
 
@@ -273,7 +272,8 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = evaluated ? source : this.expression.evaluate(
-        source, this._mergeContexts(this._globalContext, context)
+        source,
+        context
       ).trim();
 
     // if once flag is set, then check if source has already been included
@@ -365,7 +365,7 @@ class Machine {
       this._out(
         String(this.expression.evaluate(
           instruction.value,
-          this._mergeContexts(this._globalContext, context)
+          context
         )),
         context,
         buffer
@@ -383,8 +383,10 @@ class Machine {
    */
   _executeSet(instruction, context, buffer) {
     this._globalContext[instruction.variable] =
-      this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globalContext, context));
+      this.expression.evaluate(
+        instruction.value,
+        context
+      );
   }
 
   /**
@@ -397,7 +399,8 @@ class Machine {
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globalContext, context))
+        context,
+      )
     );
   }
 
@@ -410,7 +413,8 @@ class Machine {
    */
   _executeWarning(instruction, context, buffer) {
     const message = this.expression.evaluate(instruction.value,
-      this._mergeContexts(this._globalContext, context));
+      context
+    );
     console.error("\x1b[33m" + message + '\u001b[39m');
   }
 
@@ -425,7 +429,7 @@ class Machine {
 
     const test = this.expression.evaluate(
       instruction.test,
-      this._mergeContexts(this._globalContext, context)
+      context
     );
 
     if (test) {
@@ -487,7 +491,6 @@ class Machine {
     const that = this;
     this._globalContext[macro.name] = (function(macro) {
       return function(...args) {
-        const context = this;
         const buffer = [];
         macro.args = args;
 
@@ -495,7 +498,7 @@ class Machine {
         that._includeMacro(
           macro,
           /* enable inline mode for all subsequent operations */
-          that._mergeContexts(context, {__INLINE__: true}),
+          that._mergeContexts(this, {__INLINE__: true}),
           buffer
         );
 
@@ -522,7 +525,7 @@ class Machine {
       // evaluate test expression
       const test = this._expression.evaluate(
         instruction.while || instruction.repeat,
-        this._mergeContexts(this._globalContext, context)
+        context
       );
 
       // check break condition
