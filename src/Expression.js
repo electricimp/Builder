@@ -430,11 +430,11 @@ class Expression {
           const args = node.arguments.map(v => this._evaluate(v, context));
 
           if (context.hasOwnProperty(callee) && typeof context[callee] === 'function') {
-            res = context[callee].apply(context, args);
+            res = context[callee].apply(this._machine._mergeContexts(context, { globals: this._globalContext }), args);
           } else if (typeof callee === 'function') {
-            res = callee.apply(context, args);
+            res = callee.apply(this._machine._mergeContexts(context, { globals: this._globalContext }), args);
           } else if (this._globalContext.hasOwnProperty(callee) && typeof this._globalContext[callee] === 'function') {
-            res = this._globalContext[callee].apply(context, args);
+            res = this._globalContext[callee].apply(this._machine._mergeContexts(context, { globals: this._globalContext }), args);
           } else {
 
             if (node.callee.type === 'Identifier') {
