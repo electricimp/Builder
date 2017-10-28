@@ -75,6 +75,7 @@
 'use strict';
 
 const jsep = require('jsep');
+const merge = require('./merge');
 
 // <editor-fold desc="Errors" defaultstate="collapsed">
 const Errors = {};
@@ -430,11 +431,11 @@ class Expression {
           const args = node.arguments.map(v => this._evaluate(v, context));
 
           if (context.hasOwnProperty(callee) && typeof context[callee] === 'function') {
-            res = context[callee].apply(this._machine._mergeContexts(context, { globals: this._globalContext }), args);
+            res = context[callee].apply(merge(context, { globals: this._globalContext }), args);
           } else if (typeof callee === 'function') {
-            res = callee.apply(this._machine._mergeContexts(context, { globals: this._globalContext }), args);
+            res = callee.apply(merge(context, { globals: this._globalContext }), args);
           } else if (this._globalContext.hasOwnProperty(callee) && typeof this._globalContext[callee] === 'function') {
-            res = this._globalContext[callee].apply(this._machine._mergeContexts(context, { globals: this._globalContext }), args);
+            res = this._globalContext[callee].apply(merge(context, { globals: this._globalContext }), args);
           } else {
 
             if (node.callee.type === 'Identifier') {

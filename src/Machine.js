@@ -26,11 +26,11 @@
 
 const url = require('url');
 const path = require('path');
-const clone = require('clone');
 
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 const FileCache = require('./FileCache');
+const merge = require('./merge');
 
 // instruction types
 const INSTRUCTIONS = {
@@ -88,7 +88,7 @@ class Machine {
     const ast = this.parser.parse(source);
 
     // execute
-    context = this._mergeContexts(
+    context = merge(
       {__FILE__: this.file, __PATH__: this.path},
       this._builtinFunctions,
       this.globals,
@@ -126,7 +126,7 @@ class Machine {
       that._includeSource(
         args[0],
         /* enable inline mode for all subsequent operations */
-        that._mergeContexts(this, {__INLINE__: true}),
+        merge(this, {__INLINE__: true}),
         buffer,
         false,
         true
@@ -173,7 +173,7 @@ class Machine {
     for (const instruction of ast) {
 
       // set __LINE__
-      context = this._mergeContexts(
+      context = merge(
         context,
         {__LINE__: instruction._line}
       );
@@ -297,7 +297,7 @@ class Machine {
     // update context
 
     // __FILE__/__PATH__
-    context = this._mergeContexts(
+    context = merge(
       context,
       res.includePathParsed
     );
@@ -336,7 +336,7 @@ class Machine {
     // execute macro
     this._execute(
       this._macros[macro.name].body,
-      this._mergeContexts(context, macroContext),
+      merge(context, macroContext),
       buffer
     );
   }
@@ -498,7 +498,7 @@ class Machine {
         that._includeMacro(
           macro,
           /* enable inline mode for all subsequent operations */
-          that._mergeContexts(this, {__INLINE__: true}),
+          merge(this, {__INLINE__: true}),
           buffer
         );
 
@@ -538,7 +538,7 @@ class Machine {
       // execute body
       this._execute(
         instruction.body,
-        this._mergeContexts(
+        merge(
           context,
           {loop: {index, iteration: index + 1}}
         ),
@@ -579,22 +579,6 @@ class Machine {
     } else {
       buffer.push(output);
     }
-  }
-
-  /**
-   * Merge local context with global
-   * @param {...{}} - contexts
-   * @private
-   */
-  _mergeContexts() {
-    const args = Array.prototype.slice.call(arguments);
-
-    // clone target
-    let target = args.shift();
-    target = clone(target);
-    args.unshift(target);
-
-    return Object.assign.apply(this, args);
   }
 
   /**
