@@ -115,7 +115,8 @@ class Machine {
 
     // include()
     const that = this;
-    this._builtinFunctions['include'] = function(...args) {
+    this._builtinFunctions['include'] = function() {
+      const args = [].slice.call(arguments);
       if (args.length < 1) {
         throw Error('Wrong number of arguments for include()');
       }
@@ -399,7 +400,7 @@ class Machine {
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value,
-        context,
+        context
       )
     );
   }
@@ -490,7 +491,8 @@ class Machine {
     // add macro to supported function in expression expression
     const that = this;
     this._globalContext[macro.name] = (function(macro) {
-      return function(...args) {
+      return function() {
+        const args = [].slice.call(arguments);
         const buffer = [];
         macro.args = args;
 

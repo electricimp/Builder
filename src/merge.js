@@ -14,5 +14,5 @@ module.exports = function() {
   target = clone(target);
   args.unshift(target);
 
-  return Object.assign.apply(null, args);
+  return Object.assign.apply({}, args);
 };

@@ -10,12 +10,6 @@
 @{S.includes("abc", "a")}
 @{S.includes("abc", "abc")}
 
-@{S.padEnd("abc", 5)}
-@{S.padEnd("abc", 5, "-")}
-
-@{S.padStart("abc", 5)}
-@{S.padStart("abc", 5, "-")}
-
 @{S.repeat("abc", 0)}
 @{S.repeat("abc", 1)}
 @{S.repeat("abc", 2)}

@@ -1,4 +1,9 @@
+'use strict';
 module.exports = {
-  str_upper: s => s.toUpperCase(),
-  str_lower: s => s.toLowerCase(),
+  str_upper: function(s) {
+    return s.toUpperCase();
+  },
+  str_lower: function(s) {
+    return s.toLowerCase();
+  },
 };

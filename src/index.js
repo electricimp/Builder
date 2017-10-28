@@ -39,7 +39,8 @@ const GithubReader = require('./Readers/GithubReader');
  */
 class Builder {
 
-  constructor(opts = {}) {
+  constructor(opts) {
+    opts = opts || {};
     this._libs = [ path.resolve(__dirname + '/libs') + '/*.js' ].concat(opts.libs || []);
     this._initGlobals();
     this._initMachine();
@@ -86,7 +87,8 @@ class Builder {
 
     // create Math.* function
     const _createMathFunction = (name) => {
-      return (...args) => {
+      return function() {
+        const args = [].slice.call(arguments);
         if (args.length < 1) {
           throw new Error('Wrong number of arguments for ' + name + '()');
         }

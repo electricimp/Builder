@@ -537,8 +537,6 @@ will print the home directory path of the current user of the system where *Buil
   - <code>S.concat()</code>
   - <code>S.endsWith()</code>
   - <code>S.includes()</code>
-  - <code>S.padEnd()</code>
-  - <code>S.padStart()</code>
   - <code>S.repeat()</code>
   - <code>S.split()</code>
   - <code>S.startsWith()</code>

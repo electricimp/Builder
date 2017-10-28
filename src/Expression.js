@@ -95,10 +95,10 @@ Errors.FunctionCallError = class FunctionCallError extends Errors.ExpressionErro
  */
 class Expression {
 
-  constructor(machine = {}) {
+  constructor(machine) {
     this.functions = {};
     this._initParser();
-    this._machine = machine;
+    this._machine = machine || {};
   }
 
   /**

@@ -1,3 +1,4 @@
+'use strict';
 module.exports = {
-	lib_b: () => "lib_b string"
+	lib_b: function() { return "lib_b string"; }
 };

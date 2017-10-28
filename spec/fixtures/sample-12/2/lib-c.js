@@ -1,8 +1,9 @@
+'use strict';
 let num = 0;
 
 module.exports = {
 	lib_c: {
-		upper: (s) => s.toUpperCase(),
-	       counter: () => ++num,
+		upper: function(s) { return s.toUpperCase(); },
+		counter: function() { return ++num; },
 	}
 };

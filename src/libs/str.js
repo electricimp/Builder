@@ -1,10 +1,10 @@
+'use strict';
+
 const stringFunctions = {};
 const stringMethodNames = [
   'concat',
   'endsWith',
   'includes',
-  'padEnd',
-  'padStart',
   'repeat',
   'split',
   'startsWith',
@@ -19,7 +19,8 @@ const stringMethodNames = [
 
 // Generate functions from method names
 for (const name of stringMethodNames) {
-  stringFunctions[name] = (...args) => {
+  stringFunctions[name] = function() {
+    const args = [].slice.call(arguments);
     if (args.length < 1) {
       throw new Error('Missing string as required first argument in ' + name + '()');
     }

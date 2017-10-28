@@ -1,5 +1,9 @@
+'use strict';
 module.exports = {
 	lib_d: {
-		log: (...args) => (console.log(...args), '')
+		log: function() {
+			console.log.apply(console, [].slice.call(arguments));
+			return '';
+		}
 	}
 };
