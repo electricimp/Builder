@@ -614,7 +614,7 @@ Run builder with the option `--lib path/to/your/lib/file` included.
 
 ### "this"
 
-NB: Functions called by Builder will be called their `this` argument set to a Builder context object.  This context object exposes the useful variables `__FILE__` (string), `__PATH__` (string), and `__LINE__` (number) which can be used for debug logging, as well as the globally defined Builder functions that your directives have available.
+NB: Functions called by Builder will be called their `this` argument set to a Builder context object.  Within the context object, builder [variables](#variables) like `__FILE__`, functions like `max()`, and your other included library functions will be made available at the top level.  Variables defined in your input code with `@macro` or `@set` will be available under the key `globals`.
 
 Ignoring the binding of `this` may cause you to find some behaviour unexpected, for example when calling methods on objects.  Take the following example library:
 
