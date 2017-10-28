@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node_modules/jasmine/bin/jasmine.js",
-    "build": "pleasebuild input"
+    "build": "src/cli.js input"
   },
   "repository": {
     "type": "git",
