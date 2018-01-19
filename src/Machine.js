@@ -26,17 +26,18 @@
 
 const url = require('url');
 const path = require('path');
-const clone = require('clone');
 
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
 const FileCache = require('./FileCache');
+const merge = require('./merge');
 
 // instruction types
 const INSTRUCTIONS = {
   SET: 'set',
   LOOP: 'loop',
   ERROR: 'error',
+  WARNING: 'warning',
   MACRO: 'macro',
   OUTPUT: 'output',
   INCLUDE: 'include',
@@ -87,7 +88,7 @@ class Machine {
     const ast = this.parser.parse(source);
 
     // execute
-    context = this._mergeContexts(
+    context = merge(
       {__FILE__: this.file, __PATH__: this.path},
       this._builtinFunctions,
       this.globals,
@@ -113,7 +114,9 @@ class Machine {
     this._builtinFunctions = {}; // builtin functions
 
     // include()
-    this._builtinFunctions['include'] = (args, context) => {
+    const that = this;
+    this._builtinFunctions['include'] = function() {
+      const args = [].slice.call(arguments);
       if (args.length < 1) {
         throw Error('Wrong number of arguments for include()');
       }
@@ -121,17 +124,17 @@ class Machine {
       const buffer = [];
 
       // include macro in inline mode
-      this._includeSource(
+      that._includeSource(
         args[0],
         /* enable inline mode for all subsequent operations */
-        this._mergeContexts(context, {__INLINE__: true}),
+        merge(this, {__INLINE__: true}),
         buffer,
         false,
         true
       );
 
       // trim trailing newline in inline mode
-      this._trimLastLine(buffer);
+      that._trimLastLine(buffer);
 
       return buffer.join('');
     };
@@ -171,7 +174,7 @@ class Machine {
     for (const instruction of ast) {
 
       // set __LINE__
-      context = this._mergeContexts(
+      context = merge(
         context,
         {__LINE__: instruction._line}
       );
@@ -198,6 +201,10 @@ class Machine {
 
           case INSTRUCTIONS.ERROR:
             this._executeError(instruction, context, buffer);
+            break;
+
+          case INSTRUCTIONS.WARNING:
+            this._executeWarning(instruction, context, buffer);
             break;
 
           case INSTRUCTIONS.MACRO:
@@ -240,7 +247,7 @@ class Machine {
 
     const macro = this.expression.parseMacroCall(
       instruction.value,
-      this._mergeContexts(this._globalContext, context),
+      context,
       this._macros
     );
 
@@ -266,7 +273,8 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = evaluated ? source : this.expression.evaluate(
-        source, this._mergeContexts(this._globalContext, context)
+        source,
+        context
       ).trim();
 
     // if once flag is set, then check if source has already been included
@@ -290,7 +298,7 @@ class Machine {
     // update context
 
     // __FILE__/__PATH__
-    context = this._mergeContexts(
+    context = merge(
       context,
       res.includePathParsed
     );
@@ -329,7 +337,7 @@ class Machine {
     // execute macro
     this._execute(
       this._macros[macro.name].body,
-      this._mergeContexts(context, macroContext),
+      merge(context, macroContext),
       buffer
     );
   }
@@ -358,7 +366,7 @@ class Machine {
       this._out(
         String(this.expression.evaluate(
           instruction.value,
-          this._mergeContexts(this._globalContext, context)
+          context
         )),
         context,
         buffer
@@ -376,12 +384,14 @@ class Machine {
    */
   _executeSet(instruction, context, buffer) {
     this._globalContext[instruction.variable] =
-      this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globalContext, context));
+      this.expression.evaluate(
+        instruction.value,
+        context
+      );
   }
 
   /**
-   * Execute "error: instruction
+   * Execute "error" instruction
    * @param {{type, value}} instruction
    * @param {{}} context
    * @param {string[]} buffer
@@ -390,8 +400,23 @@ class Machine {
   _executeError(instruction, context, buffer) {
     throw new Errors.UserDefinedError(
       this.expression.evaluate(instruction.value,
-        this._mergeContexts(this._globalContext, context))
+        context
+      )
     );
+  }
+
+  /**
+   * Execute "warning" instruction
+   * @param {{type, value}} instruction
+   * @param {{}} context
+   * @param {string[]} buffer
+   * @private
+   */
+  _executeWarning(instruction, context, buffer) {
+    const message = this.expression.evaluate(instruction.value,
+      context
+    );
+    console.error("\x1b[33m" + message + '\u001b[39m');
   }
 
   /**
@@ -405,7 +430,7 @@ class Machine {
 
     const test = this.expression.evaluate(
       instruction.test,
-      this._mergeContexts(this._globalContext, context)
+      context
     );
 
     if (test) {
@@ -464,21 +489,23 @@ class Machine {
     };
 
     // add macro to supported function in expression expression
-    this._globalContext[macro.name] = ((macro) => {
-      return (args, context) => {
+    const that = this;
+    this._globalContext[macro.name] = (function(macro) {
+      return function() {
+        const args = [].slice.call(arguments);
         const buffer = [];
         macro.args = args;
 
         // include macro in inline mode
-        this._includeMacro(
+        that._includeMacro(
           macro,
           /* enable inline mode for all subsequent operations */
-          this._mergeContexts(context, {__INLINE__: true}),
+          merge(this, {__INLINE__: true}),
           buffer
         );
 
         // trim trailing newline (only in inline mode for macros)
-        this._trimLastLine(buffer);
+        that._trimLastLine(buffer);
 
         return buffer.join('');
       };
@@ -500,7 +527,7 @@ class Machine {
       // evaluate test expression
       const test = this._expression.evaluate(
         instruction.while || instruction.repeat,
-        this._mergeContexts(this._globalContext, context)
+        context
       );
 
       // check break condition
@@ -513,7 +540,7 @@ class Machine {
       // execute body
       this._execute(
         instruction.body,
-        this._mergeContexts(
+        merge(
           context,
           {loop: {index, iteration: index + 1}}
         ),
@@ -554,22 +581,6 @@ class Machine {
     } else {
       buffer.push(output);
     }
-  }
-
-  /**
-   * Merge local context with global
-   * @param {...{}} - contexts
-   * @private
-   */
-  _mergeContexts() {
-    const args = Array.prototype.slice.call(arguments);
-
-    // clone target
-    let target = args.shift();
-    target = clone(target);
-    args.unshift(target);
-
-    return Object.assign.apply(this, args);
   }
 
   /**
