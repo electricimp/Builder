@@ -13,7 +13,13 @@ module.exports = (sampleFile) => {
   return {
 
     createMachine: () => {
-      const builder = new Builder();
+      // File listing libs to include
+      const libFile = `${path.dirname(sampleFile)}/libs`;
+      let libs = [];
+      if (fs.existsSync(libFile)) {
+        libs = fs.readFileSync(libFile).toString().split('\n').map(l => `${path.dirname(sampleFile)}/${l}`);
+      }
+      const builder = new Builder({ libs });
       builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
       builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
       builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;

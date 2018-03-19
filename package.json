@@ -7,7 +7,8 @@
     "pleasebuild": "src/cli.js"
   },
   "scripts": {
-    "test": "node_modules/jasmine/bin/jasmine.js"
+    "test": "node_modules/jasmine/bin/jasmine.js",
+    "build": "src/cli.js input"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   "dependencies": {
     "clone": "^1.0.2",
     "github": "^0.2.4",
+    "glob": "^7.1.2",
     "jsep": "^0.3.1",
     "request": "^2.71.0",
     "minimatch": "^3.0.4",
@@ -33,6 +35,7 @@
     "jasmine": "^2.4.1",
     "jasmine-diff-matchers": "^2.0.0",
     "jasmine-expect": "^2.0.2",
-    "log": "^1.4.0"
+    "log": "^1.4.0",
+    "fixture-stdout": "^0.2.1"
   }
 }
