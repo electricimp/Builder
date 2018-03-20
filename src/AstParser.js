@@ -56,14 +56,15 @@ const TOKENS = {
   ENDMACRO: 'endmacro',
   ENDREPEAT: 'endrepeat',
   SOURCE_FRAGMENT: 'source_fragment',
-  INLINE_EXPRESSION: 'inline_expression'
+  INLINE_EXPRESSION: 'inline_expression',
+  WARNING: 'warning',
 };
 
 // lines gobbling regex
 const LINES = /(.*(?:\r\n|\n)?)/g;
 
 // regex to detect if fragment is a directive
-const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end|while|endwhile|repeat|endrepeat)\b(.*?)\s*$/;
+const DIRECTIVE = /^\s*@(include|set|if|else|elseif|endif|error|macro|endmacro|end|while|endwhile|repeat|endrepeat|warning)\b(.*?)\s*$/;
 
 // @-style comments regex
 const COMMENT = /^\s*@\s/;
@@ -186,6 +187,12 @@ class AstParser {
           case 'error':
             this._checkArgumentIsNonempty(type, arg, token._line);
             token.type = TOKENS.ERROR;
+            token.args.push(arg);
+            break;
+
+          case 'warning':
+            this._checkArgumentIsNonempty(type, arg, token._line);
+            token.type = TOKENS.WARNING;
             token.args.push(arg);
             break;
 
@@ -382,6 +389,15 @@ class AstParser {
         case TOKENS.ERROR:
 
           node.type = INSTRUCTIONS.ERROR;
+          node.value = token.args[0];
+          this._append(parent, node, state);
+
+          break;
+
+        // @warning <message:expression>
+        case TOKENS.WARNING:
+
+          node.type = INSTRUCTIONS.WARNING;
           node.value = token.args[0];
           this._append(parent, node, state);
 
