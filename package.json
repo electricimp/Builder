@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "2.2.4",
+  "version": "2.3.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
