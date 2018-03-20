@@ -35,8 +35,8 @@
   - [Comments](#comments)
 - [Usage](#usage)
   - [Running](#running)
-  - [Including Javascript Libraries](#including-javascript-libraries)
-    - ["this"](#this)
+  - [Including JavaScript Libraries](#including-javascript-libraries)
+    - [Binding the Context Object Correctly](#binding-the-context-object-correctly)
   - [Cache for Remote Includes](#cache-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
@@ -533,7 +533,7 @@ will print the home directory path of the current user of the system where *Buil
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
-- String functions: the following string functions, based on the Javascript methods by the same names, are available under the namespace `S`.  The first argument to each function is always the string to be operated on.  For documentation on the remaining arguments see the documentation for Javascript string methods [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)
+- String functions: the following string functions, based on the JavaScript methods of the same names, are available under the namespace `S`. The first argument to each function is always the string to be operated on. For documentation on the remaining arguments, please see the documentation for JavaScript string methods [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String).
   - <code>S.concat()</code>
   - <code>S.endsWith()</code>
   - <code>S.includes()</code>
@@ -605,11 +605,11 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
-  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to Javascript file to include as libraries
+  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries
 
-## Including Javascript Libraries
+## Including JavaScript Libraries
 
-Builder can accept Javascript libraries to add functionality to its global namespace.  The library should export an object, the properties of which will be merged into the global namespace.  For example, to include a function to convert strings to uppercase, define your library file like so:
+Builder can accept JavaScript libraries to add functionality to its global namespace. The library should export an object, the properties of which will be merged into the global namespace. For example, to include a function to convert strings to uppercase, define your library file like so:
 
 ```js
 module.exports = {
@@ -617,20 +617,20 @@ module.exports = {
 };
 ```
 
-Include directives like the following in your input file:
+Include directives, such as the following example, in your input file:
 
 ```
 @{upper("warning:")}
 @{upper(include("warning.txt"))}
 ```
 
-Run builder with the option `--lib path/to/your/lib/file` included.
+Run builder with the option `--lib path/to/your/lib/file`.
 
-### "this"
+### Binding the Context Object Correctly
 
-NB: Functions called by Builder will be called their `this` argument set to a Builder context object.  Within the context object, builder [variables](#variables) like `__FILE__`, [functions](#functions) like `max()`, and your other included library functions will be made available at the top level.  Variables defined in your input code with `@macro` or `@set` will be available under the key `globals`.
+**Note** Functions called by Builder will be called with their *this* argument set to a Builder context object. Within the context object, Builder [variables](#variables) like `__FILE__`, [functions](#functions) like `max()`, and other included library functions will be made available at the top level. Variables defined in your input code with `@macro` or `@set` will be available under the key *globals*.
 
-Ignoring the binding of `this` may cause you to find some behaviour unexpected, for example when calling methods on objects.  Take the following example library:
+Ignoring the binding of *this* may cause unexpected behavior, for example when calling methods on objects. Take the following example library:
 
 ```js
 class MyClass {
@@ -650,7 +650,7 @@ module.exports = {
 };
 ```
 
-Attempting to use this library with the directive `@{myObject.getStr()}` will not do what it's "supposed" to do, because `this` in `getStr()` will be set to a Builder context object and not to `myObject`.  When calling class methods ensure they have been bound to the correct value of this in your library file, for example.
+Attempting to use this library with the directive `@{myObject.getStr()}` will not deliver the expected behavior because *this* in *getStr()* will be set to a Builder context object and not to *myObject*. When calling class methods ensure they have been bound to the correct value of *this*:
 
 ```js
 class MyClass {
