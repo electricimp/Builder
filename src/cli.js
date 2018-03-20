@@ -69,6 +69,7 @@ where:
 \t\u001b[34m--cache>\u001b[39m - enable cache for remote files
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
+\t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
     `.trim());
 }
 
@@ -78,7 +79,7 @@ where:
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: ''};
+  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: '', libs: []};
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -107,6 +108,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.gh.token = args.shift();
+    } else if (argument === '--lib' || argument === '--libs') {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.libs.push(args.shift());
     } else {
       res.input = argument;
     }
@@ -125,7 +131,7 @@ try {
   }
 
 // create builder
-  const builder = new Builder();
+  const builder = new Builder({ libs: args.libs });
   builder.machine.generateLineControlStatements = args.lineControl;
   builder.machine.useCache = args.cache;
   builder.logger = new NullLogger();

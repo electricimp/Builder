@@ -24,21 +24,24 @@
 
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const glob = require('glob');
 const Machine = require('./Machine');
 const AstParser = require('./AstParser');
 const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
-const EscapeFilter = require('./Filters/EscapeFilter');
-const Base64Filter = require('./Filters/Base64Filter');
 
 /**
  * Main Builder class
  */
 class Builder {
 
-  constructor() {
+  constructor(opts) {
+    opts = opts || {};
+    this._libs = [ path.resolve(__dirname + '/libs') + '/*.js' ].concat(opts.libs || []);
     this._initGlobals();
     this._initMachine();
   }
@@ -48,26 +51,44 @@ class Builder {
    * @private
    */
   _initGlobals() {
+
+    let libFiles = [];
+    for (let file of this._libs) {
+      let newFiles = [];
+
+      if (glob.hasMagic(file)) {
+        newFiles = newFiles.concat(glob.sync(file));
+
+      } else {
+        const stat = fs.lstatSync(file);
+
+        if (stat.isFile()) {
+          libFiles.push(file);
+
+        } else if (stat.isDirectory()) {
+          newFiles = newFiles.concat(glob.sync(`${file}/**/*.js`));
+
+        } else {
+          throw `lib path "${file}" is not a file or directory`;
+        }
+      }
+      newFiles.sort();
+      libFiles = libFiles.concat(newFiles);
+    }
+    const libs = libFiles.map(p => require(path.resolve(process.cwd(), p)));
+
     // global context
     this._globals = {};
-
-    // filters
-
-    const escapeFilter = new EscapeFilter();
-    this._globals[escapeFilter.name] = (args) => {
-      return escapeFilter.filter(args.shift(), args);
-    };
-
-    const base64Filter = new Base64Filter();
-    this._globals[base64Filter.name] = (args) => {
-      return base64Filter.filter(args.shift(), args);
-    };
+    for (let lib of libs) {
+      Object.assign(this._globals, lib);
+    }
 
     // arithmetic functions
 
     // create Math.* function
     const _createMathFunction = (name) => {
-      return (args, context) => {
+      return function() {
+        const args = [].slice.call(arguments);
         if (args.length < 1) {
           throw new Error('Wrong number of arguments for ' + name + '()');
         }
@@ -89,9 +110,9 @@ class Builder {
     const httpReader = new HttpReader();
     const githubReader = new GithubReader();
 
-    const expression = new Expression();
     const parser = new AstParser();
     const machine = new Machine();
+    const expression = new Expression(machine);
 
     machine.readers.github = githubReader;
     machine.readers.http = httpReader;

@@ -24,19 +24,16 @@
 
 'use strict';
 
-class AbstractFilter {
-  /**
-   * Apply filter
-   * @param {[*]} args
-   * @param {string} input
-   */
-  filter(input, args) {
-    return String(input);
-  }
-
-  get name() {
-    return 'abstract';
-  }
-}
-
-module.exports = AbstractFilter;
+module.exports = {
+  escape: (input) => String(input)
+    .replace(/[\"\'\\\b\f\n\r\t]/g, (m) => ({
+      '"':'\\"',
+      '\'':'\\\'',
+      '\\':'\\\\',
+      '\b':'\\b',
+      '\f':'\\f',
+      '\n':'\\n',
+      '\r':'\\r',
+      '\t':'\\t'
+    }[m]))
+};

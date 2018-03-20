@@ -16,6 +16,7 @@
     - [@repeat](#repeat)
     - [@if – @elseif – @else](#if--elseif--else)
     - [@error](#error)
+    - [@warning](#warning)
   - [Filters](#filters)
   - [Expressions](#expressions)
     - [Types](#types)
@@ -25,7 +26,7 @@
     - [Member Expressions](#member-expressions)
     - [Conditional Expressions](#conditional-expressions)
     - [Variables](#variables)
-      - [Variable Definition Order](#variables-definition-order)
+      - [Variable Definition Order](#variable-definition-order)
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
@@ -34,6 +35,8 @@
   - [Comments](#comments)
 - [Usage](#usage)
   - [Running](#running)
+  - [Including JavaScript Libraries](#including-javascript-libraries)
+    - [Binding the Context Object Correctly](#binding-the-context-object-correctly)
   - [Cache for Remote Includes](#cache-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
@@ -350,6 +353,29 @@ Emits an error.
 <b>@endif</b>
 </pre>
 
+### @warning
+
+<pre>
+<b>@warning</b> <i>&lt;message:expression&gt;</i>
+</pre>
+
+Emits a warning.
+
+#### Example
+
+<pre>
+<b>@if</b> PLATFORM == "platform1"
+  // platform 1 code
+<b>@elseif</b> PLATFORM == "platform2"
+  // platform 2 code
+<b>@elseif</b> PLATFORM == "platform3"
+  // platform 3 code
+<b>@else</b>
+  <b>@warning</b> "Building for default platform"
+  // default platform code
+<b>@endif</b>
+</pre>
+
 ## Filters
 
 The `|` operator (filter) allows you to pass a value through any of the supported functions.
@@ -507,6 +533,20 @@ will print the home directory path of the current user of the system where *Buil
 - <code>min(<i>&lt;numbers&gt;</i>)</code>
 - <code>max(<i>&lt;numbers&gt;</i>)</code>
 - <code>abs(<i>&lt;number&gt;</i>)</code>
+- String functions: the following string functions, based on the JavaScript methods of the same names, are available under the namespace `S`. The first argument to each function is always the string to be operated on. For documentation on the remaining arguments, please see the documentation for JavaScript string methods [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String).
+  - <code>S.concat()</code>
+  - <code>S.endsWith()</code>
+  - <code>S.includes()</code>
+  - <code>S.repeat()</code>
+  - <code>S.split()</code>
+  - <code>S.startsWith()</code>
+  - <code>S.substr()</code>
+  - <code>S.substring()</code>
+  - <code>S.toLowerCase()</code>
+  - <code>S.toUpperCase()</code>
+  - <code>S.trim()</code>
+  - <code>S.trimLeft()</code>
+  - <code>S.trimRight()</code>
 
 ## Comments
 
@@ -565,6 +605,70 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
+  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries
+
+## Including JavaScript Libraries
+
+Builder can accept JavaScript libraries to add functionality to its global namespace. The library should export an object, the properties of which will be merged into the global namespace. For example, to include a function to convert strings to uppercase, define your library file like so:
+
+```js
+module.exports = {
+  upper: (s) => s.toUpperCase()
+};
+```
+
+Include directives, such as the following example, in your input file:
+
+```
+@{upper("warning:")}
+@{upper(include("warning.txt"))}
+```
+
+Run builder with the option `--lib path/to/your/lib/file`.
+
+### Binding the Context Object Correctly
+
+**Note** Functions called by Builder will be called with their *this* argument set to a Builder context object. Within the context object, Builder [variables](#variables) like `__FILE__`, [functions](#functions) like `max()`, and other included library functions will be made available at the top level. Variables defined in your input code with `@macro` or `@set` will be available under the key *globals*.
+
+Ignoring the binding of *this* may cause unexpected behavior, for example when calling methods on objects. Take the following example library:
+
+```js
+class MyClass {
+  constructor(str) {
+    this._str = str;
+  }
+
+  getStr() {
+    return this._str;
+  }
+}
+
+myObject = MyClass("my text");
+
+module.exports = {
+  myObject
+};
+```
+
+Attempting to use this library with the directive `@{myObject.getStr()}` will not deliver the expected behavior because *this* in *getStr()* will be set to a Builder context object and not to *myObject*. When calling class methods ensure they have been bound to the correct value of *this*:
+
+```js
+class MyClass {
+  constructor(str) {
+    this._str = str;
+  }
+
+  getStr() {
+    return this._str;
+  }
+}
+
+myObject = MyClass("my text");
+
+module.exports = {
+  getStr: myObject.getStr.bind(myObject)
+};
+```
 
 ## Cache for Remote Includes
 

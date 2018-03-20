@@ -2,3 +2,7 @@ node_modules
 _private
 .idea
 .builder-cache
+**/.*.swp
+**/.*.swo
+input
+output

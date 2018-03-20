@@ -1,0 +1,45 @@
+false input.nut 1
+true input.nut 3
+1 input.nut 4
+0 input.nut 6
+false input.nut 7
+false input.nut 8
+true input.nut 9
+true input.nut 10
+true input.nut 12
+false input.nut 13
+0 input.nut 14
+	0 macro.nut 2
+	1 macro.nut 4
+	false macro.nut 5
+	true macro.nut 13
+1 input.nut 16
+true input.nut 17
+true input.nut 18
+	1 macro.nut 2
+	3 macro.nut 4
+	true macro.nut 5
+	true macro.nut 13
+3 input.nut 20
+			3 macro.nut 8
+				3 macro.nut 2
+	2 macro.nut 4
+	true macro.nut 5
+	true macro.nut 13
+			2 macro.nut 10
+2 input.nut 22
+			2 macro.nut 8
+				2 macro.nut 2
+	0 macro.nut 4
+	true macro.nut 5
+	true macro.nut 13
+			0 macro.nut 10
+0 input.nut 24
+	1 input.nut 25
+1 input.nut 26
+	3 input.nut 27
+3 input.nut 28
+	2 input.nut 29
+2 input.nut 30
+	0 input.nut 31
+0 input.nut 32
