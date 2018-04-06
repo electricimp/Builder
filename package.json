@@ -22,7 +22,7 @@
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
     "clone": "^1.0.2",
-    "github": "^0.2.4",
+    "@octokit/rest": "^15.2.6",
     "glob": "^7.1.2",
     "jsep": "^0.3.1",
     "request": "^2.71.0",

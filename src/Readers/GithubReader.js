@@ -24,8 +24,9 @@
 
 'use strict';
 
+const HttpsProxyAgent = require('https-proxy-agent');
 const path = require('path');
-const GitHubApi = require('github');
+const GitHubApi = require('@octokit/rest');
 const childProcess = require('child_process');
 const packageJson = require('../../package.json');
 const AbstractReader = require('./AbstractReader');
@@ -122,7 +123,7 @@ class GithubReader extends AbstractReader {
     const parsed = GithubReader.parseUrl(source);
     return {
       __FILE__: path.basename(parsed.path),
-      __PATH__: `github:${parsed.user}/${parsed.repo}/${path.dirname(parsed.path)}`
+      __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`
     };
   }
 
@@ -131,17 +132,22 @@ class GithubReader extends AbstractReader {
    * @param {string} source
    */
   static fetch(source, username, password) {
-
+    var agent = null;
+    if (process.env.HTTPS_PROXY) {
+        agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
+    } else if (process.env.https_proxy) {
+        agent = HttpsProxyAgent(process.env.https_proxy);
+    }
     const github = new GitHubApi({
       version: '3.0.0',
       debug: false,
-      protocol: 'https',
-      host: 'api.github.com',
+      baseUrl: 'https://api.github.com',
       timeout: 5000,
       headers: {
         'user-agent': packageJson.name + '/' + packageJson.version,
         'accept': 'application/vnd.github.VERSION.raw'
-      }
+      },
+      agent: agent
     });
 
     // authorization
@@ -176,7 +182,7 @@ class GithubReader extends AbstractReader {
         process.exit(STATUS_FETCH_FAILED);
 
       } else {
-        process.stdout.write(res);
+        process.stdout.write(res['data']);
       }
     });
   }
@@ -194,7 +200,7 @@ class GithubReader extends AbstractReader {
 
     if (m) {
       const res = {
-        'user': m[1],
+        'owner': m[1],
         'repo': m[2],
         'path': m[3]
       };

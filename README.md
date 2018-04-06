@@ -38,6 +38,7 @@
   - [Including JavaScript Libraries](#including-javascript-libraries)
     - [Binding the Context Object Correctly](#binding-the-context-object-correctly)
   - [Cache for Remote Includes](#cache-for-remote-includes)
+  - [Proxy for Remote Includes](#proxy-for-remote-includes)
 - [Testing](#testing)
 - [License](#license)
 
@@ -681,6 +682,18 @@ To turn the cache on, pass the `--cache` or `-c` option to Builder. If this opti
 To reset the cache use both the `--cache` and the `--clear-cache` options.
 
 If a resource should never be cached, it needs to be added to the *exclude-list.builder* file. You can use wildcard characters to mask file names.
+
+## Proxy for Remote Includes
+
+To use a proxy for including of files from a remote resource (GitHub or remote HTTP/HTTPs servers), set environment variable(s) `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` to be equal to the address of your proxy server.
+
+`HTTP_PROXY`/`http_proxy` - for HTTP requests only.
+
+`HTTPS_PROXY`/`https_proxy` - for HTTPS requests only.
+
+For example, your proxy has `IP=10.0.0.1` and `PORT=3128`. Then you can set `HTTP_PROXY='http://10.0.0.1:3128'` and force all Builder's HTTP requests to go through your proxy.
+
+Note: GitHub includes always use HTTPS protocol
 
 ### Wildcard pattern matching
 
