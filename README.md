@@ -685,15 +685,12 @@ If a resource should never be cached, it needs to be added to the *exclude-list.
 
 ## Proxy for Remote Includes
 
-To use a proxy for including of files from a remote resource (GitHub or remote HTTP/HTTPs servers), set environment variable(s) `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` to be equal to the address of your proxy server.
+To specify proxy that should be used to include files from remote resources (GitHub or remote HTTP/HTTPs servers), set environment variable(s) `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` for HTTP and HTTPS protocols respectively.
 
-`HTTP_PROXY`/`http_proxy` - for HTTP requests only.
+For example, to use a proxy is running at IP `192.168.10.2` on port 3128 for HTTP requests you should set the environment variable:
+`HTTP_PROXY='http://192.168.10.2:3128'`. This will make all the Builder's HTTP requests to go through the proxy.
 
-`HTTPS_PROXY`/`https_proxy` - for HTTPS requests only.
-
-For example, your proxy has `IP=10.0.0.1` and `PORT=3128`. Then you can set `HTTP_PROXY='http://10.0.0.1:3128'` and force all Builder's HTTP requests to go through your proxy.
-
-Note: GitHub includes always use HTTPS protocol
+**Note**: files from GitHub (`github:` protocol) are always included via HTTPS protocol, so the HTTPS_PROXY (if any) should be used to specify proxy in this case.
 
 ### Wildcard pattern matching
 

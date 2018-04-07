@@ -134,9 +134,9 @@ class GithubReader extends AbstractReader {
   static fetch(source, username, password) {
     var agent = null;
     if (process.env.HTTPS_PROXY) {
-        agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
+      agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
     } else if (process.env.https_proxy) {
-        agent = HttpsProxyAgent(process.env.https_proxy);
+      agent = HttpsProxyAgent(process.env.https_proxy);
     }
     const github = new GitHubApi({
       version: '3.0.0',
