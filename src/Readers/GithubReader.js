@@ -139,7 +139,6 @@ class GithubReader extends AbstractReader {
       agent = HttpsProxyAgent(process.env.https_proxy);
     }
     const github = new GitHubApi({
-      version: '3.0.0',
       debug: false,
       baseUrl: 'https://api.github.com',
       timeout: 5000,
