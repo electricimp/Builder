@@ -61,7 +61,7 @@ class FileReader extends AbstractReader {
       }
     }
 
-    throw new AbstractReader.Errors.SourceReadingError('Local file "' + filePath + '" not found');
+    throw new AbstractReader.Errors.SourceReadingError('Local file "' + filePath.replace('\\','/') + '" not found');
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
