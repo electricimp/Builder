@@ -85,7 +85,7 @@ class Machine {
     this._reset();
 
     // parse
-    const ast = this.parser.parse(source.replace(/\\/g,'/'));
+    const ast = this.parser.parse(source.replace(/\\/g, '/'));
 
     // execute
     context = merge(
@@ -156,7 +156,7 @@ class Machine {
    * @private
    */
   _formatPath(path) {
-	let _path = path.replace('\\','/');
+    let _path = path.replace('\\', '/');
     return _path ? _path + '/' : '';	  
   }
   
@@ -265,7 +265,7 @@ class Machine {
       this._includeMacro(macro, context, buffer);
     } else {
       // source inclusion
-      this._includeSource(instruction.value.replace(/\\/g,'/'), context, buffer, instruction.once);
+      this._includeSource(instruction.value.replace(/\\/g, '/'), context, buffer, instruction.once);
     }
   }
 
