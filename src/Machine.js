@@ -156,7 +156,7 @@ class Machine {
    * @private
    */
   _formatPath(path) {
-    let _path = path.replace('\\', '/');
+    let _path = path.replace(/\\/g, '/');
     return _path ? _path + '/' : '';	  
   }
   
