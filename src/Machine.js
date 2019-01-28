@@ -265,7 +265,7 @@ class Machine {
       this._includeMacro(macro, context, buffer);
     } else {
       // source inclusion
-      this._includeSource(instruction.value.replace(/\\/g, '/'), context, buffer, instruction.once);
+      this._includeSource(instruction.value), context, buffer, instruction.once);
     }
   }
 
