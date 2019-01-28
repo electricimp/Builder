@@ -85,7 +85,7 @@ class Machine {
     this._reset();
 
     // parse
-    const ast = this.parser.parse(source.replace(/\\/g, '/'));
+    const ast = this.parser.parse(source);
 
     // execute
     context = merge(
