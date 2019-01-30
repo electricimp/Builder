@@ -19,9 +19,10 @@ describe('Machine', () => {
 
   it('should handle built-in function include()', () => {
     const res = machine.execute(
-`@{include('${backslashToSlash(__dirname) + '/../fixtures/lib/d.builder'}')|escape}`
-);
-    expect(res).toEqual(`d.builder\\nd.builder:2`);
+      `@{include('${backslashToSlash(__dirname) + '/../fixtures/lib/d.builder'}')|escape}`
+    );
+    // eol normalize \r\n at end of line only. Replace \r\n inside line.
+    expect(res.replace('\\r\\n','\\n')).toEqual(`d.builder\\nd.builder:2`);
   });
 
   it('should handle errors in include() calls', () => {

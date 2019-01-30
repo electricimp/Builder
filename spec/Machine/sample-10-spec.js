@@ -8,6 +8,7 @@ require('jasmine-expect');
 
 const FILE = __dirname + '/../fixtures/sample-10/input.nut';
 const init = require('./init')(FILE);
+const eol = require('eol');
 
 describe('Machine', () => {
   let machine, result, resultWithLC;
@@ -19,8 +20,8 @@ describe('Machine', () => {
   });
 
   it('should do something alright #1', () => {
-    expect(machine.execute('@include "input.nut"')).toBe(result);
+    expect(eol.lf(machine.execute('@include "input.nut"'))).toBe(result);
     machine.generateLineControlStatements = true;
-    expect(machine.execute('@include "input.nut"')).toBe(resultWithLC);
+    expect(eol.lf(machine.execute('@include "input.nut"'))).toBe(resultWithLC);
   });
 });

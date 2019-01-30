@@ -7,6 +7,7 @@
 const fs = require('fs');
 const Log = require('log');
 const path = require('path');
+const eol = require('eol');
 const Builder = require('../../src/');
 
 module.exports = (sampleFile) => {
@@ -17,7 +18,7 @@ module.exports = (sampleFile) => {
       const libFile = `${path.dirname(sampleFile)}/libs`;
       let libs = [];
       if (fs.existsSync(libFile)) {
-        libs = fs.readFileSync(libFile).toString().split('\n').map(l => `${path.dirname(sampleFile)}/${l}`);
+        libs = eol.lf(fs.readFileSync(libFile).toString()).split('\n').map(l => `${path.dirname(sampleFile)}/${l}`);
       }
       const builder = new Builder({ libs });
       builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
@@ -28,17 +29,17 @@ module.exports = (sampleFile) => {
     },
 
     getResult: () => {
-      return fs.readFileSync(sampleFile + '.out', 'utf-8');
+      return eol.lf(fs.readFileSync(sampleFile + '.out', 'utf-8'));
     },
 
     getResultWithLineControl: () => {
       let content;
       try {
-        content = fs.readFileSync(sampleFile + '.out-lc', 'utf-8');
+        content = eol.lf(fs.readFileSync(sampleFile + '.out-lc', 'utf-8'));
       } catch (err) {
         if (err.code == 'ENOENT') {
           const platform = /^win/.test(process.platform) ? '-win' : '-unix';
-          content = fs.readFileSync(sampleFile + '.out-lc' + platform, 'utf-8');
+          content = eol.lf(fs.readFileSync(sampleFile + '.out-lc' + platform, 'utf-8'));
         } else {
           throw err;
         }
