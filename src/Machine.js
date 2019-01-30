@@ -156,8 +156,7 @@ class Machine {
    * @private
    */
   _formatPath(filepath, filename) {
-    let _filepath = path.normalize(path.join(filepath, filename));
-    return _filepath;	  
+    return path.normalize(path.join(filepath, filename));
   }
   
   /**
