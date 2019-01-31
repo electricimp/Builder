@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -61,7 +61,7 @@ class FileReader extends AbstractReader {
       }
     }
 
-    throw new AbstractReader.Errors.SourceReadingError('Local file "' + filePath + '" not found');
+    throw new AbstractReader.Errors.SourceReadingError('Local file "' + path.normalize(filePath) + '" not found');
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">

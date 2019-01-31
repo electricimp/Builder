@@ -7,7 +7,7 @@
     "pleasebuild": "src/cli.js"
   },
   "scripts": {
-    "test": "node_modules/jasmine/bin/jasmine.js",
+    "test": "jasmine",
     "build": "src/cli.js input"
   },
   "repository": {
@@ -36,6 +36,7 @@
     "jasmine-diff-matchers": "^2.0.0",
     "jasmine-expect": "^2.0.2",
     "log": "^1.4.0",
+    "eol": "^0.9.1",
     "fixture-stdout": "^0.2.1"
   }
 }

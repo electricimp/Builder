@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -152,6 +152,14 @@ class Machine {
   }
 
   /**
+   * Format path
+   * @private
+   */
+  _formatPath(filepath, filename) {
+    return path.normalize(path.join(filepath, filename));
+  }
+  
+  /**
    * Execute AST
    * @param {[]} ast
    * @param {{}} context
@@ -165,7 +173,7 @@ class Machine {
         // Since anything greater than zero means a recurring call
         // from the entry base block, __LINE__ will be defined in context.
         // MAX_INCLUDE_DEPTH == 0 doesn't allow execution at all.
-        `Maximum execution depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
+        `Maximum execution depth reached, possible cyclic reference? (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`
       );
     }
 
@@ -223,9 +231,9 @@ class Machine {
 
         // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
-          throw new Errors.ExpressionEvaluationError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
+          throw new Errors.ExpressionEvaluationError(`${e.message} (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`);
         } else if (e instanceof AbstractReader.Errors.SourceReadingError) {
-          throw new Errors.SourceInclusionError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
+          throw new Errors.SourceInclusionError(`${e.message} (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`);
         } else {
           throw e;
         }
@@ -475,7 +483,7 @@ class Machine {
       throw new Errors.MacroIsAlreadyDeclared(
         `Macro "${macro.name}" is already declared in ` +
         `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
-        ` (${context.__FILE__}:${context.__LINE__})`
+        ` (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`
       );
     }
 
