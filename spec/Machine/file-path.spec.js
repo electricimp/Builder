@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2019 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -6,7 +6,10 @@
 
 require('jasmine-expect');
 const path = require('path');
+const eol = require('eol');
 const init = require('./init')('main');
+
+const backslashToSlash = require('../backslashToSlash');
 
 describe('Machine', () => {
   let machine;
@@ -19,12 +22,12 @@ describe('Machine', () => {
     machine.path = 'some/path/to';
     machine.file = 'file.ext';
 
-    const res = machine.execute(
+    const res = eol.lf(machine.execute(
 `@macro A()
 @{__PATH__}#@{__FILE__}@@{__LINE__}
 @end
 @{__PATH__}#@{__FILE__}@@{__LINE__}
-@include A()`);
+@include A()`));
 
     expect(res).toEqual(`some/path/to#file.ext@4\nsome/path/to#file.ext@2\n`);
   });
@@ -37,8 +40,8 @@ describe('Machine', () => {
 
   it('should generate correct __FILE__/__PATH__ #3', () => {
     machine.file = '';
-    const res = machine.execute(`@{__PATH__}#@{__FILE__}@@{__LINE__}
-      @include "${__dirname}/../fixtures/lib/path.builder"`);
+    const res = eol.lf(machine.execute(`@{__PATH__}#@{__FILE__}@@{__LINE__}
+      @include "${backslashToSlash(__dirname)}/../fixtures/lib/path.builder"`));
     // __PATH__ should be absolute (when possible), normalized one
     expect(res).toEqual(`#@1\n${path.normalize(__dirname + '/../fixtures/lib')}#path.builder@1\n`);
   });
