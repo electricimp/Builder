@@ -36,4 +36,10 @@ describe('Builder', () => {
     expect(res).toBe(`YWJj`);
   });
 
+  it('should contain a __GIT_SHA__ variable', () => {
+    expect(builder.machine instanceof Machine).toBeTruthy();
+    const res = builder.machine.execute(`@{__GIT_SHA__}`);
+    expect(res).toBe(require('child_process').execSync('git rev-parse HEAD').toString().trimRight());
+  });
+
 });

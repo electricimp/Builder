@@ -33,6 +33,7 @@ const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const execSync = require('child_process').execSync
 
 /**
  * Main Builder class
@@ -99,6 +100,30 @@ class Builder {
     this._globals['abs'] = _createMathFunction('abs');
     this._globals['min'] = _createMathFunction('min');
     this._globals['max'] = _createMathFunction('max');
+
+    // Set GIT constants at build time
+    try{
+      //Parse output from git describe and turn it into a 32-bit bit field.
+      var gitDescribe = execSync('git describe --always --long --dirty').toString()
+      var int32Val = parseInt(gitDescribe.match(/^.*([0-9a-f]{7})/)[1], 16)
+
+      // '-dirty' sets the top bit. the first 7 digits of revision ID are packed into
+      //the next 7 nibbles. So 'develop-118-g3f4acbf-dirty' is translated to (1 << 31) | 0x3f4acbf.
+
+      // In other words:
+      //Bits 0 – 27: These encode the 7-digit Git revision ID of the firmware build. This is obtained using “git rev-parse --short HEAD”. For example, if this command reports a revision ID of “2cfc234”, this field will be 0x2CFC234 (470,170,100 in decimal).
+      //Bits 28 – 31: The top 4 bits are flags. Currently only bit 31 is used to indicate there were uncommitted changes when the binary was built.
+
+      if(gitDescribe.includes("dirty")){
+          int32Val |= (1 << 31)   // Set a "dirty" bit.  NOTE - this will NOT appear if untracked files are in the repo, only if a tracked file is changed.
+      }
+
+      this._globals["__GIT_REV__"] = "0x" + (int32Val >>> 0).toString(16)
+
+      // Set the git commit sha
+      this._globals["__GIT_SHA__"] = execSync("git rev-parse HEAD").toString().trimRight()
+
+    } catch(e){}  // Silently fail on error - git is not in the path or we aren't in a git repo
   }
 
   /**

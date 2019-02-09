@@ -30,6 +30,8 @@
       - [\_\_LINE\_\_](#__line__)
       - [\_\_FILE\_\_](#__file__)
       - [\_\_PATH\_\_](#__path__)
+      - [\_\_GIT\_REV\_\_](#__git_rev__)
+      - [\_\_GIT\_SHA\_\_](#__git_sha__)
       - [loop](#loop)
     - [Functions](#functions)
   - [Comments](#comments)
@@ -483,6 +485,32 @@ Absolute path (not including file name) to the file where this variable appears.
 
 <pre>
 Hi from file <b>@{</b>__PATH__<b>}</b>!
+</pre>
+
+#### \_\_GIT\_REV\_\_
+
+*This variable will only be populated if you are in a valid git repo with [git](http://git-scm.com/downloads) installed and accessible by using the command `git`.*
+
+The **\_\_GIT\_REV\_\_** variable is a 32-bit hexadecimal integer bitfield.  
+- **Bits 28 – 31**: The top 4 bits are flags. Currently only bit 31 is used to indicate there were uncommitted changes when the binary was built.  NOTE - this will NOT appear if untracked files are in the repo, only if a tracked file is changed.
+- **Bits 0 – 27**: These encode the 7-digit Git revision ID of the firmware build. This is obtained using “git rev-parse --short HEAD”. For example, if this command reports a revision ID of “2cfc234”, this field will be 0x2CFC234 (470,170,100 in decimal).
+
+**Example**
+
+<pre>
+local gitRev = <b>@{</b>__GIT_REV__<b>}</b>
+</pre>
+
+#### \_\_GIT\_SHA\_\_
+
+*This variable will only be populated if you are in a valid git repo with [git](http://git-scm.com/downloads) installed and accessible by using the command `git`.*
+
+This contains the `git` commit SHA for the repo, equivalent to the output of `git rev-parse HEAD`.
+
+**Example**
+
+<pre>
+local gitSHA = "<b>@{</b>__GIT_SHA__<b>}</b>"
 </pre>
 
 #### loop
