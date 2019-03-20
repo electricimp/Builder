@@ -26,6 +26,7 @@
 
 const url = require('url');
 const path = require('path');
+const md5 = require('md5');
 
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
@@ -148,6 +149,7 @@ class Machine {
     this._macros = {}; // macros
     this._depth = 0; // nesting level
     this._includedSources = new Set(); // all included sources
+    this._includedSourcesHashes = new Set(); // all included sources hash values
     this._globalContext = {}; // global context
   }
 
@@ -296,6 +298,15 @@ class Machine {
 
     // read
     const res = this.fileCache.read(reader, includePath);
+
+    // Check if source with same hash value has already been included 
+    const md5sum = md5(res.content);
+    if (!this.supressDupWarning && this._includedSourcesHashes.has(md5sum)) {
+        const message = `The source file ${includePath} has already been included`;
+        console.error("\x1b[33m" + message + '\u001b[39m');
+    }
+
+    this._includedSourcesHashes.add(md5sum);
 
     // provide filename for correct error messages
     this.parser.file = res.includePathParsed.__FILE__;

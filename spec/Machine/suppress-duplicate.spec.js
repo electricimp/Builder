@@ -1,0 +1,72 @@
+// Copyright (c) 2016-2019 Electric Imp
+// This file is licensed under the MIT License
+// http://opensource.org/licenses/MIT
+
+'use strict';
+
+require('jasmine-expect');
+
+const Fixture = require('fixture-stdout');
+const stderrFixture = new Fixture({ stream: process.stderr });
+const init = require('./init')('main');
+const eol = require('eol');
+const backslashToSlash = require('../backslashToSlash');
+
+describe('Machine', () => {
+  let machine;
+
+  beforeEach(() => {
+    machine = init.createMachine();
+  });
+
+  it('should print included source duplicate warning by default', (done) => {
+    // What we expect to be logged to STDERR
+    const includePath = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy`;
+    const text = `The source file ${includePath} has already been included`;
+    const duplicateWarning = `\x1b[33m${text}\u001b[39m\n`;
+    try {
+      // Capture STDERR messages
+      stderrFixture.capture(message => {
+        try {
+            expect(message).toBe(duplicateWarning);
+            // Release STDERR
+            stderrFixture.release();
+            done();
+        } catch (e) {
+            fail(e);
+        }
+        // Returning false prevents message actually being logged to STDERR
+        return false;
+      });
+
+      const res = eol.lf(machine.execute(
+      `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+      ));
+      expect(res).toEqual(`a.builder\na.builder\n`);
+    } catch (e) {
+        fail(e);
+    }
+  });
+
+  it('should not print included source duplicate warning if requested', () => {
+        // The STDERR should be empty
+        try {
+          // Capture STDERR messages
+          stderrFixture.capture(message => {
+            fail(`Got message in stderr ${message}`);
+            // Returning false prevents message actually being logged to STDERR
+            return false;
+          });
+    
+          machine.supressDupWarning = true;
+          const res = eol.lf(machine.execute(
+          `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+    @include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+          ));
+          expect(res).toEqual(`a.builder\na.builder\n`);
+        } catch (e) {
+            fail(e);
+        }
+  });
+});
