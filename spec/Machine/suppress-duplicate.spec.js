@@ -21,8 +21,9 @@ describe('Machine', () => {
 
   it('should print included source duplicate warning by default', (done) => {
     // What we expect to be logged to STDERR
-    const includePath = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy`;
-    const text = `The source file ${includePath} has already been included`;
+    const includePathOriginal = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder`;
+    const includePathDuplicated = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy`;
+    const text = `The source file ${includePathDuplicated} has already been included ${includePathOriginal}`;
     const duplicateWarning = `\x1b[33m${text}\u001b[39m\n`;
     try {
       // Capture STDERR messages
@@ -39,6 +40,7 @@ describe('Machine', () => {
         return false;
       });
 
+      machine.suppressDupWarning = false;
       const res = eol.lf(machine.execute(
       `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
 @include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
@@ -59,7 +61,6 @@ describe('Machine', () => {
             return false;
           });
     
-          machine.supressDupWarning = true;
           const res = eol.lf(machine.execute(
           `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
     @include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
