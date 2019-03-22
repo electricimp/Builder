@@ -606,8 +606,8 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
-  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries
-  * <code>--suppress-duplicate-includes-warning</code> &mdash; do not warn if sources with same content were included multiple times
+  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries.
+  * <code>--suppress-duplicate-includes-warning</code> &mdash; do not show a warning if a source file with the exact content was included in the multiple times from different places, that results in code duplication.
 
 ## Including JavaScript Libraries
 

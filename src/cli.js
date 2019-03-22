@@ -70,7 +70,7 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
-\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - hide warnings about included files with same content
+\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
     `.trim());
 }
 
@@ -90,7 +90,7 @@ function readArgs() {
     excludeFile : '',
     cacheFolder: '',
     libs: [],
-    supressDupWarning: false,
+    suppressDupWarning: false,
   };
   const args = process.argv.splice(2);
 
@@ -126,7 +126,7 @@ function readArgs() {
       }
       res.libs.push(args.shift());
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
-        res.supressDupWarning = true;
+        res.suppressDupWarning = true;
     } else {
       res.input = argument;
     }
@@ -162,7 +162,7 @@ try {
   //set cache settings
   builder.machine.excludeList = args.excludeFile;
   // set supress dupicate includes warning
-  builder.machine.supressDupWarning = args.supressDupWarning;
+  builder.machine.suppressDupWarning = args.suppressDupWarning;
 
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);
