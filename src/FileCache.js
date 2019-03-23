@@ -34,6 +34,7 @@ const GithubReader = require('./Readers/GithubReader');
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
+const DEPENDENCIES_SUPPORTED_READERS = [GithubReader];
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
 
@@ -42,6 +43,7 @@ class FileCache {
 
   constructor(machine) {
     this._useCache = false;
+    this._useDependencies = false;
     this._cacheDir = '.' + path.sep + '.builder-cache';
     this._excludeList = [];
     this._machine = machine;
@@ -108,6 +110,10 @@ class FileCache {
     return CACHED_READERS.some((cachedReader) => (reader instanceof cachedReader));
   }
 
+  _isDependenciesSupportedReader(reader) {
+      return DEPENDENCIES_SUPPORTED_READERS.some((supportedReader) => (reader instanceof supportedReader));
+  }
+
   /**
    * Check, has file to be excluded from cache
    * @param {string} path to the file
@@ -129,6 +135,19 @@ class FileCache {
   _isCacheFileOutdate(pathname) {
     const stat = fs.statSync(pathname);
     return Date.now() - stat.mtime > this._outdateTime;
+  }
+
+  _processDependencies(reader, includePath) {
+    if (!this._useDependencies && !this._isDependenciesSupportedReader(reader)) {
+        return;
+    }
+
+    // - Skip if include path contain github tag
+    // - Check if dependencies.json exist, create it set variable, that include path append possible
+    // - case 1: file not exist, create, add include path
+    // - case 2: file exist, append possible, add include path with commit ID
+    // - case 3: file exist, append not possible, read include path with commit ID from file
+    // NOTE: if append possible, skip local cache in all cases
   }
 
   /**
@@ -186,6 +205,21 @@ class FileCache {
    */
   set useCache(value) {
     this._useCache = value;
+  }
+
+  /**
+   * Use dependencies?
+   * @return {boolean}
+   */
+  get useDependencies() {
+    return this._useDependencies || false;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  set useDependencies(value) {
+    this._useDependencies = value;
   }
 
   set cacheDir(value) {

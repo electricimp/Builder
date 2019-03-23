@@ -771,6 +771,21 @@ class Machine {
   }
 
   /**
+   * Use dependencies?
+   * @return {boolean}
+   */
+  get useDependencies() {
+    return this.fileCache.useDependencies;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  set useDependencies(value) {
+     this.fileCache.useDependencies = value;
+  }
+
+  /**
    * Filename
    * @return {string}
    */

@@ -70,6 +70,7 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
+\t\u001b[34m--use-dependencies\u001b[39m - read dependencies.json if exist or save included sources git commit IDs
 \t\u001b[34m--use-directives\u001b[39m - read directives.json if exist or save defined varaibles to this file
     `.trim());
 }
@@ -114,6 +115,8 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
+    } else if ('--use-dependencies' === argument) {
+        res.useDependencies = true;
     } else if ('--use-directives' === argument) {
         res.useDirectives = true;
     } else {
@@ -150,6 +153,9 @@ try {
   builder.machine.readers.github.token = args.gh.token;
   //set cache settings
   builder.machine.excludeList = args.excludeFile;
+
+  // use dependencies
+  builder.machine.useDependencies = args.useDependencies;
 
   // use directives
   builder.machine.useDirectives = args.useDirectives;

@@ -160,7 +160,7 @@ class GithubReader extends AbstractReader {
     ;
 
     // @see http://mikedeboer.github.io/node-github/#repos.prototype.getContent
-    github.repos.getContent(this.parseUrl(source), (err, res) => {
+    github.repos.getContents(this.parseUrl(source), (err, res) => {
       if (err) {
 
         try {
@@ -181,6 +181,9 @@ class GithubReader extends AbstractReader {
         process.exit(STATUS_FETCH_FAILED);
 
       } else {
+        console.log("getContents===========");
+        console.log(require('util').inspect(res, {showHidden: false, depth: null}));
+        console.log("getContents-----------");
         process.stdout.write(res['data']);
       }
     });
@@ -201,7 +204,7 @@ class GithubReader extends AbstractReader {
       const res = {
         'owner': m[1],
         'repo': m[2],
-        'path': m[3]
+        'path': m[3],
       };
 
       if (undefined !== m[4]) {
