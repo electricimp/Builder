@@ -23,7 +23,7 @@ describe('Machine', () => {
     // What we expect to be logged to STDERR
     const includePathOriginal = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder`;
     const includePathDuplicated = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy`;
-    const text = `The source file ${includePathDuplicated} has already been included ${includePathOriginal}`;
+    const text = `The source file ${includePathDuplicated} has already been included in main:1`;
     const duplicateWarning = `\x1b[33m${text}\u001b[39m\n`;
     try {
       // Capture STDERR messages

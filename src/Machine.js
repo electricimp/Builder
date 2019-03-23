@@ -303,10 +303,10 @@ class Machine {
     if (!this.suppressDupWarning) {
         const md5sum = md5(res.content);
         if (this._includedSourcesHashes.has(md5sum)) {
-            const message = `The source file ${includePath} has already been included ${this._includedSourcesHashes.get(md5sum)}`;
+            const message = `The source file ${includePath} has already been included in ${this._includedSourcesHashes.get(md5sum)}`;
             console.error("\x1b[33m" + message + '\u001b[39m');
         }
-        this._includedSourcesHashes.set(md5sum, includePath);
+        this._includedSourcesHashes.set(md5sum, `${context.__FILE__}:${context.__LINE__}`);
     }
 
     // provide filename for correct error messages
