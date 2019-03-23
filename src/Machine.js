@@ -26,6 +26,7 @@
 
 const url = require('url');
 const path = require('path');
+const fs = require('fs');
 
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
@@ -61,6 +62,9 @@ const Errors = {
 // maximum nesting depth
 const MAX_EXECUTION_DEPTH = 256;
 
+// read and store defined variables here
+const DIRECTIVES_FILE = "directives.json";
+
 /**
  * Builder VM
  */
@@ -87,6 +91,9 @@ class Machine {
     // parse
     const ast = this.parser.parse(source);
 
+    // read directives
+    context = this._getDirectives(context);
+
     // execute
     context = merge(
       {__FILE__: this.file, __PATH__: this.path},
@@ -97,6 +104,9 @@ class Machine {
 
     const buffer = [];
     this._execute(ast, context, buffer);
+
+    // save directives
+    this._saveDirectives();
 
     // return output buffer contents
     return buffer.join('');
@@ -622,6 +632,44 @@ class Machine {
         buffer[buffer.length - 1]
           .replace(/(\r\n|\n)$/, '');
     }
+  }
+
+  /**
+   * Get directives.json file content
+   * @param {*} context
+   * @return {*}
+   * @private
+   */
+  _getDirectives(context) {
+    if (!this.useDirectives) {
+        return context;
+    }
+
+    if (!fs.existsSync(DIRECTIVES_FILE)) {
+        this.directives = context;
+        return context;
+    }
+
+    this.directives = {
+      ...JSON.parse(fs.readFileSync(DIRECTIVES_FILE).toString()),
+      ...context,
+    }
+
+    return this.directives;
+  }
+
+  /**
+   * Save defined variables to directives.json file
+   * @param
+   * @return
+   * @private
+   */
+  _saveDirectives() {
+    if (!this.useDirectives || fs.existsSync(DIRECTIVES_FILE)) {
+        return;
+    }
+
+    fs.writeFileSync(DIRECTIVES_FILE, JSON.stringify(this.directives, null, 2));
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
