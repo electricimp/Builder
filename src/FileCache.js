@@ -32,6 +32,7 @@ const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
+const DEPENDENCIES_FILE_NAME = 'dependencies.json';
 const CACHED_READERS = [GithubReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const DEPENDENCIES_SUPPORTED_READERS = [GithubReader];
@@ -42,12 +43,13 @@ const MAX_FILENAME_LENGTH = 250;
 class FileCache {
 
   constructor(machine) {
-    this._useCache = false;
-    this._useDependencies = false;
     this._cacheDir = '.' + path.sep + '.builder-cache';
+    this._fillDependencies = false;
     this._excludeList = [];
     this._machine = machine;
     this._outdateTime = CACHE_LIFETIME * 86400000; // precalc milliseconds in one day
+    this._useCache = false;
+    this._useDependencies = false;
   }
 
   /**
@@ -137,17 +139,41 @@ class FileCache {
     return Date.now() - stat.mtime > this._outdateTime;
   }
 
-  _processDependencies(reader, includePath) {
-    if (!this._useDependencies && !this._isDependenciesSupportedReader(reader)) {
+  // - Skip if include path contain github tag
+  // - Check if dependencies.json exist, create it set variable, that include path append possible
+  // - case 1: file not exist, create, add include path
+  // - case 2: file exist, append possible, add include path with commit ID
+  // - case 3: file exist, append not possible, read include path with commit ID from file
+  // NOTE: if append possible, skip local cache in all cases ???
+  _getDependencies(reader, includePath) {
+    if (!this._isDependenciesSupportedReader(reader) || this._fillDependencies) {
+        return includePath;
+    }
+
+    if (GithubReader.parseUrl(includePath).ref) {
+        return includePath;
+    }
+
+    if (!(this._useDependencies instanceof Map) || !this._useDependencies.has(includePath)) {
+        return includePath;
+    }
+
+    return `${includePath}@${this._useDependencies.get(includePath)}`;
+  }
+
+  _collectDependencies(reader, includePath) {
+    if (this._isDependenciesSupportedReader(reader) &&
+      this._fillDependencies && (this._useDependencies instanceof Map)) {
+        this._useDependencies.set(includePath, reader.sha);
+    }
+  }
+
+  saveDependencies() {
+    if (!this._fillDependencies) {
         return;
     }
 
-    // - Skip if include path contain github tag
-    // - Check if dependencies.json exist, create it set variable, that include path append possible
-    // - case 1: file not exist, create, add include path
-    // - case 2: file exist, append possible, add include path with commit ID
-    // - case 3: file exist, append not possible, read include path with commit ID from file
-    // NOTE: if append possible, skip local cache in all cases
+    fs.writeFileSync(DEPENDENCIES_FILE_NAME, JSON.stringify([...this._useDependencies], null, 2), 'utf-8');
   }
 
   /**
@@ -158,6 +184,8 @@ class FileCache {
    * @private
    */
   read(reader, includePath) {
+    includePath = this._getDependencies(reader, includePath);
+
     let needCache = false;
     if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
         let result;
@@ -170,6 +198,7 @@ class FileCache {
           needCache = true;
         }
     }
+
     const includePathParsed = reader.parsePath(includePath);
     let content = reader.read(includePath);
 
@@ -177,6 +206,8 @@ class FileCache {
     if (content.length > 0 && content[content.length - 1] != '\n') {
         content += '\n';
     }
+
+    this._collectDependencies(reader, includePath);
 
     if (needCache && this.useCache) {
       this.machine.logger.debug(`Caching file "${includePath}"`);
@@ -212,14 +243,29 @@ class FileCache {
    * @return {boolean}
    */
   get useDependencies() {
-    return this._useDependencies || false;
+    if (this._useDependencies) {
+        return true;
+    }
+
+    return false;
   }
 
   /**
    * @param {boolean} value
    */
   set useDependencies(value) {
-    this._useDependencies = value;
+    if (!value) {
+      this._useDependencies = value;
+      return;
+    }
+
+    if (!fs.existsSync(DEPENDENCIES_FILE_NAME)) {
+      this._useDependencies = new Map();
+      this._fillDependencies = true;
+    } else {
+        const content = fs.readFileSync(DEPENDENCIES_FILE_NAME, 'utf8');
+        this._useDependencies = new Map(JSON.parse(content));
+    }
   }
 
   set cacheDir(value) {

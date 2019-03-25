@@ -91,7 +91,7 @@ class Machine {
     // parse
     const ast = this.parser.parse(source);
 
-    // read directives
+    // read directives, merge it with actual context
     context = this._getDirectives(context);
 
     // execute
@@ -107,6 +107,9 @@ class Machine {
 
     // save directives
     this._saveDirectives();
+
+    // save dependencies
+    this.fileCache.saveDependencies();
 
     // return output buffer contents
     return buffer.join('');
