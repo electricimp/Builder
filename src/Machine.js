@@ -303,10 +303,39 @@ class Machine {
     if (!this.suppressDupWarning) {
         const md5sum = md5(res.content);
         if (this._includedSourcesHashes.has(md5sum)) {
-            const message = `The source file ${includePath} has already been included in ${this._includedSourcesHashes.get(md5sum)}`;
+            let message;
+            switch(3) {
+                case 1:
+                    // Report duplicate include file path and original file path
+                    message = `The source file ${includePath} has already been included ${this._includedSourcesHashes.get(md5sum).path}`;
+                    break;
+                case 2:
+                    // Report duplicate include file path and place, where original file was included
+                    const file = this._includedSourcesHashes.get(md5sum).file;
+                    const line = this._includedSourcesHashes.get(md5sum).line;
+                    message = `The source file ${includePath} has already been included in ${file}:${line}`
+
+                case 3:
+                    // Report all
+                    const path = this._includedSourcesHashes.get(md5sum).path;
+                    const file = this._includedSourcesHashes.get(md5sum).file;
+                    const line = this._includedSourcesHashes.get(md5sum).line;
+                    const dupPath = includePath;
+                    const dupFile = context.__FILE__;
+                    const dupLine = context.__LINE__;
+                    message = `The source file ${dupPath} included in ${dupFile}:${dupLine} is duplicate of ${path} included in ${file}:${line}`;
+            }
+
             console.error("\x1b[33m" + message + '\u001b[39m');
         }
-        this._includedSourcesHashes.set(md5sum, `${context.__FILE__}:${context.__LINE__}`);
+
+        const info = {
+            path: includePath,
+            file: context.__FILE__,
+            line: context.__LINE__,
+        };
+
+        this._includedSourcesHashes.set(md5sum, info);
     }
 
     // provide filename for correct error messages
