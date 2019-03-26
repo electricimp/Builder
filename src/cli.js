@@ -126,7 +126,7 @@ function readArgs() {
       }
       res.libs.push(args.shift());
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
-        res.suppressDupWarning = true;
+      res.suppressDupWarning = true;
     } else {
       res.input = argument;
     }

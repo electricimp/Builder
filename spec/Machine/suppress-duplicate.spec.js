@@ -23,18 +23,20 @@ describe('Machine', () => {
     // What we expect to be logged to STDERR
     const includePathOriginal = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder`;
     const includePathDuplicated = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy`;
-    const text = `The source file ${includePathDuplicated} has already been included in main:1`;
+    const text = `Warning: duplicated includes detected! The same exact file content is included from
+    main:1 (${includePathOriginal})
+    main:2 (${includePathDuplicated})`;
     const duplicateWarning = `\x1b[33m${text}\u001b[39m\n`;
     try {
       // Capture STDERR messages
       stderrFixture.capture(message => {
         try {
-            expect(message).toBe(duplicateWarning);
-            // Release STDERR
-            stderrFixture.release();
-            done();
+          expect(message).toBe(duplicateWarning);
+          // Release STDERR
+          stderrFixture.release();
+          done();
         } catch (e) {
-            fail(e);
+          fail(e);
         }
         // Returning false prevents message actually being logged to STDERR
         return false;
@@ -47,27 +49,27 @@ describe('Machine', () => {
       ));
       expect(res).toEqual(`a.builder\na.builder\n`);
     } catch (e) {
-        fail(e);
+      fail(e);
     }
   });
 
   it('should not print included source duplicate warning if requested', () => {
-        // The STDERR should be empty
-        try {
-          // Capture STDERR messages
-          stderrFixture.capture(message => {
-            fail(`Got message in stderr ${message}`);
-            // Returning false prevents message actually being logged to STDERR
-            return false;
-          });
-    
-          const res = eol.lf(machine.execute(
-          `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
-    @include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
-          ));
-          expect(res).toEqual(`a.builder\na.builder\n`);
-        } catch (e) {
-            fail(e);
-        }
+    // The STDERR should be empty
+    try {
+      // Capture STDERR messages
+      stderrFixture.capture(message => {
+        fail(`Got message in stderr ${message}`);
+        // Returning false prevents message actually being logged to STDERR
+        return false;
+      });
+
+      const res = eol.lf(machine.execute(
+      `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+      ));
+        expect(res).toEqual(`a.builder\na.builder\n`);
+    } catch (e) {
+      fail(e);
+    }
   });
 });
