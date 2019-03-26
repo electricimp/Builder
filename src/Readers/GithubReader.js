@@ -26,7 +26,7 @@
 
 const HttpsProxyAgent = require('https-proxy-agent');
 const path = require('path');
-const GitHubApi = require('@octokit/rest');
+const Octokit = require('@octokit/rest');
 const childProcess = require('child_process');
 const packageJson = require('../../package.json');
 const AbstractReader = require('./AbstractReader');
@@ -108,10 +108,11 @@ class GithubReader extends AbstractReader {
 
       } else {
         const ret = JSON.parse(child.output[1].toString());
-        this.sha = ret.sha;
+        this.lastSha = ret.sha;
+        this.lastData = ret.data;
 
         // s'all good
-        return ret.data;
+        return this.lastData;
       }
 
     }
@@ -160,7 +161,8 @@ class GithubReader extends AbstractReader {
     } else if (process.env.https_proxy) {
       agent = HttpsProxyAgent(process.env.https_proxy);
     }
-    const github = new GitHubApi({
+
+    const octokit = new Octokit({
       debug: false,
       baseUrl: 'https://api.github.com',
       timeout: 5000,
@@ -173,83 +175,40 @@ class GithubReader extends AbstractReader {
 
     // authorization
     if (username != '' && password !== '') {
-      github.authenticate({
+      octokit.authenticate({
         type: 'basic',
         username,
         password
       });
     }
-    ;
 
-    // @see http://mikedeboer.github.io/node-github/#repos.prototype.getContent
-    github.repos.getContents(this.parseUrl(source), (err, contentsRes) => {
-      if (err) {
-        GithubReader.processExitWithErr(err);
-      }
-
-      github.repos.listCommits(this.parseUrl(source), (err, listRes) => {
-        if (err) {
-          GithubReader.processExitWithErr(err);
+    // @see https://developer.github.com/v3/repos/contents/#get-contents
+    octokit.repos.getContents(this.parseUrl(source))
+      .then((res) => { this.data = res.data; })
+      .then(() => octokit.repos.listCommits(this.parseUrl(source)))
+      .then((res) => { process.stdout.write(JSON.stringify({
+        data: this.data,
+        sha: res.data[0].sha,
+      }))})
+      .catch((err) => {
+        try {
+          err = JSON.parse(err.message);
+  
+          // detect rate limit hit
+          if (err.message.indexOf('API rate limit exceeded') !== -1) {
+            process.stderr.write('GitHub API rate limit exceeded');
+            process.exit(STATUS_API_RATE_LIMIT);
+          }
+  
+          process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
+        } catch (e) {
+          process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
         }
-
-        const ret = {
-            data: contentsRes['data'],
-            sha: listRes.data[0].sha,
-        };
-
-        process.stdout.write(JSON.stringify(ret));
+  
+        // misc feth error
+        process.exit(STATUS_FETCH_FAILED);
       });
-    });
   }
-
-/*
-  async getRef(source) {
-    var agent = null;
-    if (process.env.HTTPS_PROXY) {
-      agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
-    } else if (process.env.https_proxy) {
-      agent = HttpsProxyAgent(process.env.https_proxy);
-    }
-
-    // [debug]
-    this.logger.debug(`Reading GitHub ref "${source}"...`);
-    
-    const github = new GitHubApi({
-        debug: false,
-        baseUrl: 'https://api.github.com',
-        timeout: 5000,
-        headers: {
-          'user-agent': packageJson.name + '/' + packageJson.version,
-          'accept': 'application/vnd.github.VERSION.raw'
-        },
-        agent: agent
-      });
-
-    // authorization
-    if (this.username != '' && this.password !== '') {
-        github.authenticate({
-          type: 'basic',
-          username: this.username,
-          password: this.password
-        });
-    }
-
-    try {
-      const ret = await github.repos.listCommits(GithubReader.parseUrl(source));
-      return ret.data[0].sha;
-    } catch(e) {
-      const err = JSON.parse(e.message);
-
-      // detect rate limit hit
-      if (err.message.indexOf('API rate limit exceeded') !== -1) {
-        const message = 'GitHub API rate limit exceeded';
-        throw new AbstractReader.Errors.SourceReadingError(`Failed to fetch url "${source}": ${message}`);
-      }
-
-      throw new AbstractReader.Errors.SourceReadingError(`Failed to fetch url "${source}": ${err.message}`);
-    }
-  }
-*/
 
   /**
    * Parse Github reference into parts
