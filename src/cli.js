@@ -70,6 +70,7 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
+\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
     `.trim());
 }
 
@@ -79,7 +80,18 @@ where:
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: '', libs: []};
+  const res = {
+    defines: {},
+    cache: false,
+    lineControl: false,
+    input: null,
+    gh: {user: null, token: null},
+    clean : false,
+    excludeFile : '',
+    cacheFolder: '',
+    libs: [],
+    suppressDupWarning: false,
+  };
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -113,6 +125,8 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
+    } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
+      res.suppressDupWarning = true;
     } else {
       res.input = argument;
     }
@@ -147,6 +161,9 @@ try {
   builder.machine.readers.github.token = args.gh.token;
   //set cache settings
   builder.machine.excludeList = args.excludeFile;
+  // set supress dupicate includes warning
+  builder.machine.suppressDupWarning = args.suppressDupWarning;
+
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);
   process.stdout.write(res);
