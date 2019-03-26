@@ -594,7 +594,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list <i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list <i>&lt;path_to_file&gt;</i>] [--use-dependencies] [--use-directives] <i>&lt;input_file&gt;</i>
   </pre>
 
   where:
@@ -607,6 +607,8 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
   * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries
+  * <code>--use-dependencies</code> &mdash; use the dependencies.json file
+  * <code>--use-directives</code> &mdash; use the directives.json file
 
 ## Including JavaScript Libraries
 
