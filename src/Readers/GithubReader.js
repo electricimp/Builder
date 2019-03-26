@@ -163,14 +163,12 @@ class GithubReader extends AbstractReader {
     }
 
     const octokit = new Octokit({
-      debug: false,
+      userAgent: packageJson.name + '/' + packageJson.version,
       baseUrl: 'https://api.github.com',
-      timeout: 5000,
-      headers: {
-        'user-agent': packageJson.name + '/' + packageJson.version,
-        'accept': 'application/vnd.github.VERSION.raw'
+      request: {
+        agent: agent,
+        timeout: 5000
       },
-      agent: agent
     });
 
     // authorization
@@ -184,7 +182,7 @@ class GithubReader extends AbstractReader {
 
     // @see https://developer.github.com/v3/repos/contents/#get-contents
     octokit.repos.getContents(this.parseUrl(source))
-      .then((res) => { this.data = res.data; })
+      .then((res) => { this.data = Buffer.from(res.data.content, 'base64').toString(); })
       .then(() => octokit.repos.listCommits(this.parseUrl(source)))
       .then((res) => { process.stdout.write(JSON.stringify({
         data: this.data,
