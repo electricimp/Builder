@@ -44,7 +44,7 @@ class FileCache {
 
   constructor(machine) {
     this._cacheDir = '.' + path.sep + '.builder-cache';
-    this._fillDependencies = false;
+    this._fillDependencies = false; // the dependencies.json does not exist, create it
     this._excludeList = [];
     this._machine = machine;
     this._outdateTime = CACHE_LIFETIME * 86400000; // precalc milliseconds in one day
@@ -139,35 +139,52 @@ class FileCache {
     return Date.now() - stat.mtime > this._outdateTime;
   }
 
-  // - Skip if include path contain github tag
-  // - Check if dependencies.json exist, create it set variable, that include path append possible
-  // - case 1: file not exist, create, add include path
-  // - case 2: file exist, append possible, add include path with commit ID
-  // - case 3: file exist, append not possible, read include path with commit ID from file
-  // NOTE: if append possible, skip local cache in all cases ???
+  /**
+   * Get github dependencies (refs)
+   * @param {AbstractReader} reader reader
+   * @return {content: string, includePathParsed} content and parsed path
+   */
   _getDependencies(reader, includePath) {
-    if (!this._isDependenciesSupportedReader(reader) || this._fillDependencies) {
+    // Skip, if option was not requested or if it is not github reader
+    if (!(this._useDependencies instanceof Map) || !this._isDependenciesSupportedReader(reader)) {
         return includePath;
     }
 
+    // Skip, if the dependencies.json file does not exist
+    if (this._fillDependencies) {
+        return includePath;
+    }
+
+    // Skip, if url alreay have github ref
     if (GithubReader.parseUrl(includePath).ref) {
         return includePath;
     }
 
-    if (!(this._useDependencies instanceof Map) || !this._useDependencies.has(includePath)) {
+    // Check, that requested url present in the Map
+    if (!this._useDependencies.has(includePath)) {
         return includePath;
     }
 
+    // Return url with github tag
     return `${includePath}@${this._useDependencies.get(includePath)}`;
   }
 
+  /**
+   * Collect github dependencies (refs)
+   * @param {AbstractReader} reader reader
+   * @return {content: string, includePathParsed} content and parsed path
+   */
   _collectDependencies(reader, includePath) {
-    if (this._isDependenciesSupportedReader(reader) &&
-      this._fillDependencies && (this._useDependencies instanceof Map)) {
-        this._useDependencies.set(includePath, reader.sha);
+    if ((this._useDependencies instanceof Map) &&
+      this._isDependenciesSupportedReader(reader) && this._fillDependencies) {
+        this._useDependencies.set(includePath, reader.lastSha);
     }
   }
 
+  /**
+   * Save github dependencies (refs) to dependencies.json file
+   * @param
+   */
   saveDependencies() {
     if (!this._fillDependencies) {
         return;
@@ -259,12 +276,16 @@ class FileCache {
       return;
     }
 
-    if (!fs.existsSync(DEPENDENCIES_FILE_NAME)) {
-      this._useDependencies = new Map();
-      this._fillDependencies = true;
-    } else {
+    try {
+      if (!fs.existsSync(DEPENDENCIES_FILE_NAME)) {
+        this._useDependencies = new Map();
+        this._fillDependencies = true;
+      } else {
         const content = fs.readFileSync(DEPENDENCIES_FILE_NAME, 'utf8');
         this._useDependencies = new Map(JSON.parse(content));
+      }
+    } catch (err) {
+        throw new Error(`The ${DEPENDENCIES_FILE_NAME} file cannot be used: ${err.message}`);
     }
   }
 

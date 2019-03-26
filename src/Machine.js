@@ -645,17 +645,25 @@ class Machine {
    */
   _getDirectives(context) {
     if (!this.useDirectives) {
-        return context;
+      return context;
     }
 
+    /*
+     * If directives.json file does not exist,
+     * collect context and save it in case of _saveDirectives() function call.
+     */
     if (!fs.existsSync(DIRECTIVES_FILE)) {
-        this.directives = context;
-        return context;
+      this.directives = context;
+      return context;
     }
 
-    this.directives = {
-      ...JSON.parse(fs.readFileSync(DIRECTIVES_FILE).toString()),
-      ...context,
+    try {
+      this.directives = {
+        ...JSON.parse(fs.readFileSync(DIRECTIVES_FILE).toString()),
+        ...context,
+      }
+    } catch(err) {
+      throw new Error(`The ${DIRECTIVES_FILE} file cannot be used: ${err.message}`);
     }
 
     return this.directives;
@@ -669,7 +677,7 @@ class Machine {
    */
   _saveDirectives() {
     if (!this.useDirectives || fs.existsSync(DIRECTIVES_FILE)) {
-        return;
+      return;
     }
 
     fs.writeFileSync(DIRECTIVES_FILE, JSON.stringify(this.directives, null, 2));
