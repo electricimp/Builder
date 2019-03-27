@@ -130,9 +130,9 @@ function readArgs() {
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
     } else if ('--use-dependencies' === argument) {
-        res.useDependencies = true;
+      res.useDependencies = true;
     } else if ('--use-directives' === argument) {
-        res.useDirectives = true;
+      res.useDirectives = true;
     } else {
       res.input = argument;
     }
@@ -167,14 +167,12 @@ try {
   builder.machine.readers.github.token = args.gh.token;
   //set cache settings
   builder.machine.excludeList = args.excludeFile;
-
-  // use dependencies
-  builder.machine.useDependencies = args.useDependencies;
-
-  // use directives
-  builder.machine.useDirectives = args.useDirectives;
   // set supress dupicate includes warning
   builder.machine.suppressDupWarning = args.suppressDupWarning;
+  // use dependencies
+  builder.machine.useDependencies = args.useDependencies;
+  // use directives
+  builder.machine.useDirectives = args.useDirectives;
 
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);
