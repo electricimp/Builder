@@ -27,6 +27,7 @@
 const url = require('url');
 const path = require('path');
 const fs = require('fs');
+const md5 = require('md5');
 
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
@@ -161,6 +162,7 @@ class Machine {
     this._macros = {}; // macros
     this._depth = 0; // nesting level
     this._includedSources = new Set(); // all included sources
+    this._includedSourcesHashes = new Map(); // all included sources content hash values
     this._globalContext = {}; // global context
   }
 
@@ -309,6 +311,32 @@ class Machine {
 
     // read
     const res = this.fileCache.read(reader, includePath);
+
+    // Check if source with same hash value has already been included
+    if (!this.suppressDupWarning) {
+      const md5sum = md5(res.content);
+      if (this._includedSourcesHashes.has(md5sum)) {
+        const path = this._includedSourcesHashes.get(md5sum).path;
+        const file = this._includedSourcesHashes.get(md5sum).file;
+        const line = this._includedSourcesHashes.get(md5sum).line;
+        const dupPath = includePath;
+        const dupFile = context.__FILE__;
+        const dupLine = context.__LINE__;
+        const message = `Warning: duplicated includes detected! The same exact file content is included from
+    ${file}:${line} (${path})
+    ${dupFile}:${dupLine} (${dupPath})`;
+
+        console.error("\x1b[33m" + message + '\u001b[39m');
+      }
+
+      const info = {
+        path: includePath,
+        file: context.__FILE__,
+        line: context.__LINE__,
+      };
+
+      this._includedSourcesHashes.set(md5sum, info);
+    }
 
     // provide filename for correct error messages
     this.parser.file = res.includePathParsed.__FILE__;

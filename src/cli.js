@@ -70,6 +70,7 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
+\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
 \t\u001b[34m--use-dependencies\u001b[39m - use the dependencies.json file contained github refs, create if does not exist
 \t\u001b[34m--use-directives\u001b[39m - use the directives.json file contained defined varialbes, create if does not exist
     `.trim());
@@ -81,7 +82,18 @@ where:
  */
 function readArgs() {
   let m;
-  const res = {defines: {}, cache: false, lineControl: false, input: null, gh: {user: null, token: null}, clean : false, excludeFile : '', cacheFolder: '', libs: []};
+  const res = {
+    defines: {},
+    cache: false,
+    lineControl: false,
+    input: null,
+    gh: {user: null, token: null},
+    clean : false,
+    excludeFile : '',
+    cacheFolder: '',
+    libs: [],
+    suppressDupWarning: false,
+  };
   const args = process.argv.splice(2);
 
   while (args.length > 0) {
@@ -115,6 +127,8 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
+    } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
+      res.suppressDupWarning = true;
     } else if ('--use-dependencies' === argument) {
         res.useDependencies = true;
     } else if ('--use-directives' === argument) {
@@ -159,6 +173,8 @@ try {
 
   // use directives
   builder.machine.useDirectives = args.useDirectives;
+  // set supress dupicate includes warning
+  builder.machine.suppressDupWarning = args.suppressDupWarning;
 
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);
