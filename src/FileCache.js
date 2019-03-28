@@ -176,7 +176,9 @@ class FileCache {
    */
   _collectDependencies(reader, includePath) {
     if ((this._useDependencies instanceof Map) &&
-      this._isDependenciesSupportedReader(reader) && this._fillDependencies) {
+      this._isDependenciesSupportedReader(reader) &&
+      !GithubReader.parseUrl(includePath).ref &&
+      this._fillDependencies && reader.lastSha) {
         this._useDependencies.set(includePath, reader.lastSha);
     }
   }
@@ -283,6 +285,7 @@ class FileCache {
       } else {
         const content = fs.readFileSync(DEPENDENCIES_FILE_NAME, 'utf8');
         this._useDependencies = new Map(JSON.parse(content));
+        this._fillDependencies = false;
       }
     } catch (err) {
         throw new Error(`The ${DEPENDENCIES_FILE_NAME} file cannot be used: ${err.message}`);

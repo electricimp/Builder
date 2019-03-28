@@ -131,25 +131,6 @@ class GithubReader extends AbstractReader {
     };
   }
 
-  static processExitWithErr(err) {
-    try {
-        err = JSON.parse(err.message);
-
-        // detect rate limit hit
-        if (err.message.indexOf('API rate limit exceeded') !== -1) {
-          process.stderr.write('GitHub API rate limit exceeded');
-          process.exit(STATUS_API_RATE_LIMIT);
-        }
-
-        process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-      } catch (e) {
-        process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-      }
-
-      // misc feth error
-      process.exit(STATUS_FETCH_FAILED);
-  }
-
   /**
    * Fethces the source ref and outputs it to STDOUT
    * @param {string} source
@@ -186,7 +167,7 @@ class GithubReader extends AbstractReader {
       .then(() => octokit.repos.listCommits(this.parseUrl(source)))
       .then((res) => { process.stdout.write(JSON.stringify({
         data: this.data,
-        sha: res.data[0].sha,
+        sha: res.data[0] ? res.data[0].sha : undefined,
       }))})
       .catch((err) => {
         try {
