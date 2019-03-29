@@ -7,7 +7,6 @@
 const fs = require('fs');
 const Log = require('log');
 const HttpReader = require('../src/Readers/HttpReader');
-const jasmineDiffMatchers = require('jasmine-diff-matchers');
 const AbstractReader = require('../src/Readers/AbstractReader');
 
 describe('HttpReader', () => {
@@ -20,21 +19,18 @@ describe('HttpReader', () => {
 
     // @see https://www.npmjs.com/package/log#log-levels
     reader.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
-
-    // show string diffs
-    jasmine.addMatchers(jasmineDiffMatchers.diffChars);
   });
 
   it('should read sample#1 from githubusercontent.com (http)', () => {
     const remote = reader.read('http://raw.githubusercontent.com/electricimp/Builder/master/spec/fixtures/sample-1/input.nut');
     const local = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
-    expect(remote).diffChars(local);
+    expect(remote).toEqual(local);
   });
 
   it('should read sample#1 from githubusercontent.com (https)', () => {
     const remote = reader.read('https://raw.githubusercontent.com/electricimp/Builder/master/spec/fixtures/sample-1/input.nut');
     const local = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
-    expect(remote).diffChars(local);
+    expect(remote).toEqual(local);
   });
 
   it('should throw a timeout error', () => {

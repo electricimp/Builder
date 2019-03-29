@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
-    "jasmine-diff-matchers": "^2.0.0",
     "jasmine-expect": "^2.0.2",
     "log": "^1.4.0",
     "eol": "^0.9.1",

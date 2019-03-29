@@ -27,7 +27,6 @@
 require('jasmine-expect');
 const init = require('./init')('main');
 const eol = require('eol');
-const jasmineDiffMatchers = require('jasmine-diff-matchers');
 
 const backslashToSlash = require('../backslashToSlash');
 
@@ -36,8 +35,6 @@ describe('Machine', () => {
 
   beforeEach(() => {
     machine = init.createMachine();
-    // show string diffs
-    jasmine.addMatchers(jasmineDiffMatchers.diffChars);
   });
 
   it('should handle comments in include corectly', () => {
@@ -63,7 +60,7 @@ describe('Machine', () => {
 `
         );
 
-        expect(res).diffChars(
+        expect(res).toEqual(
             `
 1 1.07
 `
