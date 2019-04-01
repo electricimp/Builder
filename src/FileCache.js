@@ -113,7 +113,7 @@ class FileCache {
   }
 
   _isDependenciesSupportedReader(reader) {
-      return DEPENDENCIES_SUPPORTED_READERS.some((supportedReader) => (reader instanceof supportedReader));
+    return DEPENDENCIES_SUPPORTED_READERS.some((supportedReader) => (reader instanceof supportedReader));
   }
 
   /**
@@ -147,12 +147,12 @@ class FileCache {
   _getDependencies(reader, includePath) {
     // Skip, if option was not requested or if it is not github reader
     if (!(this._useDependencies instanceof Map) || !this._isDependenciesSupportedReader(reader)) {
-        return includePath;
+      return includePath;
     }
 
     // Skip, if the dependencies.json file does not exist
     if (this._fillDependencies) {
-        return includePath;
+      return includePath;
     }
 
     // Skip, if url alreay have github ref
@@ -162,7 +162,7 @@ class FileCache {
 
     // Check, that requested url present in the Map
     if (!this._useDependencies.has(includePath)) {
-        return includePath;
+      return includePath;
     }
 
     // Return url with github tag
@@ -189,7 +189,7 @@ class FileCache {
    */
   saveDependencies() {
     if (!this._fillDependencies) {
-        return;
+      return;
     }
 
     fs.writeFileSync(DEPENDENCIES_FILE_NAME, JSON.stringify([...this._useDependencies], null, 2), 'utf-8');
@@ -263,7 +263,7 @@ class FileCache {
    */
   get useDependencies() {
     if (this._useDependencies) {
-        return true;
+      return true;
     }
 
     return false;
@@ -288,7 +288,7 @@ class FileCache {
         this._fillDependencies = false;
       }
     } catch (err) {
-        throw new Error(`The ${DEPENDENCIES_FILE_NAME} file cannot be used: ${err.message}`);
+      throw new Error(`The ${DEPENDENCIES_FILE_NAME} file cannot be used: ${err.message}`);
     }
   }
 
