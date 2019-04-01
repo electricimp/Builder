@@ -63,9 +63,6 @@ const Errors = {
 // maximum nesting depth
 const MAX_EXECUTION_DEPTH = 256;
 
-// read and store defined variables here
-const DIRECTIVES_FILE = "directives.json";
-
 /**
  * Builder VM
  */
@@ -672,26 +669,22 @@ class Machine {
    * @private
    */
   _getDirectives(context) {
-    if (!this.useDirectives) {
-      return context;
-    }
-
-    /*
-     * If directives.json file does not exist,
-     * collect context and save it in case of _saveDirectives() function call.
-     */
-    if (!fs.existsSync(DIRECTIVES_FILE)) {
+    if (!this.directivesUseFile) {
       this.directives = context;
       return context;
     }
 
+    if (!fs.existsSync(this.directivesUseFile)) {
+      throw new Error(`The ${this.directivesUseFile} file does not exist.`);
+    }
+
     try {
       this.directives = {
-        ...JSON.parse(fs.readFileSync(DIRECTIVES_FILE).toString()),
+        ...JSON.parse(fs.readFileSync(this.directivesUseFile).toString()),
         ...context,
       }
     } catch(err) {
-      throw new Error(`The ${DIRECTIVES_FILE} file cannot be used: ${err.message}`);
+      throw new Error(`The ${this.directivesUseFile} file cannot be used: ${err.message}`);
     }
 
     return this.directives;
@@ -704,11 +697,15 @@ class Machine {
    * @private
    */
   _saveDirectives() {
-    if (!this.useDirectives || fs.existsSync(DIRECTIVES_FILE)) {
+    if (!this.directivesSaveFile || !this.directives) {
       return;
     }
 
-    fs.writeFileSync(DIRECTIVES_FILE, JSON.stringify(this.directives, null, 2));
+    try {
+      fs.writeFileSync(this.directivesSaveFile, JSON.stringify(this.directives, null, 2));
+    } catch(err) {
+      throw new Error(`The ${this.directivesSaveFile} file cannot be saved: ${err.message}`);
+    }
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
