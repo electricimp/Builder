@@ -35,6 +35,7 @@
   - [Comments](#comments)
 - [Usage](#usage)
   - [Running](#running)
+  - [Reproducible Artifacts Built From GitHub](#reproducible-artifacts-built-from-github)
   - [Including JavaScript Libraries](#including-javascript-libraries)
     - [Binding the Context Object Correctly](#binding-the-context-object-correctly)
   - [Cache for Remote Includes](#cache-for-remote-includes)
@@ -607,10 +608,20 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
   * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries
-  * <code>--save-directives <i>&lt;path_to_file&gt;</i></code> &mdash; path to file, where Builder variable definitions will be saved.
+  * <code>--save-dependencies <i>&lt;path_to_file&gt;</i></code> &mdash; path to JSON file, where github URL's and SHA-hashes (git blob IDs) will be saved.
+  * <code>--save-directives <i>&lt;path_to_file&gt;</i></code> &mdash; path to JSON file, where Builder variable definitions will be saved.
   * <code>--suppress-duplicate-includes-warning</code> &mdash; do not show a warning if a source file with the exact content was included in the multiple times from different places, that results in code duplication.
-  * <code>--use-dependencies</code> &mdash; use the dependencies.json file
+  * <code>--use-dependencies <i>&lt;path_to_file&gt;</i></code> &mdash; path to JSON file with github URL's and SHA-hashes (git blob IDs).
   * <code>--use-directives <i>&lt;path_to_file&gt;</i></code> &mdash; path to JSON file with Builder variable definitions, it will be merged with defines passed by <code>-D</code> option.
+
+## Reproducible Artifacts Built From GitHub
+
+It is possible to 'freeze' the build configuration using --save/use-dependencies, --save/use-directives CLI options. The first one stores the Bulder variable definitions passed by <code>-D</code> CLI option to the JSON file, provided by <code>--save-directives <i>&lt;path_to_file&gt;</i></code> option. The second one stores the github URL's mapped to git blob IDs in the JSON file, provided by <code>--save-dependencies <i>&lt;path_to_file&gt;</i></code> option. Pass the saved files to appropriate <code>--use-* <i>&lt;path_to_file&gt;</i></code> option to achive 'frozen' build state.
+
+**Note** It is possible to get the SHA-hashes (git blob IDs) using next git command in the local repository:
+```js
+% git hash-object <path_to_file>
+```
 
 ## Including JavaScript Libraries
 

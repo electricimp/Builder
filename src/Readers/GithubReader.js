@@ -25,6 +25,7 @@
 'use strict';
 
 const HttpsProxyAgent = require('https-proxy-agent');
+const fs = require('fs');
 const path = require('path');
 const Octokit = require('@octokit/rest');
 const childProcess = require('child_process');
@@ -59,7 +60,7 @@ class GithubReader extends AbstractReader {
    * @param {number=TIMEOUT} timeout - timeout (ms)
    * @return {string}
    */
-  read(source) {
+  read(source, options) {
 
     // [debug]
     this.logger.debug(`Reading GitHub source "${source}"...`);
@@ -67,7 +68,14 @@ class GithubReader extends AbstractReader {
     // spawn child process
     const child = childProcess.spawnSync(
       /* node */ process.argv[0],
-      [/* self */ __filename, WORKER_MARKER, source, this.username, this.token],
+      [/* self */ __filename,
+        WORKER_MARKER,
+        source,
+        this.username,
+        this.token,
+        options.dependenciesSaveFile,
+        options.dependenciesUseFile
+      ],
       {timeout: this.timeout}
     );
 
@@ -107,12 +115,8 @@ class GithubReader extends AbstractReader {
         }
 
       } else {
-        const ret = JSON.parse(child.output[1].toString());
-        this.lastSha = ret.sha;
-        this.lastData = ret.data;
-
         // s'all good
-        return this.lastData;
+        return child.output[1].toString();
       }
 
     }
@@ -131,11 +135,55 @@ class GithubReader extends AbstractReader {
     };
   }
 
+  static processError(err) {
+      try {
+        err = JSON.parse(err.message);
+
+        // detect rate limit hit
+        if (err.message.indexOf('API rate limit exceeded') !== -1) {
+          process.stderr.write('GitHub API rate limit exceeded');
+          process.exit(STATUS_API_RATE_LIMIT);
+        }
+
+        process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
+      } catch (e) {
+        process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
+      }
+
+      // misc feth error
+      process.exit(STATUS_FETCH_FAILED);
+  }
+
+  static updateDependencies(source, sha, dependenciesSaveFile) {
+    if (dependenciesSaveFile === 'undefined') {
+      return;
+    }
+
+    let dependencies;
+    try {
+      if (!fs.existsSync(dependenciesSaveFile)) {
+        dependencies = new Map();
+      } else {
+        dependencies = new Map(JSON.parse(fs.readFileSync(dependenciesSaveFile, 'utf8')));
+      }
+
+      if (dependencies.has(source)) {
+        return;
+      }
+
+      dependencies.set(source, sha);
+      fs.writeFileSync(dependenciesSaveFile, JSON.stringify([...dependencies], null, 2), 'utf-8');
+    } catch (err) {
+      process.stderr.write(`Failed to get source "${source}" from GitHub: dependencies JSON file '${dependenciesSaveFile}' error: ${err.message}`);
+      process.exit(STATUS_FETCH_FAILED);
+    }
+  }
+
   /**
    * Fethces the source ref and outputs it to STDOUT
    * @param {string} source
    */
-  static fetch(source, username, password) {
+  static fetch(source, username, password, dependenciesSaveFile, dependenciesUseFile) {
     var agent = null;
     if (process.env.HTTPS_PROXY) {
       agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
@@ -161,32 +209,46 @@ class GithubReader extends AbstractReader {
       });
     }
 
+    if (dependenciesUseFile !== 'undefined') {
+      if (!fs.existsSync(dependenciesUseFile)) {
+        process.stderr.write(`Failed to get source "${source}" from GitHub: dependencies JSON file '${dependenciesUseFile}' does not exist`);
+        process.exit(STATUS_FETCH_FAILED);
+      }
+
+      let dependencies;
+      try {
+        dependencies = new Map(JSON.parse(fs.readFileSync(dependenciesUseFile, 'utf8')));
+      } catch(err) {
+        process.stderr.write(`Failed to get source "${source}" from GitHub: dependencies JSON file '${dependenciesUseFile}' error: ${err.message}`);
+        process.exit(STATUS_FETCH_FAILED);
+      }
+
+      if (dependencies.has(source)) {
+        const args = {
+          owner: this.parseUrl(source).owner,
+          repo: this.parseUrl(source).repo,
+          file_sha: dependencies.get(source),
+        };
+
+        // @see https://octokit.github.io/rest.js/#api-Git-getBlob
+        octokit.gitdata.getBlob(args)
+          .then(res => {
+            process.stdout.write(Buffer.from(res.data.content, 'base64').toString());
+            this.updateDependencies(source, res.data.sha, dependenciesSaveFile);
+          })
+          .catch(err => GithubReader.processError(err));
+
+        return;
+      }
+    }
+
     // @see https://developer.github.com/v3/repos/contents/#get-contents
     octokit.repos.getContents(this.parseUrl(source))
-      .then((res) => { this.data = Buffer.from(res.data.content, 'base64').toString(); })
-      .then(() => octokit.repos.listCommits(this.parseUrl(source)))
-      .then((res) => { process.stdout.write(JSON.stringify({
-        data: this.data,
-        sha: res.data[0] ? res.data[0].sha : undefined,
-      }))})
-      .catch((err) => {
-        try {
-          err = JSON.parse(err.message);
-  
-          // detect rate limit hit
-          if (err.message.indexOf('API rate limit exceeded') !== -1) {
-            process.stderr.write('GitHub API rate limit exceeded');
-            process.exit(STATUS_API_RATE_LIMIT);
-          }
-  
-          process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-        } catch (e) {
-          process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-        }
-  
-        // misc feth error
-        process.exit(STATUS_FETCH_FAILED);
-      });
+      .then((res) => {
+        process.stdout.write(Buffer.from(res.data.content, 'base64').toString());
+        GithubReader.updateDependencies(source, res.data.sha, dependenciesSaveFile);
+      })
+      .catch(err => GithubReader.processError(err));
   }
 
   /**
@@ -252,7 +314,7 @@ class GithubReader extends AbstractReader {
 
 if (process.argv.indexOf(WORKER_MARKER) !== -1) {
   // launch worker
-  GithubReader.fetch(process.argv[3], process.argv[4], process.argv[5]);
+  GithubReader.fetch(process.argv[3], process.argv[4], process.argv[5], process.argv[6], process.argv[7]);
 } else {
   // acto as module
   module.exports = GithubReader;

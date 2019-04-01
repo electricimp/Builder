@@ -106,9 +106,6 @@ class Machine {
     // save directives
     this._saveDirectives();
 
-    // save dependencies
-    this.fileCache.saveDependencies();
-
     // return output buffer contents
     return buffer.join('');
   }
@@ -807,18 +804,19 @@ class Machine {
   }
 
   /**
-   * Use dependencies?
-   * @return {boolean}
+   * File, where dependencies will be saved
+   * @param {string} value
    */
-  get useDependencies() {
-    return this.fileCache.useDependencies;
+  set dependenciesSaveFile(value) {
+    this.fileCache.dependenciesSaveFile = value;
   }
 
   /**
-   * @param {boolean} value
+   * File, where from dependencies will be read
+   * @param {string} value
    */
-  set useDependencies(value) {
-     this.fileCache.useDependencies = value;
+  set dependenciesUseFile(value) {
+     this.fileCache.dependenciesUseFile = value;
   }
 
   /**

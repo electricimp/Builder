@@ -70,9 +70,10 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
+\t\u001b[34m--save-dependencies <path_to_file>\u001b[39m - save the SHA-hashes (git blob IDs) to JSON file
 \t\u001b[34m--save-directives <path_to_file>\u001b[39m - save the Builder varialbe definitions to JSON file
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
-\t\u001b[34m--use-dependencies\u001b[39m - use the dependencies.json file contained github refs, create if does not exist
+\t\u001b[34m--use-dependencies <path_to_file>\u001b[39m - read the SHA-hashes (git blob IDs) from JSON file
 \t\u001b[34m--use-directives <path_to_file>\u001b[39m - read the Builder varialbe definitions from JSON file
     `.trim());
 }
@@ -128,6 +129,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
+    } else if ('--save-dependencies' === argument) {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.dependenciesSaveFile = args.shift();
     } else if ('--save-directives' === argument) {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
@@ -136,7 +142,10 @@ function readArgs() {
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
     } else if ('--use-dependencies' === argument) {
-      res.useDependencies = true;
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.dependenciesUseFile = args.shift();
     } else if ('--use-directives' === argument) {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
@@ -179,7 +188,8 @@ try {
   // set supress dupicate includes warning
   builder.machine.suppressDupWarning = args.suppressDupWarning;
   // use dependencies
-  builder.machine.useDependencies = args.useDependencies;
+  builder.machine.dependenciesSaveFile = args.dependenciesSaveFile;
+  builder.machine.dependenciesUseFile = args.dependenciesUseFile;
   // use directives
   builder.machine.directivesSaveFile = args.directivesSaveFile;
   builder.machine.directivesUseFile = args.directivesUseFile;

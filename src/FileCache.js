@@ -32,10 +32,8 @@ const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const DEPENDENCIES_FILE_NAME = 'dependencies.json';
 const CACHED_READERS = [GithubReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
-const DEPENDENCIES_SUPPORTED_READERS = [GithubReader];
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
 
@@ -44,12 +42,10 @@ class FileCache {
 
   constructor(machine) {
     this._cacheDir = '.' + path.sep + '.builder-cache';
-    this._fillDependencies = false; // the dependencies.json does not exist, create it
     this._excludeList = [];
     this._machine = machine;
     this._outdateTime = CACHE_LIFETIME * 86400000; // precalc milliseconds in one day
     this._useCache = false;
-    this._useDependencies = false;
   }
 
   /**
@@ -112,10 +108,6 @@ class FileCache {
     return CACHED_READERS.some((cachedReader) => (reader instanceof cachedReader));
   }
 
-  _isDependenciesSupportedReader(reader) {
-    return DEPENDENCIES_SUPPORTED_READERS.some((supportedReader) => (reader instanceof supportedReader));
-  }
-
   /**
    * Check, has file to be excluded from cache
    * @param {string} path to the file
@@ -140,62 +132,6 @@ class FileCache {
   }
 
   /**
-   * Get github dependencies (refs)
-   * @param {AbstractReader} reader reader
-   * @return {content: string, includePathParsed} content and parsed path
-   */
-  _getDependencies(reader, includePath) {
-    // Skip, if option was not requested or if it is not github reader
-    if (!(this._useDependencies instanceof Map) || !this._isDependenciesSupportedReader(reader)) {
-      return includePath;
-    }
-
-    // Skip, if the dependencies.json file does not exist
-    if (this._fillDependencies) {
-      return includePath;
-    }
-
-    // Skip, if url alreay have github ref
-    if (GithubReader.parseUrl(includePath).ref) {
-        return includePath;
-    }
-
-    // Check, that requested url present in the Map
-    if (!this._useDependencies.has(includePath)) {
-      return includePath;
-    }
-
-    // Return url with github tag
-    return `${includePath}@${this._useDependencies.get(includePath)}`;
-  }
-
-  /**
-   * Collect github dependencies (refs)
-   * @param {AbstractReader} reader reader
-   * @return {content: string, includePathParsed} content and parsed path
-   */
-  _collectDependencies(reader, includePath) {
-    if ((this._useDependencies instanceof Map) &&
-      this._isDependenciesSupportedReader(reader) &&
-      !GithubReader.parseUrl(includePath).ref &&
-      this._fillDependencies && reader.lastSha) {
-        this._useDependencies.set(includePath, reader.lastSha);
-    }
-  }
-
-  /**
-   * Save github dependencies (refs) to dependencies.json file
-   * @param
-   */
-  saveDependencies() {
-    if (!this._fillDependencies) {
-      return;
-    }
-
-    fs.writeFileSync(DEPENDENCIES_FILE_NAME, JSON.stringify([...this._useDependencies], null, 2), 'utf-8');
-  }
-
-  /**
    * Read includePath and use cache if needed
    * @param {string} includePath link to the source
    * @param {AbstractReader} reader reader
@@ -203,8 +139,6 @@ class FileCache {
    * @private
    */
   read(reader, includePath) {
-    includePath = this._getDependencies(reader, includePath);
-
     let needCache = false;
     if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
         let result;
@@ -218,15 +152,18 @@ class FileCache {
         }
     }
 
+    const options = {
+      dependenciesSaveFile: this.dependenciesSaveFile,
+      dependenciesUseFile: this.dependenciesUseFile,
+    };
+
     const includePathParsed = reader.parsePath(includePath);
-    let content = reader.read(includePath);
+    let content = reader.read(includePath, options);
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {
         content += '\n';
     }
-
-    this._collectDependencies(reader, includePath);
 
     if (needCache && this.useCache) {
       this.machine.logger.debug(`Caching file "${includePath}"`);
@@ -255,41 +192,6 @@ class FileCache {
    */
   set useCache(value) {
     this._useCache = value;
-  }
-
-  /**
-   * Use dependencies?
-   * @return {boolean}
-   */
-  get useDependencies() {
-    if (this._useDependencies) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * @param {boolean} value
-   */
-  set useDependencies(value) {
-    if (!value) {
-      this._useDependencies = value;
-      return;
-    }
-
-    try {
-      if (!fs.existsSync(DEPENDENCIES_FILE_NAME)) {
-        this._useDependencies = new Map();
-        this._fillDependencies = true;
-      } else {
-        const content = fs.readFileSync(DEPENDENCIES_FILE_NAME, 'utf8');
-        this._useDependencies = new Map(JSON.parse(content));
-        this._fillDependencies = false;
-      }
-    } catch (err) {
-      throw new Error(`The ${DEPENDENCIES_FILE_NAME} file cannot be used: ${err.message}`);
-    }
   }
 
   set cacheDir(value) {
