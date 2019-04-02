@@ -70,6 +70,7 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
+\t\u001b[34m--respect-local-includes\u001b[39m - checkout from github localy included sources from the github repositories
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
     `.trim());
 }
@@ -125,6 +126,8 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
+    } else if ('--respect-local-includes' === argument) {
+        res.respectLocalIncludes = true;
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
     } else {
@@ -161,6 +164,8 @@ try {
   builder.machine.readers.github.token = args.gh.token;
   //set cache settings
   builder.machine.excludeList = args.excludeFile;
+  // set local includes
+  builder.machine.respectLocalIncludes = args.respectLocalIncludes;
   // set supress dupicate includes warning
   builder.machine.suppressDupWarning = args.suppressDupWarning;
 

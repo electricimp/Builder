@@ -270,6 +270,22 @@ class Machine {
     }
   }
 
+  _fixLocalIncludes(includePath, context) {
+    if (!this.respectLocalIncludes) {
+      return includePath;
+    }
+
+    if (!context.__PATH__.match(/github(?:\.com)?(?:\/|\:)([a-z0-9\-\._]+)*/)) {
+      return includePath;
+    }
+
+    if (!(this._getReader(includePath) === this.readers.file)) {
+      return includePath;
+    }
+
+    return context.__PATH__ + '/' + path.basename(includePath);
+  }
+
   /**
    * Include source
    * @param {string} source
@@ -282,7 +298,7 @@ class Machine {
   _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    const includePath = evaluated ? source : this.expression.evaluate(
+    let includePath = evaluated ? source : this.expression.evaluate(
         source,
         context
       ).trim();
@@ -292,6 +308,9 @@ class Machine {
       this.logger.debug(`Skipping source "${includePath}": has already been included`);
       return;
     }
+
+    // Fix local includes in the github sources
+    includePath = this._fixLocalIncludes(includePath, context);
 
     const reader = this._getReader(includePath);
     this.logger.info(`Including source "${includePath}"`);
