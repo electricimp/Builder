@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -65,6 +65,11 @@ class GithubReader extends AbstractReader {
     // [debug]
     this.logger.debug(`Reading GitHub source "${source}"...`);
 
+    // process dependencies
+    if (options.dependencies && options.dependencies.has(source)) {
+      this.gitBlobID = options.dependencies.get(source);
+    }
+
     // spawn child process
     const child = childProcess.spawnSync(
       /* node */ process.argv[0],
@@ -73,10 +78,9 @@ class GithubReader extends AbstractReader {
         source,
         this.username,
         this.token,
-        options.dependenciesSaveFile,
-        options.dependenciesUseFile
+        this.gitBlobID,
       ],
-      {timeout: this.timeout}
+      { timeout: this.timeout }
     );
 
     if (STATUS_FETCH_FAILED === child.status || STATUS_API_RATE_LIMIT === child.status) {
@@ -116,7 +120,14 @@ class GithubReader extends AbstractReader {
 
       } else {
         // s'all good
-        return child.output[1].toString();
+        const ret = JSON.parse(child.output[1].toString());
+
+        // update dependencies map
+        if (options.dependencies) {
+          options.dependencies.set(source, ret.gitBlobID);
+        }
+
+        return ret.data;
       }
 
     }
@@ -136,54 +147,29 @@ class GithubReader extends AbstractReader {
   }
 
   static processError(err) {
-      try {
-        err = JSON.parse(err.message);
-
-        // detect rate limit hit
-        if (err.message.indexOf('API rate limit exceeded') !== -1) {
-          process.stderr.write('GitHub API rate limit exceeded');
-          process.exit(STATUS_API_RATE_LIMIT);
-        }
-
-        process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-      } catch (e) {
-        process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-      }
-
-      // misc feth error
-      process.exit(STATUS_FETCH_FAILED);
-  }
-
-  static updateDependencies(source, sha, dependenciesSaveFile) {
-    if (dependenciesSaveFile === 'undefined') {
-      return;
-    }
-
-    let dependencies;
     try {
-      if (!fs.existsSync(dependenciesSaveFile)) {
-        dependencies = new Map();
-      } else {
-        dependencies = new Map(JSON.parse(fs.readFileSync(dependenciesSaveFile, 'utf8')));
+      err = JSON.parse(err.message);
+
+      // detect rate limit hit
+      if (err.message.indexOf('API rate limit exceeded') !== -1) {
+        process.stderr.write('GitHub API rate limit exceeded');
+        process.exit(STATUS_API_RATE_LIMIT);
       }
 
-      if (dependencies.has(source)) {
-        return;
-      }
-
-      dependencies.set(source, sha);
-      fs.writeFileSync(dependenciesSaveFile, JSON.stringify([...dependencies], null, 2), 'utf-8');
-    } catch (err) {
-      process.stderr.write(`Failed to get source "${source}" from GitHub: dependencies JSON file '${dependenciesSaveFile}' error: ${err.message}`);
-      process.exit(STATUS_FETCH_FAILED);
+      process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
+    } catch (e) {
+      process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
     }
+
+    // misc feth error
+    process.exit(STATUS_FETCH_FAILED);
   }
 
   /**
    * Fethces the source ref and outputs it to STDOUT
    * @param {string} source
    */
-  static fetch(source, username, password, dependenciesSaveFile, dependenciesUseFile) {
+  static fetch(source, username, password, gitBlobID) {
     var agent = null;
     if (process.env.HTTPS_PROXY) {
       agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
@@ -209,44 +195,35 @@ class GithubReader extends AbstractReader {
       });
     }
 
-    if (dependenciesUseFile !== 'undefined') {
-      if (!fs.existsSync(dependenciesUseFile)) {
-        process.stderr.write(`Failed to get source "${source}" from GitHub: dependencies JSON file '${dependenciesUseFile}' does not exist`);
-        process.exit(STATUS_FETCH_FAILED);
-      }
+    if (gitBlobID !== 'undefined') {
+      const args = {
+        owner: this.parseUrl(source).owner,
+        repo: this.parseUrl(source).repo,
+        file_sha: gitBlobID,
+      };
 
-      let dependencies;
-      try {
-        dependencies = new Map(JSON.parse(fs.readFileSync(dependenciesUseFile, 'utf8')));
-      } catch(err) {
-        process.stderr.write(`Failed to get source "${source}" from GitHub: dependencies JSON file '${dependenciesUseFile}' error: ${err.message}`);
-        process.exit(STATUS_FETCH_FAILED);
-      }
+      // @see https://octokit.github.io/rest.js/#api-Git-getBlob
+      octokit.gitdata.getBlob(args)
+        .then((res) => {
+          const ret = {
+            data: Buffer.from(res.data.content, 'base64').toString(),
+            gitBlobID: res.data.sha,
+          };
+          process.stdout.write(JSON.stringify(ret));
+        })
+        .catch(err => GithubReader.processError(err));
 
-      if (dependencies.has(source)) {
-        const args = {
-          owner: this.parseUrl(source).owner,
-          repo: this.parseUrl(source).repo,
-          file_sha: dependencies.get(source),
-        };
-
-        // @see https://octokit.github.io/rest.js/#api-Git-getBlob
-        octokit.gitdata.getBlob(args)
-          .then(res => {
-            process.stdout.write(Buffer.from(res.data.content, 'base64').toString());
-            this.updateDependencies(source, res.data.sha, dependenciesSaveFile);
-          })
-          .catch(err => GithubReader.processError(err));
-
-        return;
-      }
+      return;
     }
 
     // @see https://developer.github.com/v3/repos/contents/#get-contents
     octokit.repos.getContents(this.parseUrl(source))
       .then((res) => {
-        process.stdout.write(Buffer.from(res.data.content, 'base64').toString());
-        GithubReader.updateDependencies(source, res.data.sha, dependenciesSaveFile);
+        const ret = {
+          data: Buffer.from(res.data.content, 'base64').toString(),
+          gitBlobID: res.data.sha,
+        };
+        process.stdout.write(JSON.stringify(ret));
       })
       .catch(err => GithubReader.processError(err));
   }
@@ -314,7 +291,7 @@ class GithubReader extends AbstractReader {
 
 if (process.argv.indexOf(WORKER_MARKER) !== -1) {
   // launch worker
-  GithubReader.fetch(process.argv[3], process.argv[4], process.argv[5], process.argv[6], process.argv[7]);
+  GithubReader.fetch(process.argv[3], process.argv[4], process.argv[5], process.argv[6]);
 } else {
   // acto as module
   module.exports = GithubReader;

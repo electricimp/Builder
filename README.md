@@ -620,7 +620,7 @@ It is possible to 'freeze' the build configuration using --save/use-dependencies
 
 **Note** It is possible to get the SHA-hashes (git blob IDs) using next git command in the local repository:
 ```js
-% git hash-object <path_to_file>
+git hash-object <path_to_file>
 ```
 
 ## Including JavaScript Libraries

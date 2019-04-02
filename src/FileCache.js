@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -138,7 +138,7 @@ class FileCache {
    * @return {content: string, includePathParsed} content and parsed path
    * @private
    */
-  read(reader, includePath) {
+  read(reader, includePath, dependencies) {
     let needCache = false;
     if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
         let result;
@@ -152,13 +152,8 @@ class FileCache {
         }
     }
 
-    const options = {
-      dependenciesSaveFile: this.dependenciesSaveFile,
-      dependenciesUseFile: this.dependenciesUseFile,
-    };
-
     const includePathParsed = reader.parsePath(includePath);
-    let content = reader.read(includePath, options);
+    let content = reader.read(includePath, { dependencies: dependencies });
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {

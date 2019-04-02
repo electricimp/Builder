@@ -89,6 +89,9 @@ class Machine {
     // parse
     const ast = this.parser.parse(source);
 
+    // read dependencies
+    this._getDependencies();
+
     // read directives, merge it with actual context
     context = this._getDirectives(context);
 
@@ -102,6 +105,9 @@ class Machine {
 
     const buffer = [];
     this._execute(ast, context, buffer);
+
+    // save dependencies
+    this._saveDependencies();
 
     // save directives
     this._saveDirectives();
@@ -304,7 +310,7 @@ class Machine {
     this.logger.info(`Including source "${includePath}"`);
 
     // read
-    const res = this.fileCache.read(reader, includePath);
+    const res = this.fileCache.read(reader, includePath, this.dependencies);
 
     // Check if source with same hash value has already been included
     if (!this.suppressDupWarning) {
@@ -660,7 +666,33 @@ class Machine {
   }
 
   /**
-   * Get directives.json file content
+   * Read dependencies JSON file content
+   * @param
+   * @return
+   * @private
+   */
+  _getDependencies() {
+    if (!this.dependenciesUseFile) {
+      if (this.dependenciesSaveFile) {
+        this.dependencies = new Map();
+      }
+
+      return;
+    }
+
+    if (!fs.existsSync(this.dependenciesUseFile)) {
+      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' does not exist.`)
+    }
+
+    try {
+      this.dependencies = new Map(JSON.parse(fs.readFileSync(this.dependenciesUseFile, 'utf8')));
+    } catch(err) {
+      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' cannot be used: ${err.message}.`);
+    }
+  }
+
+  /**
+   * Read directives JSON file content
    * @param {*} context
    * @return {*}
    * @private
@@ -672,7 +704,7 @@ class Machine {
     }
 
     if (!fs.existsSync(this.directivesUseFile)) {
-      throw new Error(`The ${this.directivesUseFile} file does not exist.`);
+      throw new Error(`The directives JSON file '${this.directivesUseFile}' does not exist.`);
     }
 
     try {
@@ -681,14 +713,32 @@ class Machine {
         ...context,
       }
     } catch(err) {
-      throw new Error(`The ${this.directivesUseFile} file cannot be used: ${err.message}`);
+      throw new Error(`The directives JSON file '${this.directivesUseFile}' cannot be used: ${err.message}`);
     }
 
     return this.directives;
   }
 
   /**
-   * Save defined variables to directives.json file
+   * Save dependencies JSON file
+   * @param
+   * @return
+   * @private
+   */
+  _saveDependencies() {
+    if (!this.dependenciesSaveFile) {
+      return;
+    }
+
+    try {
+      fs.writeFileSync(this.dependenciesSaveFile, JSON.stringify([...this.dependencies], null, 2), 'utf-8');
+    } catch (err) {
+      throw new Error(`The ${this.dependenciesSaveFile} file cannot be saved: ${err.message}`);
+    }
+  }
+
+  /**
+   * Save defined variables to directives JSON file
    * @param
    * @return
    * @private
@@ -801,22 +851,6 @@ class Machine {
    */
   set useCache(value) {
      this.fileCache.useCache = value;
-  }
-
-  /**
-   * File, where dependencies will be saved
-   * @param {string} value
-   */
-  set dependenciesSaveFile(value) {
-    this.fileCache.dependenciesSaveFile = value;
-  }
-
-  /**
-   * File, where from dependencies will be read
-   * @param {string} value
-   */
-  set dependenciesUseFile(value) {
-     this.fileCache.dependenciesUseFile = value;
   }
 
   /**
