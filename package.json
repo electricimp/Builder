@@ -24,7 +24,7 @@
     "clone": "^1.0.2",
     "@octokit/rest": "^16.20.0",
     "glob": "^7.1.2",
-    "https-proxy-agent":"^2.2.1",
+    "https-proxy-agent": "^2.2.1",
     "jsep": "^0.3.1",
     "request": "^2.71.0",
     "md5": "^2.2.1",

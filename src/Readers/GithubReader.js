@@ -65,7 +65,7 @@ class GithubReader extends AbstractReader {
     this.logger.debug(`Reading GitHub source "${source}"...`);
 
     // process dependencies
-    if (options.dependencies && options.dependencies.has(source)) {
+    if (options && options.dependencies && options.dependencies.has(source)) {
       this.gitBlobID = options.dependencies.get(source);
     }
 
@@ -122,7 +122,7 @@ class GithubReader extends AbstractReader {
         const ret = JSON.parse(child.output[1].toString());
 
         // update dependencies map
-        if (options.dependencies) {
+        if (options && options.dependencies) {
           options.dependencies.set(source, ret.gitBlobID);
         }
 

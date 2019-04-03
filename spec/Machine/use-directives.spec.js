@@ -123,6 +123,9 @@ describe('Machine', () => {
       fail(`The ${directivesSaveFile} file does not exist.`);
     }
 
+    // check that files are identical
+    expect(fs.readFileSync(directivesUseFile)).toEqual(fs.readFileSync(directivesSaveFile));
+
     // unlink directives file to avoid conflicts with unit-tests below
     fs.unlinkSync(directivesSaveFile);
     fs.unlinkSync(directivesUseFile);
@@ -155,7 +158,7 @@ describe('Machine', () => {
     // corrupt the file
     fs.appendFileSync(directivesSaveFile, ']');
 
-    const fileCorruptedMessage = `The ${directivesSaveFile} file cannot be used: Unexpected token ] in JSON at position 47`;
+    const fileCorruptedMessage = `The directives JSON file '${directivesSaveFile}' cannot be used: Unexpected token ] in JSON at position 47`;
 
     // check exception error message
     try {

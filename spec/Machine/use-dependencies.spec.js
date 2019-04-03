@@ -83,6 +83,40 @@ describe('Machine', () => {
     fs.unlinkSync(dependenciesSaveFile);
   });
 
+  it('Check ---save-dependecies/--use-dependencies options combination', () => {
+    const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
+    const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out`;
+
+    // ensure that test dependencies.json file does not exist
+    if (fs.existsSync(dependenciesUseFile)) {
+      fs.unlinkSync(dependenciesUseFile);
+    }
+
+    machine.dependenciesSaveFile = dependenciesUseFile;
+    expect(eol.lf(machine.execute(`@include "${url}"`))).toBe(rev1Content);
+
+    // check that dependencies JSON file was created
+    if (!fs.existsSync(dependenciesUseFile)) {
+      fail(`The ${dependenciesUseFile} file does not exist.`);
+    }
+
+    machine.dependenciesUseFile = dependenciesUseFile;
+    machine.dependenciesSaveFile = dependenciesSaveFile;
+    expect(eol.lf(machine.execute(`@include "${url}"`))).toBe(rev1Content);
+
+    // check that dependencies JSON file was created
+    if (!fs.existsSync(dependenciesSaveFile)) {
+      fail(`The ${dependenciesSaveFile} file does not exist.`);
+    }
+
+    // check that files are identical
+    expect(fs.readFileSync(dependenciesUseFile)).toEqual(fs.readFileSync(dependenciesSaveFile));
+
+    // unlink directives file to avoid conflicts with unit-tests below
+    fs.unlinkSync(dependenciesSaveFile);
+    fs.unlinkSync(dependenciesUseFile);
+  });
+
   it('Check case when dependencies JSON file is corrupted', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
     const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out`;
