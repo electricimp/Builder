@@ -8,7 +8,6 @@ require('jasmine-expect');
 
 const fs = require('fs');
 const path = require('path');
-const jasmineDiffMatchers = require('jasmine-diff-matchers');
 const eol = require('eol');
 
 const FILE = __dirname + '/../fixtures/sample-7/input.nut';
@@ -18,9 +17,6 @@ describe('Machine', () => {
   let machine, src;
 
   beforeEach(() => {
-    // show string diffs
-    jasmine.addMatchers(jasmineDiffMatchers.diffChars);
-
     machine = init.createMachine();
     machine.file = path.basename(FILE);
     src = eol.lf(fs.readFileSync(FILE, 'utf-8'));
@@ -29,7 +25,7 @@ describe('Machine', () => {
   it('should run sample #7', () => {
     machine.generateLineControlStatements = false;
     const result = eol.lf(machine.execute(src));
-    expect(result).diffChars(init.getResult());
+    expect(result).toEqual(init.getResult());
   });
 
   it('should run sample #7 with line control', () => {
