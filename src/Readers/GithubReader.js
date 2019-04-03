@@ -25,7 +25,6 @@
 'use strict';
 
 const HttpsProxyAgent = require('https-proxy-agent');
-const fs = require('fs');
 const path = require('path');
 const Octokit = require('@octokit/rest');
 const childProcess = require('child_process');

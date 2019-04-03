@@ -681,13 +681,13 @@ class Machine {
     }
 
     if (!fs.existsSync(this.dependenciesUseFile)) {
-      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' does not exist.`)
+      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' does not exist`)
     }
 
     try {
       this.dependencies = new Map(JSON.parse(fs.readFileSync(this.dependenciesUseFile, 'utf8')));
     } catch(err) {
-      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' cannot be used: ${err.message}.`);
+      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' cannot be used: ${err.message}`);
     }
   }
 
@@ -704,7 +704,7 @@ class Machine {
     }
 
     if (!fs.existsSync(this.directivesUseFile)) {
-      throw new Error(`The directives JSON file '${this.directivesUseFile}' does not exist.`);
+      throw new Error(`The directives JSON file '${this.directivesUseFile}' does not exist`);
     }
 
     try {
