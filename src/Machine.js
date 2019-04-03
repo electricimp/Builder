@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -26,6 +26,7 @@
 
 const url = require('url');
 const path = require('path');
+const md5 = require('md5');
 
 const Expression = require('./Expression');
 const AbstractReader = require('./Readers/AbstractReader');
@@ -148,9 +149,18 @@ class Machine {
     this._macros = {}; // macros
     this._depth = 0; // nesting level
     this._includedSources = new Set(); // all included sources
+    this._includedSourcesHashes = new Map(); // all included sources content hash values
     this._globalContext = {}; // global context
   }
 
+  /**
+   * Format path
+   * @private
+   */
+  _formatPath(filepath, filename) {
+    return path.normalize(path.join(filepath, filename));
+  }
+  
   /**
    * Execute AST
    * @param {[]} ast
@@ -165,7 +175,7 @@ class Machine {
         // Since anything greater than zero means a recurring call
         // from the entry base block, __LINE__ will be defined in context.
         // MAX_INCLUDE_DEPTH == 0 doesn't allow execution at all.
-        `Maximum execution depth reached, possible cyclic reference? (${context.__FILE__}:${context.__LINE__})`
+        `Maximum execution depth reached, possible cyclic reference? (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`
       );
     }
 
@@ -223,9 +233,9 @@ class Machine {
 
         // add file/line information to errors
         if (e instanceof Expression.Errors.ExpressionError) {
-          throw new Errors.ExpressionEvaluationError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
+          throw new Errors.ExpressionEvaluationError(`${e.message} (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`);
         } else if (e instanceof AbstractReader.Errors.SourceReadingError) {
-          throw new Errors.SourceInclusionError(`${e.message} (${context.__FILE__}:${context.__LINE__})`);
+          throw new Errors.SourceInclusionError(`${e.message} (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`);
         } else {
           throw e;
         }
@@ -288,6 +298,32 @@ class Machine {
 
     // read
     const res = this.fileCache.read(reader, includePath);
+
+    // Check if source with same hash value has already been included
+    if (!this.suppressDupWarning) {
+      const md5sum = md5(res.content);
+      if (this._includedSourcesHashes.has(md5sum)) {
+        const path = this._includedSourcesHashes.get(md5sum).path;
+        const file = this._includedSourcesHashes.get(md5sum).file;
+        const line = this._includedSourcesHashes.get(md5sum).line;
+        const dupPath = includePath;
+        const dupFile = context.__FILE__;
+        const dupLine = context.__LINE__;
+        const message = `Warning: duplicated includes detected! The same exact file content is included from
+    ${file}:${line} (${path})
+    ${dupFile}:${dupLine} (${dupPath})`;
+
+        console.error("\x1b[33m" + message + '\u001b[39m');
+      }
+
+      const info = {
+        path: includePath,
+        file: context.__FILE__,
+        line: context.__LINE__,
+      };
+
+      this._includedSourcesHashes.set(md5sum, info);
+    }
 
     // provide filename for correct error messages
     this.parser.file = res.includePathParsed.__FILE__;
@@ -475,7 +511,7 @@ class Machine {
       throw new Errors.MacroIsAlreadyDeclared(
         `Macro "${macro.name}" is already declared in ` +
         `${this._macros[macro.name].file}:${this._macros[macro.name].line}` +
-        ` (${context.__FILE__}:${context.__LINE__})`
+        ` (${this._formatPath(context.__PATH__, context.__FILE__)}:${context.__LINE__})`
       );
     }
 

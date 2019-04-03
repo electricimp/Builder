@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2019 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -9,12 +9,15 @@ const Machine = require('../src/Machine');
 const Log = require('log');
 const fs = require('fs');
 
+const backslashToSlash = require('./backslashToSlash')
+
 describe('Builder', () => {
 
   let builder;
 
   beforeEach(() => {
     builder = new Builder();
+    builder.machine.suppressDupWarning = true;
     builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
     builder.machine.readers.github.password = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
 
@@ -26,26 +29,26 @@ describe('Builder', () => {
   it('should add end of file symbol at the end of local files', () => {
 
     let output = builder.machine.execute(`
-      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
-      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
-      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
-      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/OneLineSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/OneLineSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/LineBrakeSample.nut"
     `);
     expect(output.split('\n').length).toBe(6);
 
     output = builder.machine.execute(`
-      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
-      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
-      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
-      @include "${__dirname}/fixtures/sample-11/OneLineSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/OneLineSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/OneLineSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/OneLineSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/OneLineSample.nut"
     `);
     expect(output.split('\n').length).toBe(6);
 
     output = builder.machine.execute(`
-      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
-      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
-      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
-      @include "${__dirname}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/LineBrakeSample.nut"
+      @include "${backslashToSlash(__dirname)}/fixtures/sample-11/LineBrakeSample.nut"
     `);
     expect(output.split('\n').length).toBe(6);
   });

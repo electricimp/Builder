@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2019 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -6,6 +6,7 @@
 
 require('jasmine-expect');
 const Fixture = require('fixture-stdout');
+const eol = require('eol');
 
 const FILE = __dirname + '/../fixtures/sample-12/input.nut';
 const init = require('./init')(FILE);
@@ -32,6 +33,6 @@ describe('Machine', () => {
       // Returning false prevents message actually being logged to STDOUT
       return false;
     });
-    expect(machine.execute('@include "input.nut"')).toBe(result);
+    expect(eol.lf(machine.execute('@include "input.nut"'))).toBe(result);
   });
 });

@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -24,6 +24,10 @@
 
 'use strict';
 
-module.exports = {
-  base64: input => Buffer.from(String(input)).toString('base64')
-}
+/**
+ * @param {String} input string
+ * @returns {String} output string
+ */
+module.exports = function (str) {
+    return str.replace(/\\/g, '/');
+};

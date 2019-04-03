@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -26,25 +26,25 @@
 
 require('jasmine-expect');
 const init = require('./init')('main');
-const jasmineDiffMatchers = require('jasmine-diff-matchers');
+const eol = require('eol');
+
+const backslashToSlash = require('../backslashToSlash');
 
 describe('Machine', () => {
   let machine;
 
   beforeEach(() => {
     machine = init.createMachine();
-    // show string diffs
-    jasmine.addMatchers(jasmineDiffMatchers.diffChars);
   });
 
   it('should handle comments in include corectly', () => {
     const ans = 'a.builder\n';
-    expect(machine.execute(`@include "${__dirname}/../fixtures/" + "lib/a.builder" // comment`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures//" + '//lib/a.builder' // comment`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder"//comment+/comment+"some more comment"`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures/" + 'lib/a.builder' // comment with //`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures/lib/a.builder" // comment with some expr (1 | 0)`)).toEqual(ans);
-    expect(machine.execute(`@include "${__dirname}/../fixtures/" + 'lib/a.builder' // comment with " ' ( ] {`)).toEqual(ans);
+    expect(eol.lf(machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/" + "lib/a.builder" // comment`))).toEqual(ans);
+    expect(eol.lf(machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures//" + '//lib/a.builder' // comment`))).toEqual(ans);
+    expect(eol.lf(machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"//comment+/comment+"some more comment"`))).toEqual(ans);
+    expect(eol.lf(machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/" + 'lib/a.builder' // comment with //`))).toEqual(ans);
+    expect(eol.lf(machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder" // comment with some expr (1 | 0)`))).toEqual(ans);
+    expect(eol.lf(machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/" + 'lib/a.builder' // comment with " ' ( ] {`))).toEqual(ans);
   });
 
     it('should handle @while corectly #1', () => {
@@ -60,7 +60,7 @@ describe('Machine', () => {
 `
         );
 
-        expect(res).diffChars(
+        expect(res).toEqual(
             `
 1 1.07
 `
