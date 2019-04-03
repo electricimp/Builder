@@ -168,7 +168,7 @@ try {
     process.exit(1);
   }
 
-// create builder
+  // create builder
   const builder = new Builder({ libs: args.libs });
   builder.machine.generateLineControlStatements = args.lineControl;
   builder.machine.useCache = args.cache;

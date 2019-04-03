@@ -296,9 +296,9 @@ class Machine {
 
     // path is an expression, evaluate it
     const includePath = evaluated ? source : this.expression.evaluate(
-        source,
-        context
-      ).trim();
+      source,
+      context,
+    ).trim();
 
     // if once flag is set, then check if source has already been included
     if (once && this._includedSources.has(includePath)) {
@@ -790,11 +790,11 @@ class Machine {
    */
   get logger() {
     return this._logger || {
-        debug: console.log,
-        info: console.info,
-        warning: console.warning,
-        error: console.error
-      };
+      debug: console.log,
+      info: console.info,
+      warning: console.warning,
+      error: console.error
+    };
   }
 
   /**
@@ -850,7 +850,7 @@ class Machine {
    * @param {boolean} value
    */
   set useCache(value) {
-     this.fileCache.useCache = value;
+    this.fileCache.useCache = value;
   }
 
   /**

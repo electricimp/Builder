@@ -141,15 +141,15 @@ class FileCache {
   read(reader, includePath, dependencies) {
     let needCache = false;
     if (!dependencies && this._toBeCached(includePath) && this._isCachedReader(reader)) {
-        let result;
-        if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
-          // change reader to local reader
-          includePath = result;
-          this.machine.logger.info(`Read source from local path "${includePath}"`);
-          reader = this.machine.readers.file;
-        } else {
-          needCache = true;
-        }
+      let result;
+      if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
+        // change reader to local reader
+        includePath = result;
+        this.machine.logger.info(`Read source from local path "${includePath}"`);
+        reader = this.machine.readers.file;
+      } else {
+        needCache = true;
+      }
     }
 
     const includePathParsed = reader.parsePath(includePath);
@@ -157,7 +157,7 @@ class FileCache {
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {
-        content += '\n';
+      content += '\n';
     }
 
     if (needCache && this.useCache) {
@@ -165,9 +165,9 @@ class FileCache {
       this._cacheFile(includePath, content);
     }
     return {
-             'content' : content,
-             'includePathParsed' : includePathParsed
-           };
+      'content' : content,
+      'includePathParsed' : includePathParsed
+    };
   }
 
   clearCache() {
