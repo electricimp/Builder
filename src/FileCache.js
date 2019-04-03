@@ -140,7 +140,7 @@ class FileCache {
    */
   read(reader, includePath, dependencies) {
     let needCache = false;
-    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
+    if (!dependencies && this._toBeCached(includePath) && this._isCachedReader(reader)) {
         let result;
         if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
           // change reader to local reader
