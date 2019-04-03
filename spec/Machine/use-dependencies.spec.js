@@ -66,7 +66,7 @@ describe('Machine', () => {
     const rev0Content = "// included file a\n    // included file b\n\n\n      // should be included\n\n        // l2 else\n\n\n      // should be included\n";
     const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out@${rev0CommitID}`;
 
-    // ensure that test dependencies.json file does not exist
+    // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesSaveFile)) {
       fs.unlinkSync(dependenciesSaveFile);
     }
@@ -74,7 +74,7 @@ describe('Machine', () => {
     machine.dependenciesSaveFile = dependenciesSaveFile;
     expect(eol.lf(machine.execute(`@include "${url}"`))).toBe(rev0Content);
 
-    // check dependencies.json file content again
+    // check dependencies JSON file content again
     const rev0Map = new Map(JSON.parse(fs.readFileSync(dependenciesSaveFile)));
     expect(rev0Map.size).toEqual(1);
     expect(rev0Map.get(url)).toEqual(rev0GitBlobID);
@@ -87,7 +87,7 @@ describe('Machine', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
     const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out`;
 
-    // ensure that test dependencies.json file does not exist
+    // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesUseFile)) {
       fs.unlinkSync(dependenciesUseFile);
     }
@@ -121,7 +121,7 @@ describe('Machine', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
     const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out`;
 
-    // ensure that test dependencies.json file does not exist
+    // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesSaveFile)) {
       fs.unlinkSync(dependenciesSaveFile);
     }
@@ -129,7 +129,7 @@ describe('Machine', () => {
     machine.dependenciesSaveFile = dependenciesSaveFile;
     expect(eol.lf(machine.execute(`@include "${url}"`))).toBe(rev1Content);
 
-    // Check dependencies.json file content again
+    // Check dependencies JSON file content again
     const rev0Map = new Map(JSON.parse(fs.readFileSync(dependenciesSaveFile)));
     expect(rev0Map.size).toEqual(1);
 
