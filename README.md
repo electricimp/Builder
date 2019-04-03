@@ -44,8 +44,6 @@
 - [Testing](#testing)
 - [License](#license)
 
-[![Build Status](https://travis-ci.org/electricimp/Builder.svg?branch=master)](https://travis-ci.org/electricimp/Builder)
-<br/>
 
 _Builder_ combines a preprocessor with an expression language and advanced imports.
 
