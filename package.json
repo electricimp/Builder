@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -26,6 +26,7 @@
     "glob": "^7.1.2",
     "jsep": "^0.3.1",
     "request": "^2.71.0",
+    "md5": "^2.2.1",
     "minimatch": "^3.0.4",
     "fs-extra": "^3.0.1",
     "xxhashjs": "^0.2.1",
@@ -33,7 +34,6 @@
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
-    "jasmine-diff-matchers": "^2.0.0",
     "jasmine-expect": "^2.0.2",
     "log": "^1.4.0",
     "eol": "^0.9.1",

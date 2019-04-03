@@ -160,7 +160,7 @@ class GithubReader extends AbstractReader {
     ;
 
     // @see http://mikedeboer.github.io/node-github/#repos.prototype.getContent
-    github.repos.getContent(this.parseUrl(source), (err, res) => {
+    github.repos.getContents(this.parseUrl(source), (err, res) => {
       if (err) {
 
         try {
