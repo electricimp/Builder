@@ -595,7 +595,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
   <pre>
   npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list <i>&lt;path_to_file&gt;</i>] [--use-dependencies <i>&lt;path_to_file&gt;</i>] [--use-directives <i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i>
+  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list <i>&lt;path_to_file&gt;</i>] [--save-dependencies <i>&lt;path_to_file&gt;</i>] [--save-directives <i>&lt;path_to_file&gt;</i>] [--suppress-duplicate-includes-warning] [--use-dependencies <i>&lt;path_to_file&gt;</i>] [--use-directives <i>&lt;path_to_file&gt;</i>] <i>&lt;input_file&gt;</i>
   </pre>
 
   where:
@@ -607,7 +607,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
   * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
   * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
   * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
-  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries
+  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries.
   * <code>--save-dependencies <i>&lt;path_to_file&gt;</i></code> &mdash; path to JSON file, where github URL's and SHA-hashes (git blob IDs) will be saved.
   * <code>--save-directives <i>&lt;path_to_file&gt;</i></code> &mdash; path to JSON file, where Builder variable definitions will be saved.
   * <code>--suppress-duplicate-includes-warning</code> &mdash; do not show a warning if a source file with the exact content was included in the multiple times from different places, that results in code duplication.

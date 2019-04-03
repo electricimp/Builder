@@ -145,7 +145,7 @@ class GithubReader extends AbstractReader {
     };
   }
 
-  static processError(err) {
+  static processError(err, source) {
     try {
       err = JSON.parse(err.message);
 
@@ -210,7 +210,7 @@ class GithubReader extends AbstractReader {
           };
           process.stdout.write(JSON.stringify(ret));
         })
-        .catch(err => GithubReader.processError(err));
+        .catch(err => GithubReader.processError(err, source));
 
       return;
     }
@@ -224,7 +224,7 @@ class GithubReader extends AbstractReader {
         };
         process.stdout.write(JSON.stringify(ret));
       })
-      .catch(err => GithubReader.processError(err));
+      .catch(err => GithubReader.processError(err, source));
   }
 
   /**
