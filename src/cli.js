@@ -70,7 +70,7 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
-\t\u001b[34m--respect-local-includes\u001b[39m - checkout from github localy included sources from the github repositories
+\t\u001b[34m--respect-local-includes\u001b[39m - checkout local includes in the github sources from github instead of local
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
     `.trim());
 }

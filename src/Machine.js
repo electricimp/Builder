@@ -270,20 +270,22 @@ class Machine {
     }
   }
 
-  _fixLocalIncludes(includePath, context) {
+  _respectLocalIncludes(includePath, context) {
     if (!this.respectLocalIncludes) {
       return includePath;
     }
 
+    // check if file is included from github source
     if (!context.__PATH__.match(/github(?:\.com)?(?:\/|\:)([a-z0-9\-\._]+)*/)) {
       return includePath;
     }
 
+    // check if the file is local include in the github source
     if (!(this._getReader(includePath) === this.readers.file)) {
       return includePath;
     }
 
-    return context.__PATH__ + '/' + path.basename(includePath);
+    return this._formatPath(context.__PATH__, includePath);
   }
 
   /**
@@ -309,8 +311,8 @@ class Machine {
       return;
     }
 
-    // Fix local includes in the github sources
-    includePath = this._fixLocalIncludes(includePath, context);
+    // checkout local includes in the github sources from github 
+    includePath = this._respectLocalIncludes(includePath, context);
 
     const reader = this._getReader(includePath);
     this.logger.info(`Including source "${includePath}"`);
