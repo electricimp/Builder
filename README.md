@@ -616,7 +616,9 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 ## Reproducible Artifacts Built From GitHub
 
-It is possible to 'freeze' the build configuration using --save/use-dependencies, --save/use-directives CLI options. The first one stores the Bulder variable definitions passed by <code>-D</code> CLI option to the JSON file, provided by <code>--save-directives <i>&lt;path_to_file&gt;</i></code> option. The second one stores the github URL's mapped to git blob IDs in the JSON file, provided by <code>--save-dependencies <i>&lt;path_to_file&gt;</i></code> option. Pass the saved files to appropriate <code>--use-* <i>&lt;path_to_file&gt;</i></code> option to achive 'frozen' build state.
+It is possible to 'freeze' the build configuration using --save/use-dependencies, --save/use-directives CLI options. The first one stores the github URL's mapped to git blob IDs in the JSON file, provided by <code>--save-dependencies <i>&lt;path_to_file&gt;</i></code> option. The second one stores the Builder variable definitions passed by <code>-D</code> CLI option to the JSON file, provided by <code>--save-directives <i>&lt;path_to_file&gt;</i></code> option. Pass the saved files to appropriate <code>--use-* <i>&lt;path_to_file&gt;</i></code> option to achive 'frozen' build state.
+
+**Note** If the --use/--save-dependencies options will be used, the --cache option will be ignored. 
 
 **Note** It is possible to get the SHA-hashes (git blob IDs) using next git command in the local repository:
 ```js

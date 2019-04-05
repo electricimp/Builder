@@ -90,10 +90,10 @@ class Machine {
     const ast = this.parser.parse(source);
 
     // read dependencies
-    this._getDependencies();
+    this._loadDependencies();
 
     // read directives, merge it with actual context
-    context = this._getDirectives(context);
+    context = this._loadAndMergeDirectives(context);
 
     // execute
     context = merge(
@@ -671,7 +671,7 @@ class Machine {
    * @return
    * @private
    */
-  _getDependencies() {
+  _loadDependencies() {
     if (!this.dependenciesUseFile) {
       if (this.dependenciesSaveFile) {
         this.dependencies = new Map();
@@ -692,14 +692,17 @@ class Machine {
   }
 
   /**
-   * Read directives JSON file content
+   * Read directives JSON file content and merge it with actual context
    * @param {*} context
    * @return {*}
    * @private
    */
-  _getDirectives(context) {
+  _loadAndMergeDirectives(context) {
     if (!this.directivesUseFile) {
-      this.directives = context;
+      if (this.directivesSaveFile) {
+        this.directives = { ...context };
+      }
+
       return context;
     }
 
@@ -708,15 +711,12 @@ class Machine {
     }
 
     try {
-      this.directives = {
-        ...JSON.parse(fs.readFileSync(this.directivesUseFile).toString()),
-        ...context,
-      }
+      this.directives = merge(JSON.parse(fs.readFileSync(this.directivesUseFile).toString()), context);
     } catch(err) {
       throw new Error(`The directives JSON file '${this.directivesUseFile}' cannot be used: ${err.message}`);
     }
 
-    return this.directives;
+    return { ...this.directives};
   }
 
   /**
