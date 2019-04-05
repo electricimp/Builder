@@ -79,6 +79,20 @@ where:
 }
 
 /**
+ * Get CLI option value
+ * @param {String} value CLI value
+ * @param {String} defaultValue, will be uses if CLI the option value was not provided
+ * @return {String}
+ */
+function getOption(args, defaultValue) {
+  if (args.length == 1 || args[0][0] === '-' && args[0][1] === '-') {
+    return defaultValue;
+  }
+
+  return args.shift();
+}
+
+/**
  * Read args
  * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}, cache: boolean, clean: boolean, excludeFile: string}
  */
@@ -130,27 +144,17 @@ function readArgs() {
       }
       res.libs.push(args.shift());
     } else if ('--save-dependencies' === argument) {
-      if (!args.length) {
-        throw Error('Expected argument value after ' + argument);
-      }
-      res.dependenciesSaveFile = args.shift();
+      const date = new Date();
+      res.dependenciesSaveFile = getOption(args, `dependencies_${date.toISOString()}.json`);
     } else if ('--save-directives' === argument) {
-      if (!args.length) {
-        throw Error('Expected argument value after ' + argument);
-      }
-      res.directivesSaveFile = args.shift();
+      const date = new Date();
+      res.directivesSaveFile = getOption(args, `directives_${date.toISOString()}.json`);
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
     } else if ('--use-dependencies' === argument) {
-      if (!args.length) {
-        throw Error('Expected argument value after ' + argument);
-      }
-      res.dependenciesUseFile = args.shift();
+      res.dependenciesUseFile = getOption(args, 'dependencies.json');
     } else if ('--use-directives' === argument) {
-      if (!args.length) {
-        throw Error('Expected argument value after ' + argument);
-      }
-      res.directivesUseFile = args.shift();
+      res.directivesUseFile = getOption(args, 'directives.json');
     } else {
       res.input = argument;
     }
