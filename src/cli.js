@@ -70,13 +70,16 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
-\t\u001b[34m--save-dependencies <path_to_file>\u001b[39m - save the SHA-hashes (git blob IDs) to JSON file
-\t\u001b[34m--save-directives <path_to_file>\u001b[39m - save the Builder varialbe definitions to JSON file
+\t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - save the SHA-hashes (git blob IDs) to JSON file
+\t\u001b[34m--save-directives [path_to_file]\u001b[39m - save the Builder varialbe definitions to JSON file
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
-\t\u001b[34m--use-dependencies <path_to_file>\u001b[39m - read the SHA-hashes (git blob IDs) from JSON file
-\t\u001b[34m--use-directives <path_to_file>\u001b[39m - read the Builder varialbe definitions from JSON file
+\t\u001b[34m--use-dependencies [path_to_file]\u001b[39m - read the SHA-hashes (git blob IDs) from JSON file
+\t\u001b[34m--use-directives [path_to_file]\u001b[39m - read the Builder varialbe definitions from JSON file
     `.trim());
 }
+
+const dependenciesDefaultFileName = 'dependences.json';
+const directivesDefaultFileName = 'directives.json';
 
 /**
  * Get CLI option value
@@ -85,7 +88,7 @@ where:
  * @return {String}
  */
 function getOption(args, defaultValue) {
-  if (args.length == 1 || args[0][0] === '-' && args[0][1] === '-') {
+  if (args.length == 1 || args[0][0] === '-') {
     return defaultValue;
   }
 
@@ -144,17 +147,27 @@ function readArgs() {
       }
       res.libs.push(args.shift());
     } else if ('--save-dependencies' === argument) {
-      const date = new Date();
-      res.dependenciesSaveFile = getOption(args, `dependencies_${date.toISOString()}.json`);
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.dependenciesSaveFile = getOption(args, dependenciesDefaultFileName);
     } else if ('--save-directives' === argument) {
-      const date = new Date();
-      res.directivesSaveFile = getOption(args, `directives_${date.toISOString()}.json`);
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.directivesSaveFile = getOption(args, directivesDefaultFileName);
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
     } else if ('--use-dependencies' === argument) {
-      res.dependenciesUseFile = getOption(args, 'dependencies.json');
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.dependenciesUseFile = getOption(args, dependenciesDefaultFileName);
     } else if ('--use-directives' === argument) {
-      res.directivesUseFile = getOption(args, 'directives.json');
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.directivesUseFile = getOption(args, directivesDefaultFileName);
     } else {
       res.input = argument;
     }
