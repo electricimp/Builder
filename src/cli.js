@@ -78,7 +78,7 @@ where:
     `.trim());
 }
 
-const dependenciesDefaultFileName = 'dependences.json';
+const dependenciesDefaultFileName = 'dependencies.json';
 const directivesDefaultFileName = 'directives.json';
 
 /**
