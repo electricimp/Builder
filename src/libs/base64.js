@@ -25,5 +25,5 @@
 'use strict';
 
 module.exports = {
-  base64: input => Buffer(String(input)).toString('base64')
+  base64: input => Buffer.from(String(input)).toString('base64')
 }

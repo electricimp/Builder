@@ -2,7 +2,7 @@
 
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -70,8 +70,29 @@ where:
 \t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
 \t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
+\t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - save the SHA-hashes (git blob IDs) to JSON file
+\t\u001b[34m--save-directives [path_to_file]\u001b[39m - save the Builder varialbe definitions to JSON file
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
+\t\u001b[34m--use-dependencies [path_to_file]\u001b[39m - read the SHA-hashes (git blob IDs) from JSON file
+\t\u001b[34m--use-directives [path_to_file]\u001b[39m - read the Builder varialbe definitions from JSON file
     `.trim());
+}
+
+const dependenciesDefaultFileName = 'dependencies.json';
+const directivesDefaultFileName = 'directives.json';
+
+/**
+ * Get CLI option value
+ * @param {String} value CLI value
+ * @param {String} defaultValue, will be uses if CLI the option value was not provided
+ * @return {String}
+ */
+function getOption(args, defaultValue) {
+  if (args.length == 1 || args[0][0] === '-') {
+    return defaultValue;
+  }
+
+  return args.shift();
 }
 
 /**
@@ -125,8 +146,28 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
+    } else if ('--save-dependencies' === argument) {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.dependenciesSaveFile = getOption(args, dependenciesDefaultFileName);
+    } else if ('--save-directives' === argument) {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.directivesSaveFile = getOption(args, directivesDefaultFileName);
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
+    } else if ('--use-dependencies' === argument) {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.dependenciesUseFile = getOption(args, dependenciesDefaultFileName);
+    } else if ('--use-directives' === argument) {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.directivesUseFile = getOption(args, directivesDefaultFileName);
     } else {
       res.input = argument;
     }
@@ -144,7 +185,7 @@ try {
     process.exit(1);
   }
 
-// create builder
+  // create builder
   const builder = new Builder({ libs: args.libs });
   builder.machine.generateLineControlStatements = args.lineControl;
   builder.machine.useCache = args.cache;
@@ -163,6 +204,12 @@ try {
   builder.machine.excludeList = args.excludeFile;
   // set supress dupicate includes warning
   builder.machine.suppressDupWarning = args.suppressDupWarning;
+  // use dependencies
+  builder.machine.dependenciesSaveFile = args.dependenciesSaveFile;
+  builder.machine.dependenciesUseFile = args.dependenciesUseFile;
+  // use directives
+  builder.machine.directivesSaveFile = args.directivesSaveFile;
+  builder.machine.directivesUseFile = args.directivesUseFile;
 
   // go
   const res = builder.machine.execute(`@include "${args.input.replace(/\"/g, `'`)}"`, args.defines);

@@ -6,15 +6,12 @@
 
 require('jasmine-expect');
 const init = require('./init')('main');
-const jasmineDiffMatchers = require('jasmine-diff-matchers');
 
 describe('Machine', () => {
   let machine;
 
   beforeEach(() => {
     machine = init.createMachine();
-    // show string diffs
-    jasmine.addMatchers(jasmineDiffMatchers.diffChars);
   });
 
   it('should handle @while corectly #1', () => {
@@ -29,7 +26,7 @@ a == @{a}
 `
     );
 
-    expect(res).diffChars(
+    expect(res).toEqual(
       `
 loop.index == 0
 a == 3
@@ -52,7 +49,7 @@ loop.iteration == @{loop.iteration}
 `
     );
 
-    expect(res).diffChars(
+    expect(res).toEqual(
       `
 loop.index == 0
 loop.iteration == 1
@@ -78,7 +75,7 @@ loop.iteration == 3
 `
     );
 
-    expect(res).diffChars(
+    expect(res).toEqual(
 `
     loop.iteration == 1
     loop.iteration == 1

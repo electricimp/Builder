@@ -22,8 +22,9 @@
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
     "clone": "^1.0.2",
-    "@octokit/rest": "^15.2.6",
+    "@octokit/rest": "^16.20.0",
     "glob": "^7.1.2",
+    "https-proxy-agent": "^2.2.1",
     "jsep": "^0.3.1",
     "request": "^2.71.0",
     "md5": "^2.2.1",
@@ -34,7 +35,6 @@
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
-    "jasmine-diff-matchers": "^2.0.0",
     "jasmine-expect": "^2.0.2",
     "log": "^1.4.0",
     "eol": "^0.9.1",
