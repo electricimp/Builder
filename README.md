@@ -1,5 +1,9 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
+_Builder_ combines a preprocessor with an expression language and advanced imports.
+
+**Current version: 2.6.0** TODO - actual version
+
 - [Builder Syntax](#builder-syntax)
     - [Directives](#directives)
         - [@set](#set)
@@ -36,7 +40,9 @@
     - [Comments](#comments)
 - [Builder Usage](#builder-usage)
     - [Running Builder](#running-builder)
-    - [Reproducible Artifacts Built From GitHub](#reproducible-artifacts-built-from-github)
+        - [As A Library](#as-a-library)
+        - [As A Command Line Tool](#as-a-command-line-tool)
+    - [Reproducible Artifacts](#reproducible-artifacts)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
     - [Remote Includes](#remote-includes)
@@ -44,11 +50,6 @@
         - [Proxy Access To Remote Includes](#proxy-access-to-remote-includes)
 - [Testing](#testing)
 - [License](#license)
-
-
-_Builder_ combines a preprocessor with an expression language and advanced imports.
-
-#### Current version: 2.6.0
 
 # Builder Syntax #
 
@@ -574,7 +575,13 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 **Note** Builder requires Node.js 4.0 and above.
 
-- It can be installed and used as an _npm_ library:
+Builder can be installed and used by two ways - as an _npm_ library or as an _npm_ command line tool.
+
+### As A Library ###
+
+TODO - is below still actual and really enough to explain this option of usage?
+
+Install Builder 
 
   ```sh
   npm i --save Builder
@@ -596,41 +603,83 @@ Lines starting with `@` followed by space or a line break are treated as comment
   const output = builder.machine.execute(`@include "${inputFile}"`);
   ```
 
-- Or as a CLI:
+### As A Command Line Tool ###
 
-  _Builder_ provides the `pleasebuild` command when installed globally. For example:
+Install Builder
 
-  <pre>
-  npm i -g Builder
-  pleasebuild [-D<i>&lt;variable&gt;</i> <i>&lt;value&gt;</i>...] [--github-user <i>&lt;username&gt;</i> --github-token <i>&lt;token&gt;</i>] [-l] [--cache] [--clear-cache] [--cache-exclude-list <i>&lt;path_to_file&gt;</i>] [--save-dependencies [path_to_file]] [--save-directives [path_to_file]] [--suppress-duplicate-includes-warning] [--use-dependencies [path_to_file]] [--use-directives [path_to_file]] <i>&lt;input_file&gt;</i>
-  </pre>
+```sh
+npm install -g Builder
+```
 
-  where:
+then use the `pleasebuild` command which is provided by Builder
 
-  * `-l` &mdash; generate line control statements.
-  * <code>-D <i>&lt;variable&gt;</i> <i>&lt;value&gt;</i></code> &mdash; define a variable.
-  * <code>--github-user</code> &mdash; GitHub username.
-  * <code>--github-token</code> &mdash; GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended).
-  * <code>--cache</code> or <code>-c</code> &mdash; enable cache for remote files.
-  * <code>--clear-cache</code> &mdash; remove cache before builder starts running.
-  * <code>--cache-exclude-list <i>&lt;path_to_file&gt;</i></code> &mdash; path to exclude list file.
-  * <code>--lib(s) <i>&lt;path_to_file|path_to_directory|glob&gt;</i></code> &mdash; path to JavaScript file to include as libraries.
-  * <code>--save-dependencies [path_to_file]</code> &mdash; path to JSON file, where github URL's and SHA-hashes (git blob IDs) will be saved.
-  * <code>--save-directives [path_to_file]</code> &mdash; path to JSON file, where Builder variable definitions will be saved.
-  * <code>--suppress-duplicate-includes-warning</code> &mdash; do not show a warning if a source file with the exact content was included in the multiple times from different places, that results in code duplication.
-  * <code>--use-dependencies [path_to_file]</code> &mdash; path to JSON file with github URL's and SHA-hashes (git blob IDs).
-  * <code>--use-directives [path_to_file]</code> &mdash; path to JSON file with Builder variable definitions, it will be merged with defines passed by <code>-D</code> option.
+```
+pleasebuild [-l] [-D<variable> <value>]
+    [--github-user <username> --github-token <token>]
+    [--lib <path_to_file|path_to_directory|glob>] [--suppress-duplicate-includes-warning]
+    [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
+    [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
+    [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
+    <input_file>
+```
 
-## Reproducible Artifacts Built From GitHub ##
+where:
 
-It is possible to 'freeze' the build configuration using --save/use-dependencies, --save/use-directives CLI options. The first one stores the github URL's mapped to git blob IDs in the JSON file, provided by <code>--save-dependencies <i>&lt;path_to_file&gt;</i></code> option. The second one stores the Builder variable definitions passed by <code>-D</code> CLI option to the JSON file, provided by <code>--save-directives <i>&lt;path_to_file&gt;</i></code> option. Pass the saved files to appropriate <code>--use-* <i>&lt;path_to_file&gt;</i></code> option to achive 'frozen' build state.
+`<input_file>` &mdash; is the path to source file which should be preprocessed
 
-**Note** If the --use/--save-dependencies options will be used, the --cache option will be ignored. 
+and the options are:
 
-**Note** It is possible to get the SHA-hashes (git blob IDs) using next git command in the local repository:
+TODO - thoroughly review the whole table
+
+| Option | Alias | Mandatory? | Value Required? | Description |
+| --- | --- | --- | --- | --- |
+| TODO - is there a full option name? | -l | No | No | Generates line control statements. (TODO - is it clear enough for a user?) |
+| -D&lt;variable&gt; | | No | Yes (TODO - yes or no?) | Defines a variable. See [Variables](#variables) section. May be specified several times to define different variables. |
+| --github-user | | No | Yes | GitHub username. See [Files From GitHub](#files-from-github) section. |
+| --github-token | | No | Yes | GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if `--github-user` option is specified. See [Files From GitHub](#files-from-github) section. |
+| --lib | | No | Yes | Path to JavaScript file to include as library. See [Including JavaScript Libraries](#including-javascript-libraries) section. May be specified several times to include different libraries. (TODO - explain here and/or in that section what <path_to_directory> and <glob> means) |
+| --suppress-duplicate-includes-warning | | No | No | Does not show a warning if a source file with the exact content was included multiple times from different places, that results in code duplication. |
+| --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if any of the options related to the [Reproducible Artifacts](#reproducible-artifacts) feature is specified. |
+| --clear-cache | | No | No | Clears cache before Builder starts running. See [Caching Remote Includes](#caching-remote-includes) section. |
+| --cache-exclude-list | | No | Yes | Path to the file that lists the resources which should be excluded from caching. See [Caching Remote Includes](#caching-remote-includes) section. |
+| --save-dependencies | | No | No | Path to the JSON file where github URLs and SHA-hashes (git blob IDs) should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
+| --use-dependencies | | No | No | Path to the JSON file with github URLs and SHA-hashes (git blob IDs) which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
+| --save-directives | | No | No | Path to the JSON file where Builder variable definitions should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
+| --use-directives | | No | No | Path to the JSON file with Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
+| 
+  
+## Reproducible Artifacts ##
+
+TODO - re-review
+
+It is possible to save the build configuration used for preprocessing a source file &mdash; the concrete used versions of GitHub resources/libraries and the used Builder variable definitions &mdash; and preprocess the source file again later with the saved configuration. 
+
+`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, correspondingly, the concrete versions of GitHub resources/libraries &mdash; GitHub URLs mapped to git blob IDs (SHA-hashes). (TODO - write fully correct and understandable definition - here and in the table with options)
+The file is in JSON format. If file is not specified, TODO file in the local directory is assumed.
+
+**Note** It is possible to obtain SHA-hash (git blob ID) of a GitHub resource/file using the following git command:
 ```js
 git hash-object <path_to_file>
 ```
+
+`--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to save and to reuse, correspondingly, Builder variable definitions.
+The file is in JSON format. If file is not specified, TODO file in the local directory is assumed.
+When `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
+
+The options are processed the following way:
+  - if the only `--save-dependencies [<path_to_file>]` is specified, TODO
+  - if the only `--use-dependencies [<path_to_file>]` is specified, TODO
+  - if the both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, TODO
+  
+`--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are processed the similar way.
+
+**Note** If any of the options to save/use dependendencies/directives is specified, the `--cache` option is ignored.
+
+#### Examples Of Files ####
+
+TODO - example of dependency file
+
+TODO - example of directive file
 
 ## Including JavaScript Libraries ##
 
@@ -727,14 +776,6 @@ Two consecutive asterisks `**` in patterns matched against full pathname may hav
 
 * Other consecutive asterisks are considered invalid.
 
-#### Command Line Options ####
-
-| Option&nbsp;Name | Short&nbsp;Version | Description |
-| --- | --- | --- |
-| `--cache` | `-c` | Turns on file cache for all files included from remote resources | 
-| `--cache-exclude-list <path_to_file>` |  | Excludes the named file(s) from the cache |
-| `--clear-cache` |  | Clears the cache before Builder starts |
-
 #### Example ####
 
 ```sh
@@ -757,6 +798,8 @@ For example, to operate through a proxy running at IP address 192.168.10.2 on po
 **Note** Files retrieved from GitHub (`github:` protocol) are always accessed using HTTPS. So when specifying a proxy in this case, make sure you use set the `HTTPS_PROXY` environment variable.
 
 # Testing #
+
+TODO - don't we want to explain something here?
 
 ```
 SPEC_LOGLEVEL=<debug|info|warning|error> \
