@@ -629,12 +629,10 @@ where:
 
 and the options are:
 
-TODO - thoroughly review the whole table
-
 | Option | Alias | Mandatory? | Value Required? | Description |
 | --- | --- | --- | --- | --- |
-| TODO - is there a full option name? | -l | No | No | Generates line control statements. (TODO - is it clear enough for a user?) |
-| -D&lt;variable&gt; | | No | Yes (TODO - yes or no?) | Defines a variable. See [Variables](#variables) section. May be specified several times to define different variables. |
+| -l |  | No | No | Generates line control statements. For more detailed explanation please read [this](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html). |
+| -D&lt;variable&gt; | | No | Yes | Defines a variable. See [Variables](#variables) section. May be specified several times to define different variables. |
 | --github-user | | No | Yes | GitHub username. See [Files From GitHub](#files-from-github) section. |
 | --github-token | | No | Yes | GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if `--github-user` option is specified. See [Files From GitHub](#files-from-github) section. |
 | --lib | | No | Yes | Path to JavaScript file to include as library. See [Including JavaScript Libraries](#including-javascript-libraries) section. May be specified several times to include different libraries. (TODO - explain here and/or in that section what <path_to_directory> and <glob> means) |
@@ -642,20 +640,18 @@ TODO - thoroughly review the whole table
 | --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if any of the options related to the [Reproducible Artifacts](#reproducible-artifacts) feature is specified. |
 | --clear-cache | | No | No | Clears cache before Builder starts running. See [Caching Remote Includes](#caching-remote-includes) section. |
 | --cache-exclude-list | | No | Yes | Path to the file that lists the resources which should be excluded from caching. See [Caching Remote Includes](#caching-remote-includes) section. |
-| --save-dependencies | | No | No | Path to the JSON file where github URLs and SHA-hashes (git blob IDs) should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
-| --use-dependencies | | No | No | Path to the JSON file with github URLs and SHA-hashes (git blob IDs) which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
-| --save-directives | | No | No | Path to the JSON file where Builder variable definitions should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
-| --use-directives | | No | No | Path to the JSON file with Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, TODO file in the local directory is assumed. |
+| --save-dependencies | | No | No | Path to the JSON file where github URLs and SHA-hashes (git blob IDs) should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
+| --use-dependencies | | No | No | Path to the JSON file with github URLs and SHA-hashes (git blob IDs) which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
+| --save-directives | | No | No | Path to the JSON file where Builder variable definitions should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed.|
+| --use-directives | | No | No | Path to the JSON file with Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed. |
 | 
   
 ## Reproducible Artifacts ##
 
-TODO - re-review
-
 It is possible to save the build configuration used for preprocessing a source file &mdash; the concrete used versions of GitHub resources/libraries and the used Builder variable definitions &mdash; and preprocess the source file again later with the saved configuration. 
 
-`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, correspondingly, the concrete versions of GitHub resources/libraries &mdash; GitHub URLs mapped to git blob IDs (SHA-hashes). (TODO - write fully correct and understandable definition - here and in the table with options)
-The file is in JSON format. If file is not specified, TODO file in the local directory is assumed.
+`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, correspondingly, the concrete versions of GitHub resources/libraries &mdash; GitHub URLs mapped to git blob IDs (SHA-hashes). For more information see [here](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [here](https://developer.github.com/v3/git/blobs/).
+The file is in JSON format. If file is not specified, `dependencies.json` file in the local directory is assumed.
 
 **Note** It is possible to obtain SHA-hash (git blob ID) of a GitHub resource/file using the following git command:
 ```js
@@ -663,13 +659,13 @@ git hash-object <path_to_file>
 ```
 
 `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to save and to reuse, correspondingly, Builder variable definitions.
-The file is in JSON format. If file is not specified, TODO file in the local directory is assumed.
+The file is in JSON format. If file is not specified, the `directives.json` file in the local directory is assumed.
 When `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
 
 The options are processed the following way:
-  - if the only `--save-dependencies [<path_to_file>]` is specified, TODO
-  - if the only `--use-dependencies [<path_to_file>]` is specified, TODO
-  - if the both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, TODO
+  - if the only `--save-dependencies [<path_to_file>]` is specified, the git blob IDs for all sources uploaded from github will be saved to JSON file.
+  - if the only `--use-dependencies [<path_to_file>]` is specified, the every source from github will be uploaded using it's git blob ID read from the passed JSON file.
+  - if the both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, the git blob IDs will be read from input file, passed to `--use-dependencies` option and saved to the output file, passed to `--save-dependencies` option. If any github sources, which are not included in the input file will be found, it will be added to output file.
   
 `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are processed the similar way.
 
@@ -677,9 +673,27 @@ The options are processed the following way:
 
 #### Examples Of Files ####
 
-TODO - example of dependency file
+Typical `dependencies.json` file content could looks like: 
+```json
+[
+  [
+    "github:nobitlost/Builder/.gitignore",
+    "2ff017dc92e826ad184f9cdeadd1a2446f8d6032"
+  ],
+  [
+    "github:FedorUporov/Builder/LICENSE",
+    "a01b64f9ce764f226f52c6b9364396d4a8bd550b"
+  ]
+]
+```
 
-TODO - example of directive file
+Typical `directives.json` file content could looks like:
+```json
+{
+  "Variable0": "value0",
+  "Variable1": "value1"
+}
+```
 
 ## Including JavaScript Libraries ##
 
