@@ -2,7 +2,7 @@
 
 _Builder_ combines a preprocessor with an expression language and advanced imports.
 
-**Current version: 2.6.0** TODO - actual version
+**Current version: 2.7.0**
 
 - [Builder Syntax](#builder-syntax)
     - [Directives](#directives)
@@ -40,8 +40,8 @@ _Builder_ combines a preprocessor with an expression language and advanced impor
     - [Comments](#comments)
 - [Builder Usage](#builder-usage)
     - [Running Builder](#running-builder)
-        - [As A Library](#as-a-library)
         - [As A Command Line Tool](#as-a-command-line-tool)
+        - [As A Library](#as-a-library)
     - [Reproducible Artifacts](#reproducible-artifacts)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
@@ -575,33 +575,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 **Note** Builder requires Node.js 4.0 and above.
 
-Builder can be installed and used by two ways - as an _npm_ library or as an _npm_ command line tool.
-
-### As A Library ###
-
-TODO - is below still actual and really enough to explain this option of usage?
-
-Install Builder 
-
-  ```sh
-  npm i --save Builder
-  ```
-
-  then
-
-  ```js
-  const builder = require('Builder');
-
-  // Provide GitHub credentials (optional)
-  builder.machine.readers.github.username = "<username>";
-  builder.machine.readers.github.token = "<personal_access_token>";
-  
-  // Set up cache params (optional)
-  builder.machine.useCache = <boolean>;
-  builder.machine.excludeList = "<path to exclude file>" // or "" for default name
-  builder.machine.clearCache() // delete cache folder
-  const output = builder.machine.execute(`@include "${inputFile}"`);
-  ```
+Builder can be installed and used by two ways - as an _npm_ command line tool or as an _npm_ library.
 
 ### As A Command Line Tool ###
 
@@ -616,7 +590,7 @@ then use the `pleasebuild` command which is provided by Builder
 ```
 pleasebuild [-l] [-D<variable> <value>]
     [--github-user <username> --github-token <token>]
-    [--lib <path_to_file|path_to_directory|glob>] [--suppress-duplicate-includes-warning]
+    [--lib <path_to_file>] [--suppress-duplicate-includes-warning]
     [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
     [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
     [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
@@ -629,65 +603,109 @@ where:
 
 and the options are:
 
-| Option | Alias | Mandatory? | Value Required? | Description |
+| Option | Synonym | Mandatory? | Value Required? | Description |
 | --- | --- | --- | --- | --- |
 | -l |  | No | No | Generates line control statements. For more detailed explanation please read [this](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html). |
 | -D&lt;variable&gt; | | No | Yes | Defines a variable. See [Variables](#variables) section. May be specified several times to define different variables. |
 | --github-user | | No | Yes | GitHub username. See [Files From GitHub](#files-from-github) section. |
 | --github-token | | No | Yes | GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if `--github-user` option is specified. See [Files From GitHub](#files-from-github) section. |
-| --lib | | No | Yes | Path to JavaScript file to include as library. See [Including JavaScript Libraries](#including-javascript-libraries) section. May be specified several times to include different libraries. (TODO - explain here and/or in that section what <path_to_directory> and <glob> means) |
-| --suppress-duplicate-includes-warning | | No | No | Does not show a warning if a source file with the exact content was included multiple times from different places, that results in code duplication. |
+| --lib | --libs | No | Yes | Includes the specified JavaScript file(s) as a library. See [Including JavaScript Libraries](#including-javascript-libraries) section. May be specified several times to include different libraries. The provided value may specify a concrete file or a directory (in this case all files from that directory are included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (in this case all matched files are included). |
+| --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Does not show a warning if a source file with the exact content was included multiple times from different places, that results in code duplication. |
 | --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if any of the options related to the [Reproducible Artifacts](#reproducible-artifacts) feature is specified. |
 | --clear-cache | | No | No | Clears cache before Builder starts running. See [Caching Remote Includes](#caching-remote-includes) section. |
 | --cache-exclude-list | | No | Yes | Path to the file that lists the resources which should be excluded from caching. See [Caching Remote Includes](#caching-remote-includes) section. |
-| --save-dependencies | | No | No | Path to the JSON file where github URLs and SHA-hashes (git blob IDs) should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
-| --use-dependencies | | No | No | Path to the JSON file with github URLs and SHA-hashes (git blob IDs) which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
-| --save-directives | | No | No | Path to the JSON file where Builder variable definitions should be saved. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed.|
-| --use-directives | | No | No | Path to the JSON file with Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed. |
-| 
-  
-## Reproducible Artifacts ##
+| --save-dependencies | | No | No | Saves references to the used versions of GitHub files in the specified JSON file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
+| --use-dependencies | | No | No | Reads from the specified JSON file references to the versions of GitHub files which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
+| --save-directives | | No | No | Saves Builder variable definitions in the specified JSON file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed.|
+| --use-directives | | No | No | Reads from the specified JSON file Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed. |
 
-It is possible to save the build configuration used for preprocessing a source file &mdash; the concrete used versions of GitHub resources/libraries and the used Builder variable definitions &mdash; and preprocess the source file again later with the saved configuration. 
+### As A Library ###
 
-`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, correspondingly, the concrete versions of GitHub resources/libraries &mdash; GitHub URLs mapped to git blob IDs (SHA-hashes). For more information see [here](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [here](https://developer.github.com/v3/git/blobs/).
-The file is in JSON format. If file is not specified, `dependencies.json` file in the local directory is assumed.
+Install Builder 
 
-**Note** It is possible to obtain SHA-hash (git blob ID) of a GitHub resource/file using the following git command:
+  ```sh
+  npm i --save Builder
+  ```
+
+then instantiate, setup and execute Builder from the source code, for example
+
 ```js
-git hash-object <path_to_file>
+const Builder = require('Builder');
+const builder = new Builder();
+
+// Specify whether you need line control statements. See the "-l" CLI option
+builder.machine.generateLineControlStatements = <true|false>;
+
+// Cache all files included from remote sources. See the "--cache" CLI option
+builder.machine.useCache = <true|false>;
+
+// Set GitHub credentials. See the "--github-user" and "--github-token" CLI options
+builder.machine.readers.github.username = "<USERNAME>";
+builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
+
+// Path to the file that lists the resources which should be excluded from caching.
+// See the "--cache-exclude-list" CLI option
+builder.machine.excludeList = "<PATH_TO_FILE>";
+
+// Suppress warning about duplicate includes.
+// See the "--suppress-duplicate-includes-warning" CLI option
+builder.machine.suppressDupWarning = <true|false>;
+
+// See the "--save-dependencies" CLI option
+builder.machine.dependenciesSaveFile = <false|"PATH_TO_FILE">;
+// See the "--use-dependencies" CLI option
+builder.machine.dependenciesUseFile = <false|"PATH_TO_FILE">;
+
+// See the "--save-directives" CLI option
+builder.machine.directivesSaveFile = <false|"PATH_TO_FILE">;
+// See the "--use-directives" CLI option
+builder.machine.directivesUseFile = <false|"PATH_TO_FILE">;
+
+const inputFile = "PATH_TO_YOUR_INPUT_FILE";
+
+const result = builder.machine.execute(`@include "${inputFile}"`);
+console.log(result);
 ```
 
-`--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to save and to reuse, correspondingly, Builder variable definitions.
-The file is in JSON format. If file is not specified, the `directives.json` file in the local directory is assumed.
-When `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
+To understand the details of Builder setup, review [this source code](./src/cli.js).
 
-The options are processed the following way:
-  - if the only `--save-dependencies [<path_to_file>]` is specified, the git blob IDs for all sources uploaded from github will be saved to JSON file.
-  - if the only `--use-dependencies [<path_to_file>]` is specified, the every source from github will be uploaded using it's git blob ID read from the passed JSON file.
-  - if the both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, the git blob IDs will be read from input file, passed to `--use-dependencies` option and saved to the output file, passed to `--save-dependencies` option. If any github sources, which are not included in the input file will be found, it will be added to output file.
-  
-`--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are processed the similar way.
+## Reproducible Artifacts ##
+
+It is possible to save the build configuration used for preprocessing a source file &mdash; references to the concrete used versions of GitHub files/libraries and the used Builder variable definitions &mdash; and preprocess the source file again later with the early saved configuration. 
+
+`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, correspondingly, references to the concrete versions of GitHub files/libraries. The references are saved in a JSON file. If the file is not specified, `dependencies.json` file in the local directory is assumed. Every reference consists of GitHub file URL and Git Blob Id (Git Blob SHA). For more information see [here](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [here](https://developer.github.com/v3/git/blobs/). **Note** It is possible to obtain Git Blob Id (Git Blob SHA) of a GitHub file using the following git command: `git hash-object <path_to_file>`
+
+These options are processed the following way:
+  - if the only `--save-dependencies [<path_to_file>]` is specified, the references to all source files uploaded from GitHub are saved in the provided JSON file.
+  - if the only `--use-dependencies [<path_to_file>]` is specified, the source files from GithHub are uploaded using the references read from the provided JSON file.
+  - if the both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, then
+    - first, the source files from GithHub are uploaded using the references read from the JSON file passed to the `--use-dependencies` option,
+    - then, if the source code contains includes of files from GitHub which are not uploaded yet, they are uploaded.
+    - Builder runs the prepocessing.
+    - finally, references to all source files uploaded from GitHub are saved in the JSON file passed to the `--save-dependencies` option.
+
+`--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to save and to reuse, correspondingly, Builder variable definitions. The definitions are saved in a JSON file. If the file is not specified, the `directives.json` file in the local directory is assumed. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options.
+When `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
 
 **Note** If any of the options to save/use dependendencies/directives is specified, the `--cache` option is ignored.
 
 #### Examples Of Files ####
 
-Typical `dependencies.json` file content could looks like: 
+Example of a typical `dependencies.json` file: 
 ```json
 [
   [
-    "github:nobitlost/Builder/.gitignore",
+    "github:repositoryA/ProjectA/fileA",
     "2ff017dc92e826ad184f9cdeadd1a2446f8d6032"
   ],
   [
-    "github:FedorUporov/Builder/LICENSE",
+    "github:repositoryB/ProjectB/fileB",
     "a01b64f9ce764f226f52c6b9364396d4a8bd550b"
   ]
 ]
 ```
 
-Typical `directives.json` file content could looks like:
+Example of a typical `directives.json` file:
 ```json
 {
   "Variable0": "value0",
@@ -813,14 +831,13 @@ For example, to operate through a proxy running at IP address 192.168.10.2 on po
 
 # Testing #
 
-TODO - don't we want to explain something here?
-
 ```
 SPEC_LOGLEVEL=<debug|info|warning|error> \
 SPEC_GITHUB_USERNAME=<GitHub username> \
 SPEC_GITHUB_TOKEN=<GitHub password/access token> \
 npm test
 ```
+All environment variables are optional here. Default for `SPEC_LOGLEVEL` is `error`.
 
 # License #
 
