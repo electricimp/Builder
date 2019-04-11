@@ -611,7 +611,7 @@ and the options are:
 | --github-token | | No | Yes | GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if `--github-user` option is specified. See [Files From GitHub](#files-from-github) section. |
 | --lib | --libs | No | Yes | Includes the specified JavaScript file(s) as a library. See [Including JavaScript Libraries](#including-javascript-libraries) section. May be specified several times to include different libraries. The provided value may specify a concrete file or a directory (in this case all files from that directory are included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (in this case all matched files are included). |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Does not show a warning if a source file with the exact content was included multiple times from different places, that results in code duplication. |
-| --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if any of the options related to the [Reproducible Artifacts](#reproducible-artifacts) feature is specified. |
+| --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if `--save-dependencies` or `--use-dependencies` option is specified. |
 | --clear-cache | | No | No | Clears cache before Builder starts running. See [Caching Remote Includes](#caching-remote-includes) section. |
 | --cache-exclude-list | | No | Yes | Path to the file that lists the resources which should be excluded from caching. See [Caching Remote Includes](#caching-remote-includes) section. |
 | --save-dependencies | | No | No | Saves references to the used versions of GitHub files in the specified JSON file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
@@ -684,10 +684,10 @@ These options are processed the following way:
     - Builder runs the prepocessing.
     - finally, references to all source files uploaded from GitHub are saved in the JSON file passed to the `--save-dependencies` option.
 
+**Note** If `--save-dependencies` or `--use-dependencies` option is specified, the `--cache` option is ignored.
+
 `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to save and to reuse, correspondingly, Builder variable definitions. The definitions are saved in a JSON file. If the file is not specified, the `directives.json` file in the local directory is assumed. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options.
 When `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
-
-**Note** If any of the options to save/use dependendencies/directives is specified, the `--cache` option is ignored.
 
 #### Examples Of Files ####
 
