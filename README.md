@@ -614,10 +614,10 @@ and the options are:
 | --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if `--save-dependencies` or `--use-dependencies` option is specified. |
 | --clear-cache | | No | No | Clears cache before Builder starts running. See [Caching Remote Includes](#caching-remote-includes) section. |
 | --cache-exclude-list | | No | Yes | Path to the file that lists the resources which should be excluded from caching. See [Caching Remote Includes](#caching-remote-includes) section. |
-| --save-dependencies | | No | No | Saves references to the used versions of GitHub files in the specified JSON file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
-| --use-dependencies | | No | No | Reads from the specified JSON file references to the versions of GitHub files which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
-| --save-directives | | No | No | Saves Builder variable definitions in the specified JSON file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed.|
-| --use-directives | | No | No | Reads from the specified JSON file Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed. |
+| --save-dependencies | | No | No | Saves references to the used versions of GitHub files in the specified file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
+| --use-dependencies | | No | No | Reads from the specified file references to the versions of GitHub files which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, the `dependencies.json` file in the local directory is assumed. |
+| --save-directives | | No | No | Saves Builder variable definitions in the specified file. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed.|
+| --use-directives | | No | No | Reads from the specified file Builder variable definitions which should be used. See [Reproducible Artifacts](#reproducible-artifacts) section. If the file name is not specified, `directives.json` file in the local directory is assumed. |
 
 ### As A Library ###
 
