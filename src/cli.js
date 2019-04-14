@@ -62,19 +62,19 @@ function usageInfo() {
 
 usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<varname> <value> ...] [--github-user <usename> --github-token <token>] <input_file>\u001b[39m
 where:
-\t\u001b[34m-l\u001b[39m - generate line control statements
+\t\u001b[34m-l\u001b[39m - generates line control statements
 \t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
 \t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
 \t\u001b[34m--github-token <token>\u001b[39m - personal access token or password for GitHub
-\t\u001b[34m--cache>\u001b[39m - enable cache for remote files
-\t\u001b[34m--clear-cache\u001b[39m - delete cache folder before running
-\t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to exclude list file
-\t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - path to Javascript file to include as libraries
-\t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - save the SHA-hashes (git blob IDs) to JSON file
-\t\u001b[34m--save-directives [path_to_file]\u001b[39m - save the Builder varialbe definitions to JSON file
-\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - suppress warnings about multiple includes of a file with the same exact content
-\t\u001b[34m--use-dependencies [path_to_file]\u001b[39m - read the SHA-hashes (git blob IDs) from JSON file
-\t\u001b[34m--use-directives [path_to_file]\u001b[39m - read the Builder varialbe definitions from JSON file
+\t\u001b[34m--lib(s) <path_to_file|path_to_directory|glob>\u001b[39m - includes the specified JavaScript file(s) as a library
+\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - does not show a warning if a source file with the exact content was included multiple times
+\t\u001b[34m--cache>\u001b[39m - turns on cache for all files included from remote resources
+\t\u001b[34m--clear-cache\u001b[39m - clears cache before Builder starts running
+\t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to the file that lists the resources which should be excluded from caching
+\t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - saves references to the used versions of GitHub files in the specified file
+\t\u001b[34m--use-dependencies [path_to_file]\u001b[39m - reads from the specified file references to the versions of GitHub files which should be used
+\t\u001b[34m--save-directives [path_to_file]\u001b[39m - saves Builder variable definitions in the specified file
+\t\u001b[34m--use-directives [path_to_file]\u001b[39m - reads from the specified file Builder variable definitions which should be used
     `.trim());
 }
 
