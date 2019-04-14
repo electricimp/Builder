@@ -60,7 +60,13 @@ function usageInfo() {
     `
 \u001b[36m${packageJson.name} v${packageJson.version} CLI\u001b[39m
 
-usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<varname> <value> ...] [--github-user <usename> --github-token <token>] <input_file>\u001b[39m
+usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<variable> <value>]
+\t\t[--github-user <username> --github-token <token>]
+\t\t[--lib <path_to_file>] [--suppress-duplicate-includes-warning]
+\t\t[--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
+\t\t[--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
+\t\t[--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]] <input_file>\u001b[39m
+
 where:
 \t\u001b[34m-l\u001b[39m - generates line control statements
 \t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
