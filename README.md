@@ -704,19 +704,25 @@ When the `--use-directives [<path_to_file>]` option is used, the saved Builder v
 A typical `dependencies.json` file looks like this:
 
 ```json
-{[
-    [ "github:repositoryA/ProjectA/fileA",
-      "2ff017dc92e826ad184f9cdeadd1a2446f8d6032" ],
-    [ "github:repositoryB/ProjectB/fileB",
-      "a01b64f9ce764f226f52c6b9364396d4a8bd550b" ]
-]}
+[
+  [
+    "github:repositoryA/ProjectA/fileA",
+    "2ff017dc92e826ad184f9cdeadd1a2446f8d6032"
+  ],
+  [
+    "github:repositoryB/ProjectB/fileB",
+    "a01b64f9ce764f226f52c6b9364396d4a8bd550b"
+  ]
+]
 ```
 
 A typical `directives.json` file looks like this:
 
 ```json
-{ "Variable0": "value0",
-  "Variable1": "value1" }
+{
+  "Variable0": "value0",
+  "Variable1": "value1"
+}
 ```
 
 ## Including JavaScript Libraries ##
