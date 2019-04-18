@@ -700,7 +700,7 @@ class Machine {
   _loadAndMergeDirectives(context) {
     if (!this.directivesUseFile) {
       if (this.directivesSaveFile) {
-        this.directives = { ...context };
+        this.directives = Object.assign({}, context);
       }
 
       return context;
@@ -716,7 +716,7 @@ class Machine {
       throw new Error(`The directives JSON file '${this.directivesUseFile}' cannot be used: ${err.message}`);
     }
 
-    return { ...this.directives};
+    return Object.assign({}, this.directives);
   }
 
   /**
