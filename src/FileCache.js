@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2019 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -41,11 +41,11 @@ const MAX_FILENAME_LENGTH = 250;
 class FileCache {
 
   constructor(machine) {
-    this._useCache = false;
     this._cacheDir = '.' + path.sep + '.builder-cache';
     this._excludeList = [];
     this._machine = machine;
     this._outdateTime = CACHE_LIFETIME * 86400000; // precalc milliseconds in one day
+    this._useCache = false;
   }
 
   /**
@@ -138,25 +138,26 @@ class FileCache {
    * @return {content: string, includePathParsed} content and parsed path
    * @private
    */
-  read(reader, includePath) {
+  read(reader, includePath, dependencies) {
     let needCache = false;
-    if (this._toBeCached(includePath) && this._isCachedReader(reader)) {
-        let result;
-        if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
-          // change reader to local reader
-          includePath = result;
-          this.machine.logger.info(`Read source from local path "${includePath}"`);
-          reader = this.machine.readers.file;
-        } else {
-          needCache = true;
-        }
+    if (!dependencies && this._toBeCached(includePath) && this._isCachedReader(reader)) {
+      let result;
+      if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
+        // change reader to local reader
+        includePath = result;
+        this.machine.logger.info(`Read source from local path "${includePath}"`);
+        reader = this.machine.readers.file;
+      } else {
+        needCache = true;
+      }
     }
+
     const includePathParsed = reader.parsePath(includePath);
-    let content = reader.read(includePath);
+    let content = reader.read(includePath, { dependencies: dependencies });
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {
-        content += '\n';
+      content += '\n';
     }
 
     if (needCache && this.useCache) {
@@ -164,9 +165,9 @@ class FileCache {
       this._cacheFile(includePath, content);
     }
     return {
-             'content' : content,
-             'includePathParsed' : includePathParsed
-           };
+      'content' : content,
+      'includePathParsed' : includePathParsed
+    };
   }
 
   clearCache() {
