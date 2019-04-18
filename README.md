@@ -573,7 +573,7 @@ Lines starting with `@` followed by space or a line break are treated as comment
 
 ## Running Builder ##
 
-**Note** Builder requires Node.js 4.0 and above.
+**Note** Builder requires Node.js 8.0.0 and above.
 
 Builder can be installed and used by two ways - as an _npm_ command line tool or as an _npm_ library.
 
