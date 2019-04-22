@@ -26,6 +26,7 @@
 
 const url = require('url');
 const path = require('path');
+const fs = require('fs');
 const md5 = require('md5');
 
 const Expression = require('./Expression');
@@ -88,6 +89,12 @@ class Machine {
     // parse
     const ast = this.parser.parse(source);
 
+    // read dependencies
+    this._loadDependencies();
+
+    // read directives, merge it with actual context
+    context = this._loadAndMergeDirectives(context);
+
     // execute
     context = merge(
       {__FILE__: this.file, __PATH__: this.path},
@@ -98,6 +105,12 @@ class Machine {
 
     const buffer = [];
     this._execute(ast, context, buffer);
+
+    // save dependencies
+    this._saveDependencies();
+
+    // save directives
+    this._saveDirectives();
 
     // return output buffer contents
     return buffer.join('');
@@ -300,10 +313,10 @@ class Machine {
   _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    let includePath = evaluated ? source : this.expression.evaluate(
-        source,
-        context
-      ).trim();
+    const includePath = evaluated ? source : this.expression.evaluate(
+      source,
+      context,
+    ).trim();
 
     // if once flag is set, then check if source has already been included
     if (once && this._includedSources.has(includePath)) {
@@ -318,7 +331,7 @@ class Machine {
     this.logger.info(`Including source "${includePath}"`);
 
     // read
-    const res = this.fileCache.read(reader, includePath);
+    const res = this.fileCache.read(reader, includePath, this.dependencies);
 
     // Check if source with same hash value has already been included
     if (!this.suppressDupWarning) {
@@ -673,6 +686,96 @@ class Machine {
     }
   }
 
+  /**
+   * Read dependencies JSON file content
+   * @param
+   * @return
+   * @private
+   */
+  _loadDependencies() {
+    if (!this.dependenciesUseFile) {
+      if (this.dependenciesSaveFile) {
+        this.dependencies = new Map();
+      }
+
+      return;
+    }
+
+    if (!fs.existsSync(this.dependenciesUseFile)) {
+      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' does not exist`)
+    }
+
+    try {
+      this.dependencies = new Map(JSON.parse(fs.readFileSync(this.dependenciesUseFile, 'utf8')));
+    } catch(err) {
+      throw new Error(`The dependencies JSON file '${this.dependenciesUseFile}' cannot be used: ${err.message}`);
+    }
+  }
+
+  /**
+   * Read directives JSON file content and merge it with actual context
+   * @param {*} context
+   * @return {*}
+   * @private
+   */
+  _loadAndMergeDirectives(context) {
+    if (!this.directivesUseFile) {
+      if (this.directivesSaveFile) {
+        this.directives = Object.assign({}, context);
+      }
+
+      return context;
+    }
+
+    if (!fs.existsSync(this.directivesUseFile)) {
+      throw new Error(`The directives JSON file '${this.directivesUseFile}' does not exist`);
+    }
+
+    try {
+      this.directives = merge(JSON.parse(fs.readFileSync(this.directivesUseFile).toString()), context);
+    } catch(err) {
+      throw new Error(`The directives JSON file '${this.directivesUseFile}' cannot be used: ${err.message}`);
+    }
+
+    return Object.assign({}, this.directives);
+  }
+
+  /**
+   * Save dependencies JSON file
+   * @param
+   * @return
+   * @private
+   */
+  _saveDependencies() {
+    if (!this.dependenciesSaveFile) {
+      return;
+    }
+
+    try {
+      fs.writeFileSync(this.dependenciesSaveFile, JSON.stringify([...this.dependencies], null, 2), 'utf-8');
+    } catch (err) {
+      throw new Error(`The ${this.dependenciesSaveFile} file cannot be saved: ${err.message}`);
+    }
+  }
+
+  /**
+   * Save defined variables to directives JSON file
+   * @param
+   * @return
+   * @private
+   */
+  _saveDirectives() {
+    if (!this.directivesSaveFile || !this.directives) {
+      return;
+    }
+
+    try {
+      fs.writeFileSync(this.directivesSaveFile, JSON.stringify(this.directives, null, 2));
+    } catch(err) {
+      throw new Error(`The ${this.directivesSaveFile} file cannot be saved: ${err.message}`);
+    }
+  }
+
   // <editor-fold desc="Accessors" defaultstate="collapsed">
 
   /**
@@ -708,11 +811,11 @@ class Machine {
    */
   get logger() {
     return this._logger || {
-        debug: console.log,
-        info: console.info,
-        warning: console.warning,
-        error: console.error
-      };
+      debug: console.log,
+      info: console.info,
+      warning: console.warning,
+      error: console.error
+    };
   }
 
   /**
@@ -768,7 +871,7 @@ class Machine {
    * @param {boolean} value
    */
   set useCache(value) {
-     this.fileCache.useCache = value;
+    this.fileCache.useCache = value;
   }
 
   /**

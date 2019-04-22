@@ -7,15 +7,12 @@
 require('jasmine-expect');
 
 const init = require('./init')('main');
-const jasmineDiffMatchers = require('jasmine-diff-matchers');
 
 describe('Machine', () => {
   let machine;
 
   beforeEach(() => {
     machine = init.createMachine();
-    // show string diffs
-    jasmine.addMatchers(jasmineDiffMatchers.diffChars);
   });
 
   it('should handle inline macro inclusion', () => {
@@ -31,7 +28,7 @@ A.2 // @{__FILE__}:@{__LINE__}
 @include A()
     `.trim());
 
-    expect(res).diffChars(`#line 5 "main"
+    expect(res).toEqual(`#line 5 "main"
 -~=[A.1 // main:2
 A.2 // main:3]=~-
 A.1 // main:2
