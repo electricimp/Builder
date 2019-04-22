@@ -154,8 +154,6 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.libs.push(args.shift());
-    } else if ('--respect-local-includes' === argument) {
-      res.respectLocalIncludes = true;
     } else if ('--save-dependencies' === argument) {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
