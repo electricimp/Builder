@@ -62,7 +62,7 @@ function usageInfo() {
 
 usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<variable> <value>]
 \t\t[--github-user <username> --github-token <token>]
-\t\t[--lib <path_to_file>] [--suppress-duplicate-includes-warning]
+\t\t[--lib <path_to_file>] [--respect-local-includes] [--suppress-duplicate-includes-warning]
 \t\t[--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
 \t\t[--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
 \t\t[--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]] <input_file>\u001b[39m
@@ -73,7 +73,7 @@ where:
 \t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
 \t\u001b[34m--github-token <token>\u001b[39m - personal access token or password for GitHub
 \t\u001b[34m--lib <path_to_file>\u001b[39m - includes the specified JavaScript file(s) as a library
-\t\u001b[34m--respect-local-includes\u001b[39m - checkout local includes in the github sources from github instead of local
+\t\u001b[34m--respect-local-includes\u001b[39m - download locally included files in the github-sources from github instead of looking up in the local directory
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - does not show a warning if a source file with the exact content was included multiple times
 \t\u001b[34m--cache>\u001b[39m - turns on cache for all files included from remote resources
 \t\u001b[34m--clear-cache\u001b[39m - clears cache before Builder starts running
@@ -164,6 +164,8 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.directivesSaveFile = getOption(args, directivesDefaultFileName);
+    } else if ('--respect-local-includes' === argument) {
+      res.respectLocalIncludes = true;
     } else if ('--suppress-duplicate-includes-warning' === argument || '--suppress-duplicate' === argument) {
       res.suppressDupWarning = true;
     } else if ('--use-dependencies' === argument) {

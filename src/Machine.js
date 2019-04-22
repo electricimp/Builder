@@ -283,22 +283,29 @@ class Machine {
     }
   }
 
+  /**
+   * Replace local include paths to github URLs if requested
+   * @param {string} includePath
+   * @param {{}} context
+   * @private
+   */
   _respectLocalIncludes(includePath, context) {
     if (!this.respectLocalIncludes) {
       return includePath;
     }
 
-    // check if file is included from github source
-    if (!context.__PATH__.match(/github(?:\.com)?(?:\/|\:)([a-z0-9\-\._]+)*/)) {
-      return includePath;
-    }
-
-    // check if the file is local include in the github source
+    // check if the file is included locally
     if (!(this._getReader(includePath) === this.readers.file)) {
       return includePath;
     }
 
-    return this._formatPath(context.__PATH__, includePath);
+    // check if file is included from github source
+    const path = this._formatPath(context.__PATH__, includePath);
+    if (this._getReader(path) === this.readers.github) {
+      return path;
+    }
+
+    return includePath;
   }
 
   /**
@@ -313,7 +320,7 @@ class Machine {
   _includeSource(source, context, buffer, once, evaluated) {
 
     // path is an expression, evaluate it
-    const includePath = evaluated ? source : this.expression.evaluate(
+    let includePath = evaluated ? source : this.expression.evaluate(
       source,
       context,
     ).trim();

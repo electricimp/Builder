@@ -590,7 +590,8 @@ then use the `pleasebuild` command which is provided by Builder
 ```
 pleasebuild [-l] [-D<variable> <value>]
     [--github-user <username> --github-token <token>]
-    [--lib <path_to_file>] [--suppress-duplicate-includes-warning]
+    [--lib <path_to_file>]
+    [--respect-local-includes] [--suppress-duplicate-includes-warning]
     [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
     [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
     [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
@@ -610,6 +611,7 @@ and the options are:
 | --github-user | | No | Yes | GitHub username. See [Files From GitHub](#files-from-github) section. |
 | --github-token | | No | Yes | GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if `--github-user` option is specified. See [Files From GitHub](#files-from-github) section. |
 | --lib | --libs | No | Yes | Includes the specified JavaScript file(s) as a library. See [Including JavaScript Libraries](#including-javascript-libraries) section. May be specified several times to include different libraries. The provided value may specify a concrete file or a directory (in this case all files from that directory are included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (in this case all matched files are included). |
+| --respect-local-includes | | No | No | Download locally included files in the github-sources from github instead of looking up in the local directory. |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Does not show a warning if a source file with the exact content was included multiple times from different places, that results in code duplication. |
 | --cache | -c | No | No | Turns on cache for all files included from remote resources. See [Caching Remote Includes](#caching-remote-includes) section. This option is ignored if `--save-dependencies` or `--use-dependencies` option is specified. |
 | --clear-cache | | No | No | Clears cache before Builder starts running. See [Caching Remote Includes](#caching-remote-includes) section. |
@@ -633,32 +635,36 @@ then instantiate, setup and execute Builder from the source code, for example
 const Builder = require('Builder');
 const builder = new Builder();
 
-// Specify whether you need line control statements. See the "-l" CLI option
+// Specify whether you need line control statements. See the "-l" CLI option.
 builder.machine.generateLineControlStatements = <true|false>;
 
-// Cache all files included from remote sources. See the "--cache" CLI option
+// Cache all files included from remote sources. See the "--cache" CLI option.
 builder.machine.useCache = <true|false>;
 
-// Set GitHub credentials. See the "--github-user" and "--github-token" CLI options
+// Set GitHub credentials. See the "--github-user" and "--github-token" CLI options.
 builder.machine.readers.github.username = "<USERNAME>";
 builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
 
 // Path to the file that lists the resources which should be excluded from caching.
-// See the "--cache-exclude-list" CLI option
+// See the "--cache-exclude-list" CLI option.
 builder.machine.excludeList = "<PATH_TO_FILE>";
 
+// Replace local include paths to github URLs if requested.
+// See the "--respect-local-includes" CLI option.
+builder.machine.respectLocalIncludes = <true|false>;
+
 // Suppress warning about duplicate includes.
-// See the "--suppress-duplicate-includes-warning" CLI option
+// See the "--suppress-duplicate-includes-warning" CLI option.
 builder.machine.suppressDupWarning = <true|false>;
 
-// See the "--save-dependencies" CLI option
+// See the "--save-dependencies" CLI option.
 builder.machine.dependenciesSaveFile = <false|"PATH_TO_FILE">;
-// See the "--use-dependencies" CLI option
+// See the "--use-dependencies" CLI option.
 builder.machine.dependenciesUseFile = <false|"PATH_TO_FILE">;
 
-// See the "--save-directives" CLI option
+// See the "--save-directives" CLI option.
 builder.machine.directivesSaveFile = <false|"PATH_TO_FILE">;
-// See the "--use-directives" CLI option
+// See the "--use-directives" CLI option.
 builder.machine.directivesUseFile = <false|"PATH_TO_FILE">;
 
 const inputFile = "PATH_TO_YOUR_INPUT_FILE";
