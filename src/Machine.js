@@ -295,7 +295,7 @@ class Machine {
     }
 
     // check if the file is included locally
-    if (!(this._getReader(includePath) === this.readers.file)) {
+    if (this._getReader(includePath) !== this.readers.file) {
       return includePath;
     }
 
