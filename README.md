@@ -4,6 +4,8 @@ _Builder_ combines a preprocessor with an expression language and advanced impor
 
 **Current version: 2.7.0**
 
+![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
+
 ## Contents ##
 
 - [Builder Syntax](#builder-syntax)
