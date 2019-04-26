@@ -52,6 +52,7 @@ _Builder_ combines a preprocessor with an expression language and advanced impor
     - [Remote Includes](#remote-includes)
         - [Caching Remote Includes](#caching-remote-includes)
         - [Proxy Access To Remote Includes](#proxy-access-to-remote-includes)
+        - [Local Includes From Remote Files](#local-includes-from-remote-files)
 - [Testing](#testing)
 - [License](#license)
 
@@ -593,7 +594,7 @@ then use the `pleasebuild` command which is provided by Builder:
 pleasebuild [-l] [-D <variable> <value>]
     [--github-user <username> --github-token <token>]
     [--lib <path_to_file>]
-    [--respect-local-includes] [--suppress-duplicate-includes-warning]
+    [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
     [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
     [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
     [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
@@ -613,7 +614,7 @@ and the options are:
 | --github-user | | No | Yes | A GitHub username. See [‘Files From GitHub’](#files-from-github) |
 | --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. See [‘Files From GitHub’](#files-from-github) |
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
-| --respect-local-includes | | No | No | Download locally included files in the github-sources from github instead of looking up in the local directory. |
+| --use-remote-relative-includes | | No | No | Interpret every [local include](#local-files) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
 | --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
@@ -846,6 +847,16 @@ To specify a proxy that should be used when you are including files from remote 
 For example, to operate through a proxy running at IP address 192.168.10.2 on port 3128 for HTTP requests, you should set the environment variable: `HTTP_PROXY='http://192.168.10.2:3128'`. All of Builder’s HTTP requests will now go through the proxy.
 
 **Note** Files retrieved from GitHub (`github:` protocol) are always accessed using HTTPS. So when specifying a proxy in this case, make sure you use set the `HTTPS_PROXY` environment variable.
+
+### Local Includes From Remote Files ###
+
+By default, all [local includes](#local-files), even if they are mentioned in remote source files, are always interpreted as relative to the system where Builder is running.
+
+If `--use-remote-relative-includes` option is specified, every [local include](#local-files) is interpreted as relative to the location of the source file where it is mentioned. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
+
+`--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#remote-files).
+
+**Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from GitHub only.
 
 # Testing #
 
