@@ -457,7 +457,7 @@ The following types are supported in expressions:
 Variables can be used in `Builder` expression evaluation.
 
 - Variables can be defined by:
-    - The `-D <variable name> <variable value>` command line parameter.
+    - The `-D<variable name> <variable value>` command line parameter.
     - A <code><b>@set</b></code> statement.
     - An [environment variable](#environment-variables).
 - Undefined variables are evaluated as `null`.
@@ -465,7 +465,7 @@ Variables can be used in `Builder` expression evaluation.
 
 #### Variable Definition Order ####
 
-1. When resolving a variable’s value, *Builder* first looks for its definition in the command line `-D` parameters (`-D <variable name> <variable value>`) passed to the *pleasebuild* command.
+1. When resolving a variable’s value, *Builder* first looks for its definition in the command line `-D` parameters (`-D<variable name> <variable value>`) passed to the *pleasebuild* command.
 1. If no such variable definition is found, Squirrel code is scanned for `@set` statements preceding the variable usage.
 1. If no variable definitions are found in the previous steps, *Builder* looks in the host environment variables.
 
@@ -591,7 +591,7 @@ npm install -g Builder
 then use the `pleasebuild` command which is provided by Builder:
 
 ```
-pleasebuild [-l] [-D <variable> <value>]
+pleasebuild [-l] [-D<variable> <value>]
     [--github-user <username> --github-token <token>]
     [--lib <path_to_file>]
     [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
@@ -610,7 +610,7 @@ and the options are:
 | Option | Synonym | Mandatory? | Value&nbsp;Required? | Description |
 | --- | --- | --- | --- | --- |
 | -l |  | No | No | Generates line control statements. For a more detailed explanation, please read [this GCC page](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html) |
-| -D &lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
+| -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
 | --github-user | | No | Yes | A GitHub username. See [‘Files From GitHub’](#files-from-github) |
 | --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. See [‘Files From GitHub’](#files-from-github) |
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
@@ -653,8 +653,8 @@ builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
 builder.machine.excludeList = "<PATH_TO_FILE>";
 
 // Replace local include paths to github URLs if requested.
-// See the "--respect-local-includes" CLI option.
-builder.machine.respectLocalIncludes = <true|false>;
+// See the "--use-remote-relative-includes" CLI option.
+builder.machine.relativeLocalIncludes = <true|false>;
 
 // Suppress warning about duplicate includes.
 // See the "--suppress-duplicate-includes-warning" CLI option.
@@ -704,7 +704,7 @@ These options are processed the following way:
 
 The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file is not specified, Builder will attempt to read a `directives.json` file from the local directory. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
 
-When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D <variable> <value>` options.
+When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
 
 ### Example Files ###
 
