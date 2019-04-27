@@ -69,19 +69,19 @@ usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D
 
 where:
 \t\u001b[34m-l\u001b[39m - generates line control statements
-\t\u001b[34m-D<varname> <value>\u001b[39m - define a variable that will be available from the source
-\t\u001b[34m--github-user <username>\u001b[39m - username for GitHub
-\t\u001b[34m--github-token <token>\u001b[39m - personal access token or password for GitHub
-\t\u001b[34m--lib <path_to_file>\u001b[39m - includes the specified JavaScript file(s) as a library
+\t\u001b[34m-D<varname> <value>\u001b[39m - defines a variable
+\t\u001b[34m--github-user <username>\u001b[39m - a GitHub username
+\t\u001b[34m--github-token <token>\u001b[39m - a GitHub personal access token or password
+\t\u001b[34m--lib <path_to_file>\u001b[39m - include the specified JavaScript file(s) as a library
 \t\u001b[34m--use-remote-relative-includes\u001b[39m - interpret every local include as relative to the location of the source file where it is mentioned
-\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - does not show a warning if a source file with the exact content was included multiple times
-\t\u001b[34m--cache>\u001b[39m - turns on cache for all files included from remote resources
-\t\u001b[34m--clear-cache\u001b[39m - clears cache before Builder starts running
-\t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - path to the file that lists the resources which should be excluded from caching
-\t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - saves references to the used versions of GitHub files in the specified file
-\t\u001b[34m--use-dependencies [path_to_file]\u001b[39m - reads from the specified file references to the versions of GitHub files which should be used
-\t\u001b[34m--save-directives [path_to_file]\u001b[39m - saves Builder variable definitions in the specified file
-\t\u001b[34m--use-directives [path_to_file]\u001b[39m - reads from the specified file Builder variable definitions which should be used
+\t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - do not show a warning if a source file with the same content was included multiple times
+\t\u001b[34m--cache>\u001b[39m - turn on caching for all files included from remote resources
+\t\u001b[34m--clear-cache\u001b[39m - clear the cache before Builder starts running
+\t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - set the path to the file that lists resources which should not be cached
+\t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - save references to the required GitHub files in the specified file
+\t\u001b[34m--use-dependencies [path_to_file]\u001b[39m - use the specified file to set which GitHub files are required
+\t\u001b[34m--save-directives [path_to_file]\u001b[39m - save Builder variable definitions in the specified file
+\t\u001b[34m--use-directives [path_to_file]\u001b[39m - use Builder variable definitions from the specified file
 \t\u001b[34m<input_file>\u001b[39m — is the path to source file which should be preprocessed
     `.trim());
 }
