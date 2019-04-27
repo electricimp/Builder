@@ -2,7 +2,7 @@
 
 _Builder_ combines a preprocessor with an expression language and advanced imports.
 
-**Current version: 2.7.0**
+**Current version: 2.8.0**
 
 ## Contents ##
 
@@ -680,11 +680,11 @@ To understand Builder setup, please review [this source code](./src/cli.js).
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration used for preprocessing a source file &mdash; references to the concrete versions of GitHub files and libraries that are used, and to Builder variable definitions &mdash; and preprocess the source file again later with the saved configuration.
+It is possible to save the build configuration used for preprocessing a source file &mdash; references to the concrete versions of GitHub files and libraries that are used, and Builder variable definitions which are used &mdash; and preprocess the source file again later with the saved configuration.
 
 ### GitHub Files: Dependencies ###
 
-`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of GitHub files and libraries. The references are saved in a JSON file. If a file is not specified, Builder will attempt to read a `dependencies.json` file from the local directory. Every reference consists of GitHub file URL and Git Blob ID (Git Blob SHA). For more information, please see [the Git Manual](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [the GitA API](https://developer.github.com/v3/git/blobs/).
+`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of GitHub files and libraries. The references are saved in a JSON file. If a file name is not specified, the `dependencies.json` file in the local directory is used. Every reference consists of GitHub file URL and Git Blob ID (Git Blob SHA). For more information, please see [the Git Manual](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [the Git API](https://developer.github.com/v3/git/blobs/).
 
 **Note** It is possible to obtain the Git Blob ID of a GitHub file using the following *git* command: `git hash-object <path_to_file>`
 
@@ -700,14 +700,6 @@ These options are processed the following way:
 
 **Note** If either `--save-dependencies` or `--use-dependencies` is specified, the `--cache` option is ignored.
 
-### Builder Variables: Directives ###
-
-The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file is not specified, Builder will attempt to read a `directives.json` file from the local directory. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
-
-When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
-
-### Example Files ###
-
 A typical `dependencies.json` file looks like this:
 
 ```json
@@ -722,6 +714,12 @@ A typical `dependencies.json` file looks like this:
   ]
 ]
 ```
+
+### Builder Variables: Directives ###
+
+The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
+
+When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
 
 A typical `directives.json` file looks like this:
 
