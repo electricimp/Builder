@@ -28,7 +28,7 @@ describe('Machine', () => {
     }
 
     // check respect-local-includes feature
-    machine.respectLocalIncludes = true;
+    machine.remoteRelativeIncludes = true;
     const res = eol.lf(machine.execute(`@include once "${githubPathA}"`));
     expect(res).toEqual(`// included file a\n// included file b\n`);
   });

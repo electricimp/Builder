@@ -284,13 +284,13 @@ class Machine {
   }
 
   /**
-   * Replace local include paths to github URLs if requested
+   * Replace local includes to github URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
    */
-  _respectLocalIncludes(includePath, context) {
-    if (!this.respectLocalIncludes) {
+  _remoteRelativeIncludes(includePath, context) {
+    if (!this.remoteRelativeIncludes) {
       return includePath;
     }
 
@@ -299,10 +299,15 @@ class Machine {
       return includePath;
     }
 
+    // check that path is not absolute
+    if (path.isAbsolute(includePath)) {
+      return includePath;
+    }
+
     // check if file is included from github source
-    const path = this._formatPath(context.__PATH__, includePath);
-    if (this._getReader(path) === this.readers.github) {
-      return path;
+    const remotePath = this._formatPath(context.__PATH__, includePath);
+    if (this._getReader(remotePath) === this.readers.github) {
+      return remotePath;
     }
 
     return includePath;
@@ -332,7 +337,7 @@ class Machine {
     }
 
     // checkout local includes in the github sources from github 
-    includePath = this._respectLocalIncludes(includePath, context);
+    includePath = this._remoteRelativeIncludes(includePath, context);
 
     const reader = this._getReader(includePath);
     this.logger.info(`Including source "${includePath}"`);

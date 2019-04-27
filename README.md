@@ -654,7 +654,7 @@ builder.machine.excludeList = "<PATH_TO_FILE>";
 
 // Replace local include paths to github URLs if requested.
 // See the "--use-remote-relative-includes" CLI option.
-builder.machine.relativeLocalIncludes = <true|false>;
+builder.machine.remoteRelativeIncludes = <true|false>;
 
 // Suppress warning about duplicate includes.
 // See the "--suppress-duplicate-includes-warning" CLI option.
