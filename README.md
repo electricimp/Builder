@@ -719,7 +719,7 @@ A typical `dependencies.json` file looks like this:
 
 ### Builder Variables: Directives ###
 
-The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
+The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file name is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
 
 When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
 
@@ -850,7 +850,7 @@ For example, to operate through a proxy running at IP address 192.168.10.2 on po
 
 ### Local Includes From Remote Files ###
 
-By default, all [local includes](#local-files), even if they are mentioned in remote source files, are always interpreted as relative to the system where Builder is running.
+By default, all [local includes](#local-files), even if they are mentioned in remote source files, are interpreted as relative to the system where Builder is running.
 
 If `--use-remote-relative-includes` option is specified, every [local include](#local-files) is interpreted as relative to the location of the source file where it is mentioned. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
 
