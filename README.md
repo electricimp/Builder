@@ -682,7 +682,7 @@ To understand Builder setup, please review [this source code](./src/cli.js).
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration used for preprocessing a source file &mdash; references to the concrete versions of GitHub files and libraries that are used, and Builder variable definitions which are used &mdash; and preprocess the source file again later with the saved configuration.
+It is possible to save the build configuration used for preprocessing a source file &mdash; ie. Builder variable definitions and references to the concrete versions of GitHub files and libraries that are used &mdash; and preprocess the source file again later with the saved configuration.
 
 ### GitHub Files: Dependencies ###
 
