@@ -283,6 +283,21 @@ class Machine {
     }
   }
 
+  _formatURL(prefix, filename) {
+    const URL = url.parse(prefix);
+    if (!URL.protocol) {
+        return undefined;
+    }
+
+    const res = prefix.match(/(github:|http:\/\/|https:\/\/)(.*)/);
+    if (res === null) {
+        return undefined;
+    }
+
+    const concat = require('upath').normalize(path.join(res[2], filename));
+    return `${res[1]}${concat}`.replace(/\\/g, '/');
+}
+
   /**
    * Replace local includes to github URLs if requested
    * @param {string} includePath
@@ -305,9 +320,13 @@ class Machine {
     }
 
     // check if file is included from github source
-    const remotePath = this._formatPath(context.__PATH__, includePath);
+    const remotePath = this._formatURL(context.__PATH__, includePath);
+    if (!remotePath) {
+      return includePath; 
+    }
+
     if (this._getReader(remotePath) === this.readers.github) {
-      return remotePath;
+      return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
     }
 
     return includePath;

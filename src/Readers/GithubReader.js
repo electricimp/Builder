@@ -141,7 +141,8 @@ class GithubReader extends AbstractReader {
     const parsed = GithubReader.parseUrl(source);
     return {
       __FILE__: path.basename(parsed.path),
-      __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`
+      __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
+      __REF__: parsed.ref
     };
   }
 

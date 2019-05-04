@@ -8,6 +8,7 @@ require('jasmine-expect');
 
 const init = require('./init')('main');
 const eol = require('eol');
+const backslashToSlash = require('../backslashToSlash');
 
 const githubPathA = "github:electricimp/Builder/spec/fixtures/sample-1/inc-a.nut"
 
@@ -24,7 +25,7 @@ describe('Machine', () => {
       eol.lf(machine.execute(`@include once "${githubPathA}"`));
       fail();
     } catch (e) {
-      expect(e.message).toEqual(fileNotFoundMessage);
+      expect(backslashToSlash(e.message)).toEqual(fileNotFoundMessage);
     }
 
     // check respect-local-includes feature
