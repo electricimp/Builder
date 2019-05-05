@@ -26,6 +26,7 @@
 
 const url = require('url');
 const path = require('path');
+const upath = require('upath');
 const fs = require('fs');
 const md5 = require('md5');
 
@@ -283,19 +284,26 @@ class Machine {
     }
   }
 
-  _formatURL(prefix, filename) {
+  /**
+   * Concatenate github URL prefix and local relative include
+   * @param {string[]} prefix
+   * @param {string[]} includePath
+   * @private
+   */
+  _formatURL(prefix, includePath) {
+
     const URL = url.parse(prefix);
     if (!URL.protocol) {
         return undefined;
     }
 
-    const res = prefix.match(/(github:|http:\/\/|https:\/\/)(.*)/);
+    const res = prefix.match(/(github:)(.*)/);
     if (res === null) {
         return undefined;
     }
 
-    const concat = require('upath').normalize(path.join(res[2], filename));
-    return `${res[1]}${concat}`.replace(/\\/g, '/');
+    const suffix = upath.normalize(upath.join(res[2], includePath));
+    return `${res[1]}${suffix}`.replace(/\\/g, '/');
 }
 
   /**
@@ -305,6 +313,7 @@ class Machine {
    * @private
    */
   _remoteRelativeIncludes(includePath, context) {
+
     if (!this.remoteRelativeIncludes) {
       return includePath;
     }
@@ -319,22 +328,13 @@ class Machine {
       return includePath;
     }
 
-    /*
-     * TODO: 
-     * 1) The _formatURL() function should be moved to GitHubReader::read().
-     * It should be able to understand not-normalised paths like: github:Owner/Repo/Dir../file.
-     * 
-     * 2) Process github ref on upper layer.
-     * The github ref should be appended to github URL, based on context variable,
-     * if not provided explicitly.
-     */
-
     // check if file is included from github source
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (!remotePath) {
       return includePath; 
     }
 
+    // apply github ref from context
     if (this._getReader(remotePath) === this.readers.github) {
       return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
     }
