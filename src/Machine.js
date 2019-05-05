@@ -319,6 +319,16 @@ class Machine {
       return includePath;
     }
 
+    /*
+     * TODO: 
+     * 1) The _formatURL() function should be moved to GitHubReader::read().
+     * It should be able to understand not-normalised paths like: github:Owner/Repo/Dir../file.
+     * 
+     * 2) Process github ref on upper layer.
+     * The github ref should be appended to github URL, based on context variable,
+     * if not provided explicitly.
+     */
+
     // check if file is included from github source
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (!remotePath) {
