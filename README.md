@@ -852,7 +852,7 @@ For example, to operate through a proxy running at IP address 192.168.10.2 on po
 
 By default, all [local includes](#local-files), even if they are mentioned in remote source files, are always interpreted as relative to the system where Builder is running.
 
-If `--use-remote-relative-includes` option is specified, every [local include](#local-files) is interpreted as relative to the location of the source file where it is mentioned, excludeing local absolute includes, like `/home/user/etc` or `C:\Users\user\etc`. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
+If `--use-remote-relative-includes` option is specified, every [local include](#local-files) is interpreted as relative to the location of the source file where it is mentioned, excluding absolute local includes, like `/home/user/etc` or `C:\Users\user\etc`. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
 
 `--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#remote-files).
 
