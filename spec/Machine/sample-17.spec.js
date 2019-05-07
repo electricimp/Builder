@@ -9,11 +9,7 @@ require('jasmine-expect');
 const eol = require('eol');
 const init = require('./init')('main');
 
-/*
- * TODO: Switch test github URLs to EI repo and branch.
- */
-
-const githubPath = 'github:nobitlost/Builder/spec/fixtures/sample-17/lib/lib.nut@respect-local-includes';
+const githubPath = 'github:electricimp/Builder/spec/fixtures/sample-17/lib/lib.nut@develop';
 
 describe('Machine', () => {
   let machine;
