@@ -141,7 +141,8 @@ class GithubReader extends AbstractReader {
     const parsed = GithubReader.parseUrl(source);
     return {
       __FILE__: path.basename(parsed.path),
-      __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`
+      __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
+      __REF__: parsed.ref
     };
   }
 
@@ -235,18 +236,18 @@ class GithubReader extends AbstractReader {
   static parseUrl(source) {
     // parse url
     const m = source.match(
-      /github(?:\.com)?(?:\/|\:)([a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
+      /^(github:|github\.com:|github\.com\/)([a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
     );
 
     if (m) {
       const res = {
-        'owner': m[1],
-        'repo': m[2],
-        'path': m[3],
+        'owner': m[2],
+        'repo': m[3],
+        'path': m[4],
       };
 
-      if (undefined !== m[4]) {
-        res.ref = m[4];
+      if (undefined !== m[5]) {
+        res.ref = m[5];
       }
 
       return res;

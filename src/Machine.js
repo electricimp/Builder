@@ -26,6 +26,7 @@
 
 const url = require('url');
 const path = require('path');
+const upath = require('upath');
 const fs = require('fs');
 const md5 = require('md5');
 
@@ -284,15 +285,43 @@ class Machine {
   }
 
   /**
+   * Concatenate github URL prefix and local relative include
+   * @param {string[]} prefix
+   * @param {string[]} includePath
+   * @private
+   */
+  _formatURL(prefix, includePath) {
+
+    const URL = url.parse(prefix);
+    if (!URL.protocol) {
+      return undefined;
+    }
+
+    const res = prefix.match(/(github:)(.*)/);
+    if (res === null) {
+      return undefined;
+    }
+
+    const suffix = upath.normalize(upath.join(res[2], includePath));
+    return `${res[1]}${suffix}`.replace(/\\/g, '/');
+  }
+
+  /**
    * Replace local includes to github URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
    */
   _remoteRelativeIncludes(includePath, context) {
+
     if (!this.remoteRelativeIncludes) {
       return includePath;
     }
+
+    /*
+     * The logic below could be moved to the _getReader()
+     * function and implemented for every reader type independently.
+     */
 
     // check if the file is included locally
     if (this._getReader(includePath) !== this.readers.file) {
@@ -305,9 +334,9 @@ class Machine {
     }
 
     // check if file is included from github source
-    const remotePath = this._formatPath(context.__PATH__, includePath);
-    if (this._getReader(remotePath) === this.readers.github) {
-      return remotePath;
+    const remotePath = this._formatURL(context.__PATH__, includePath);
+    if (remotePath && this._getReader(remotePath) === this.readers.github) {
+      return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
     }
 
     return includePath;
@@ -336,7 +365,7 @@ class Machine {
       return;
     }
 
-    // checkout local includes in the github sources from github 
+    // checkout local includes in the github sources from github
     includePath = this._remoteRelativeIncludes(includePath, context);
 
     const reader = this._getReader(includePath);

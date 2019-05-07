@@ -1,0 +1,1 @@
+local str = "I AM libDependency1.nut out of tree level 1";
