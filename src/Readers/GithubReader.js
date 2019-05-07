@@ -25,7 +25,6 @@
 'use strict';
 
 const HttpsProxyAgent = require('https-proxy-agent');
-const url = require('url');
 const path = require('path');
 const Octokit = require('@octokit/rest');
 const childProcess = require('child_process');
@@ -235,25 +234,20 @@ class GithubReader extends AbstractReader {
    * @return {false|{user, repo, path, ref}}
    */
   static parseUrl(source) {
-    const URL = url.parse(source);
-    if (!URL.protocol) {
-      return false;
-    }
-
     // parse url
     const m = source.match(
-      /github(?:\.com)?(?:\/|\:)([a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
+      /^(github:|github\.com:|github\.com\/)([a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
     );
 
     if (m) {
       const res = {
-        'owner': m[1],
-        'repo': m[2],
-        'path': m[3],
+        'owner': m[2],
+        'repo': m[3],
+        'path': m[4],
       };
 
-      if (undefined !== m[4]) {
-        res.ref = m[4];
+      if (undefined !== m[5]) {
+        res.ref = m[5];
       }
 
       return res;
