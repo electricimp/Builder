@@ -61,4 +61,14 @@ local str = "I AM libDependency1.nut out of tree level 1";
     const res = eol.lf(machine.execute(`@include once "${githubPath}"`, define));
     expect(res).toEqual(includesMsg);
   });
+
+  /*
+   * The support of another fixtures defines, like:
+   *  USE_ABSOLUTE_INCLUDES
+   *  USE_WIN_ABSOLUTE_INCLUDES
+   *  INCLUDE_NOT_EXIST
+   *  INCLUDE_NOT_EXIST_ERROR
+   *  INCLUDE_OUT_OF_REPO_ERROR
+   * will be added in the future.
+   */
 });

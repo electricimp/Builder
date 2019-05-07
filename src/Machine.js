@@ -318,6 +318,11 @@ class Machine {
       return includePath;
     }
 
+    /*
+     * The logic below could be moved to the _getReader()
+     * function and implemented for every reader type independently.
+     */
+
     // check if the file is included locally
     if (this._getReader(includePath) !== this.readers.file) {
       return includePath;
@@ -330,12 +335,7 @@ class Machine {
 
     // check if file is included from github source
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (!remotePath) {
-      return includePath; 
-    }
-
-    // apply github ref from context
-    if (this._getReader(remotePath) === this.readers.github) {
+    if (remotePath && this._getReader(remotePath) === this.readers.github) {
       return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
     }
 
@@ -365,7 +365,7 @@ class Machine {
       return;
     }
 
-    // checkout local includes in the github sources from github 
+    // checkout local includes in the github sources from github
     includePath = this._remoteRelativeIncludes(includePath, context);
 
     const reader = this._getReader(includePath);
