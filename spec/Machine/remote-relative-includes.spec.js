@@ -6,11 +6,11 @@
 
 require('jasmine-expect');
 
-const init = require('./init')('main');
 const eol = require('eol');
+const init = require('./init')('main');
 const backslashToSlash = require('../backslashToSlash');
 
-const githubPathA = "github:electricimp/Builder/spec/fixtures/sample-1/inc-a.nut"
+const githubPathA = 'github:electricimp/Builder/spec/fixtures/sample-1/inc-a.nut';
 
 describe('Machine', () => {
   let machine;
@@ -31,6 +31,6 @@ describe('Machine', () => {
     // check respect-local-includes feature
     machine.remoteRelativeIncludes = true;
     const res = eol.lf(machine.execute(`@include once "${githubPathA}"`));
-    expect(res).toEqual(`// included file a\n// included file b\n`);
+    expect(res).toEqual('// included file a\n// included file b\n');
   });
 });

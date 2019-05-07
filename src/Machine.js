@@ -294,17 +294,17 @@ class Machine {
 
     const URL = url.parse(prefix);
     if (!URL.protocol) {
-        return undefined;
+      return undefined;
     }
 
     const res = prefix.match(/(github:)(.*)/);
     if (res === null) {
-        return undefined;
+      return undefined;
     }
 
     const suffix = upath.normalize(upath.join(res[2], includePath));
     return `${res[1]}${suffix}`.replace(/\\/g, '/');
-}
+  }
 
   /**
    * Replace local includes to github URLs if requested
