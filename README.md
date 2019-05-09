@@ -116,29 +116,29 @@ server.log("Host home path is @{HOME}");
 
 will print the home directory path of the current user of the system where Builder was executed.
 
-Environment variables differ based on OS. If you wish to use environment variables with Builder, a quick internet search will give you details on how to list and set them.
+Environment variables differ based on OS. If you wish to use environment variables with Builder, a quick internet search will give you details on how to *list* the variables currently available on your system and also how to *set* new variables.
 
 #### Builder Variables ####
 
-- `__LINE__`  The line number (relative to the file in which this variable appears).
+- **`__LINE__`**  The line number (relative to the file in which this variable appears).
 
 ```
 Hi from line @{__LINE__}!
 ```
 
-- `__FILE__`  The name of the file in which this variable appears.
+- **`__FILE__`**  The name of the file in which this variable appears.
 
 ```
 Hi from file @{__FILE__}!
 ```
 
-- `__PATH__`  The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes.
+- **`__PATH__`**  The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes.
 
 ```
 Hi from file @{__PATH__}!
 ```
 
-Builder has two directives `@while` and `@repeat` that create loops. Inside these loops the following variables are available: 
+Builder has two directives [`@while`](#while) and [`@repeat`](#repeat) that create loops. Inside these loops the following variables are available: 
 
 - `loop.index` &mdash; 0-indexed iteration counter
 - `loop.iteration` &mdash; 1-indexed iteration counter
@@ -189,11 +189,11 @@ All text after any *Builder* expression statement, starting with `//` and extend
 
 ## Directives ##
 
-All *directives* start with the `@` symbol. The following sections will describe how to define and use directives. All examples will show how to use Builder directives to compile Electric Imp squirrel code.
+All *directives* start with the `@` symbol. The following sections will describe how to use directives to compile Electric Imp squirrel code.
 
 ### @{...} Inline Expressions/Macros ###
 
-This directive inserts the value of the enclosed variable/expression or executes a macro. 
+This directive inserts the value of the enclosed variable, expression or result from executing a macro. 
 
 <pre><b><b>@{</b></b><i>&lt;variable:identifier&gt;</i><b><b>}</b></b></pre>
 
@@ -281,7 +281,7 @@ This directive defines a code block that can take its own parameters. Macros are
 
     <pre><b>@include</b> macro(a, b, c)</pre>
 
-#### Examples ####
+#### Inline Example ####
 
 Define macro and use the inline [`@{...}`](#-inline-expressionsmacros) directive to create a multi-line string to log in squirrel. 
 
@@ -307,6 +307,8 @@ poem <- @"    Hello, username!
     And violets are blue";
 server.log(poem);
 ```
+
+#### Include Example ####
 
 Define macro and use if in an `@include` directive to create a multi-line string to log in squirrel.
 
@@ -336,6 +338,8 @@ poem <- @"
 ";
 server.log(poem);
 ```
+
+#### Optional Parameter Example ####
 
 Use a [Builder function](#builder-functions) to configure and use a macro with an optional parameter.
 
@@ -415,7 +419,7 @@ When using GitHub `@includes`, authentication is optional. However, you should b
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub *username*, you need to provide either a *[personal access token](https://github.com/settings/tokens)* **or** *password* (which is less secure and not recommended). More information on how to provide those parameters is included in the [usage](#builder-usage) section.
+Apart from a GitHub *username*, you need to provide either a *[personal access token](https://github.com/settings/tokens)* **or** *password* (which is less secure and not recommended). More information on how to provide those parameters is included in the [Builder usage](#builder-usage) section.
 
 #### Nested Includes/ Scope ####
 
@@ -635,10 +639,10 @@ and the options are:
 | --- | --- | --- | --- | --- |
 | -l |  | No | No | Generates line control statements. For a more detailed explanation, please read [this GCC page](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html) |
 | -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
-| --github-user | | No | Yes | A GitHub username. See [‘Files From GitHub’](#files-from-github) |
-| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. See [‘Files From GitHub’](#files-from-github) |
+| --github-user | | No | Yes | A GitHub username. |
+| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
-| --use-remote-relative-includes | | No | No | Interpret every [local include](#local-files) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
+| --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
 | --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
@@ -775,7 +779,7 @@ Run builder with the option `--lib path/to/your/lib/file`.
 
 ### Binding The Context Object Correctly ###
 
-Functions called by Builder will be called with their *this* argument set to a Builder context object. Within the context object, Builder [variables](#variables) like `__FILE__`, [functions](#functions) like `max()`, and other included library functions will be made available at the top level. Variables defined in your input code with `@macro` or `@set` will be available under the key *globals*.
+Functions called by Builder will be called with their *this* argument set to a Builder context object. Within the context object, Builder [variables](#variables) like `__FILE__`, [functions](#builder-functions) like `max()`, and other included library functions will be made available at the top level. Variables defined in your input code with `@macro` or `@set` will be available under the key *globals*.
 
 Ignoring the binding of *this* may cause unexpected behavior, for example when calling methods on objects. Take the following example library:
 
@@ -872,11 +876,11 @@ For example, to operate through a proxy running at IP address 192.168.10.2 on po
 
 ### Local Includes From Remote Files ###
 
-By default, all [local includes](#local-files), even if they are mentioned in remote source files, are interpreted as relative to the system where Builder is running.
+By default, all [local includes](#include), even if they are mentioned in remote source files, are interpreted as relative to the system where Builder is running.
 
-If `--use-remote-relative-includes` option is specified, every [local include](#local-files) is interpreted as relative to the location of the source file where it is mentioned, excluding absolute local includes, like `/home/user/etc` or `C:\Users\user\etc`. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
+If `--use-remote-relative-includes` option is specified, every [local include](#include) is interpreted as relative to the location of the source file where it is mentioned, excluding absolute local includes, like `/home/user/etc` or `C:\Users\user\etc`. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
 
-`--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#remote-files).
+`--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#include).
 
 **Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from GitHub only.
 
