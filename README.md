@@ -28,7 +28,6 @@
         - [@macro](#macro)
         - [@include](#include)
             - [GitHub Authentication](#github-authentication)
-            - [TBD Nested Includes](#nested-includes-scope)
         - [@include once](#include-once)
         - [@while](#while)
         - [@repeat](#repeat)
@@ -412,6 +411,15 @@ This directive can be used to include local files, external sources, or macros.
     
     <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
+When using the `@include` directive in complex file directories it is recommended you use the `__PATH__` variable to build references to your files. 
+
+```
+// Include supporting source files
+@include __PATH__ + "Hardware.device.nut"
+@include __PATH__ + "/../shared/Logger.shared.nut"
+@include __PATH__ + "/../shared/Constants.shared.nut"
+```
+
 #### GitHub Authentication ####
 
 When using GitHub `@includes`, authentication is optional. However, you should bear in mind that:
@@ -419,11 +427,7 @@ When using GitHub `@includes`, authentication is optional. However, you should b
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub *username*, you need to provide either a *[personal access token](https://github.com/settings/tokens)* **or** *password* (which is less secure and not recommended). More information on how to provide those parameters is included in the [Builder usage](#builder-usage) section.
-
-#### Nested Includes/ Scope ####
-
-TODO: add info and examples for what happens when includes are nested in files that are themselves included.
+Apart from a GitHub *username*, you need to provide either a *[personal access token](https://github.com/settings/tokens)* **or** *password* (which is less secure and not recommended). GitHub credentials can be stored using your system's environmental variables, in files that store Builder variables, or they a can be passed into the `pleasebuild` command. More information on how to set GitHub variables is included in the [Builder usage](#builder-usage) section.
 
 ### @include once ###
 
