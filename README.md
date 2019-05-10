@@ -1,13 +1,12 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-*Builder* combines a preprocessor with an expression language and advanced imports.
-
 **Current version: 2.8.1**
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
 ## Contents ##
 
+- [About Builder](#about-builder)
 - [Builder Syntax](#builder-syntax)
     - [Expressions](#expressions)
         - [Types](#types)
@@ -26,12 +25,14 @@
         - [@{...} – Inline Expressions/Macros](#-inline-expressionsmacros)
         - [@set](#set)
         - [@macro](#macro)
+            - [Define A Macro](#define-a-macro)
+            - [Use A Macro](#use-a-macro)
         - [@include](#include)
             - [GitHub Authentication](#github-authentication)
         - [@include once](#include-once)
         - [@while](#while)
         - [@repeat](#repeat)
-        - [@if... @elseif... @else](#if-elseeif-else)
+        - [@if... @elseif... @else](#if-elif-else)
         - [@error](#error)
         - [@warning](#warning)
     - [Filters](#filters)
@@ -51,13 +52,27 @@
 - [Testing](#testing)
 - [License](#license)
 
+# About Builder #
+
+Builder combines a preprocessor with an expression language and advanced imports.
+
+There are a number of ways in which you can [install Builder](#installing-and-running-builder). Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to your chosen impCentral Device Group.
+
+For example, you can use Builder the contents of separate code files into your main source code files. These additional files might contain library code that you make use of in a number of different products, or they might contain confidential data which you don’t want to include in source code files that are uploaded and shared on a site such as GitHub.
+
+You tell Builder which files to import, and where within your main source code they should be added, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a server file share, on a web site or hosted by a service such as GitHub.
+
+While Builder can be used to pull in code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
+
+Build components which are not expected to change between builds can be [cached for quick re-use](#reproducible-artifacts), as can [files that are stored remotely](#remote-includes).
+
 # Builder Syntax #
 
 ## Expressions ##
 
 ### Types ###
 
-The following types are supported in expressions:
+The following value types are supported in expressions:
 
 - _numbers_ (eg. `1`, `1E6`, `1e-6`, `1.567`)
 - _strings_ (eg. `"abc"`, `'abc'`)
@@ -66,6 +81,8 @@ The following types are supported in expressions:
 - `false`
 
 ### Operators ###
+
+Builder supports the following operators:
 
 #### Binary ####
 
@@ -77,39 +94,43 @@ The following types are supported in expressions:
 
 ### Member Expressions ###
 
+Membership of an object is expressed using any of the following expressions:
+
 - `somevar.member`
 - `somevar["member"]`
 - `([1, 2, 3])[1]`
 
 ### Conditional Expressions ###
 
-`conditional ? if_true : if_false`
+Builder provides the standard ternary operator (`?:`) for evaluating basic conditions:
+
+`<condition> ? <if_condition_true> : <if_condition_false>`
 
 ### Variables ###
 
-Variables can be used in Builder expression evaluation. Variable names can contain `$`, `_`, latin letters and digits, however they must not start with a digit. Variables can be defined in the following ways:
+Variables can be used in Builder expressions. Variable names can contain `$`, `_`, latin letters and digits, however they must not start with a digit. Variables can be defined in the following ways:
 
 - Builder's [`@set` directive](#set) statement.
-- Your computer's [environment variable](#environment-variables).
-- Builder's command line parameter `-D<variable name> <variable value>` passed to the `pleasebuild` command
+- Your computer's [environment variables](#environment-variables).
+- Pass the option `-D<variable name> <variable value>` to Builder’s `pleasebuild` command.
 
 All undefined variables are evaluated as `null`.
 
 #### Variable Definition Order ####
 
-When resolving a variable’s value: 
+When resolving a variable’s value:
 
-1. Builder first looks for its definition in the command line -D parameters (`-D<variable name> <variable value>`) passed to the `pleasebuild` command.
+1. Builder first looks for its definition among the command line parameters (as `-D<variable name> <variable value>`) passed to the `pleasebuild` command.
 2. If no such variable definition is found, the code is scanned for `@set` directive statements preceding the variable usage.
 3. If no variable definitions are found in the previous steps, Builder looks in the host environment variables.
 
 #### Environment Variables ####
 
-There is no special predicate required to make use of environment variables. Builder looks in the host environment variables to try and resolve the expressions if no command line or local variables have been set.   
+There is no special predicate required to make use of environment variables. Builder looks in the host environment variables to try and resolve the expressions if no command line or local variables have been set.
 
-For example on a mac:
+For example, on a Mac:
 
-```
+```squirrel
 server.log("Host home path is @{HOME}");
 ```
 
@@ -119,25 +140,20 @@ Environment variables differ based on OS. If you wish to use environment variabl
 
 #### Builder Variables ####
 
-- **`__LINE__`**  The line number (relative to the file in which this variable appears).
+Builder provides the following pre-defined variables:
 
-```
-Hi from line @{__LINE__}!
-```
+- `__LINE__` &mdash; The line number (relative to the file in which this variable appears). For example:
 
-- **`__FILE__`**  The name of the file in which this variable appears.
+    `Hi from line @{__LINE__}!`
+- `__FILE__` &mdash; The name of the file in which this variable appears. For example:
 
-```
-Hi from file @{__FILE__}!
-```
+    `Hi from file @{__FILE__}!`
+- `__PATH__` &mdash; The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes. For example:
 
-- **`__PATH__`**  The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes.
+    `Hi from file @{__PATH__}!`
 
-```
-Hi from file @{__PATH__}!
-```
-
-Builder has two directives [`@while`](#while) and [`@repeat`](#repeat) that create loops. Inside these loops the following variables are available: 
+<a id="loopvars"></a>
+Builder has two directives [`@while`](#while) and [`@repeat`](#repeat) for managing loops. Inside these loops the following variables are available:
 
 - `loop.index` &mdash; 0-indexed iteration counter
 - `loop.iteration` &mdash; 1-indexed iteration counter
@@ -146,15 +162,15 @@ Usage examples for these variables can be found in the [`@while`](#while) and [`
 
 ### Builder Functions ###
 
-Builder has a handful of helper functions.
+Builder provides the following helper functions:
 
 - `defined(<variable_name>)` &mdash; returns `true` if a variable is defined, `false` otherwise.
 - `include(<source>)` &mdash; includes external source.
 - `escape(<value>)` &mdash; escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`).
 - `base64(<value>)` &mdash; encodes value as base64.
-- `min(<numbers>)` &mdash; returns a number equal to the lowest number parameter 
-- `max(<numbers>)` &mdash; returns a number equal to the highest number parameter
-- `abs(<number>)` &mdash; returns the absolute value of the number parameter
+- `min(<numbers>)` &mdash; returns a number equal to the lowest number in the supplied list.
+- `max(<numbers>)` &mdash; returns a number equal to the highest number in the supplied list.
+- `abs(<number>)` &mdash; returns the absolute value of the supplied number.
 
 Builder also comes with some string functions, based on the JavaScript methods of the same names. These functions are available under the namespace `S`. The first argument of each function is always the string to be operated on. For documentation on the remaining arguments, please see [‘JavaScript String Methods’](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String).
 
@@ -174,13 +190,13 @@ Builder also comes with some string functions, based on the JavaScript methods o
 
 ## Comments ##
 
-Lines starting with `@` followed by space or a line break are treated as comments and not added to the output.
+Lines starting with `@` followed by space or a line break are treated as comments and not added to the output. For example:
 
 ```
 @ This is a Builder comment and will not appear in the output
 ```
 
-All text after any *Builder* expression statement, starting with `//` and extending to the end of the line, will be ignored by *Builder* and will not appear in the result output.
+Any text following `//` and extending to the end of the line will be ignored by Builder* and will not appear in the result output. For example:
 
 ```
 @set SOME_STRING = "my string" // This is a Builder comment that will not appear in output
@@ -188,25 +204,27 @@ All text after any *Builder* expression statement, starting with `//` and extend
 
 ## Directives ##
 
-All *directives* start with the `@` symbol. The following sections will describe how to use directives to compile Electric Imp squirrel code.
+All of Builder’s directives start with the `@` symbol. Don’t include a space or line break between the `@` and the required directive’s name as this will be interpreted as a [comment](#comments).
 
 ### @{...} Inline Expressions/Macros ###
 
-This directive inserts the value of the enclosed variable, expression or result from executing a macro. 
+This directive evaluates the expression enclosed by braces (`{` and  `}`) and inserts the result into the output. The enclosure can be the value of a named variable, an expression or a macro.
 
-<pre><b><b>@{</b></b><i>&lt;variable:identifier&gt;</i><b><b>}</b></b></pre>
-
-<pre><b>@{</b><i>&lt;expression&gt;</i><b>}</b></pre>
-
-<pre><b>@{</b>macro(a, b, c)<b>}</b></pre>
+<pre>
+<b>@{</b><i>&lt;variable:identifier&gt;</i><b>}</b>
+<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
+<b>@{</b><i>macro(a, b, c)</i><b>}</b>
+</pre>
 
 #### Example ####
+
+The line:
 
 ```
 The result is: @{123 * 456}.
 ```
 
-This results in the following output:
+results in the following output:
 
 ```
 The result is: 56088.
@@ -214,29 +232,26 @@ The result is: 56088.
 
 ### @set ###
 
-This directive assigns a *value* or the value of an *expression* to a *variable*. Variables are defined in a global context. A *value* can be any supported [expression type](#types) or [Builder function](#builder-functions).
+This directive assigns a value or the value of an expression to a [variable](#variables). Variables are defined in a global context. A value can be any supported [type](#types) or [function](#builder-functions).
 
 <pre>
-<b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> <i>&lt;value:expression&gt;</i>
-</pre>
-
-<pre>
-<b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> = <i>&lt;value:expression&gt;</i>
+<b>@set </b><i>&lt;variable:identifier&gt; &lt;value:expression&gt;</i>
+<b>@set </b><i>&lt;variable:identifier&gt;</i> <b>=</b> <i>&lt;value:expression&gt;</i>
 </pre>
 
 #### Example ####
 
-Set variables using Builder `@set` directive, then use the Builder inline [`@{...}`](#-inline-expressionsmacros) to create squirrel log messages with those variables. 
+In this example, we define a number of variables using `@set`, then use [`@{...}`](#-inline-expressionsmacros) to create squirrel log messages with those variables. If the following lines are added to your source code:
 
 ```
 @ Set Builder global variables
 @set SOME_INT    = 10
 @set SOME_STRING = "my string"
 @set BOOL_VAL    = (12 > 4)
-@ 
+@
 @ Use a Builder function to set a global variable
 @set MIN_INT min(1, 2, 3)
-@ 
+@
 // Use Builder global variables in squirrel log messages
 server.log(@{SOME_INT});
 server.log("@{SOME_STRING}");
@@ -244,7 +259,7 @@ server.log(@{BOOL_VAL});
 server.log(@{MIN_INT});
 ```
 
-This results in the following output:
+then during processing, Builder will output:
 
 ```
 // Use Builder global variables in squirrel log messages
@@ -256,42 +271,39 @@ server.log(1);
 
 ### @macro ###
 
-This directive defines a code block that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
+This directive defines a code block with its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
 
-#### Define ####
+#### Define A Macro ####
 
 <pre>
 <b>@macro</b> <i>&lt;name&gt;</i>(<i>&lt;arguments&gt;</i>)
-  <i>&lt;body&gt;</i>
+    <i>&lt;body&gt;</i>
 <b>@endmacro</b>
 </pre>
 
-`@endmacro` can be replaced with `@end`.
+**Note** `@end` can be used in place of `@endmacro` if you prefer.
 
-#### Use ####
+#### Use A Macro ####
 
- Macros can be used either inline [`@{...}`](#-inline-expressionsmacros) or via the [@include](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
+Macros can be used either inline with the [`@{...}`](#-inline-expressionsmacros) director, or with the [@include](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
 
-- Inline `@{...}`:
-
-	<pre><b>@{</b>macro(a, b, c)<b>}</b></pre>
-
-- With `@include` directive
-
-    <pre><b>@include</b> macro(a, b, c)</pre>
+<pre>
+<b>@{</b>macro<b>(</b>a, b ,c)<b>}</b>
+<b>@include</b> macro(a, b ,c)
+</pre>
 
 #### Inline Example ####
 
-Define macro and use the inline [`@{...}`](#-inline-expressionsmacros) directive to create a multi-line string to log in squirrel. 
+Define a macro and use the [`@{...}`](#-inline-expressionsmacros) directive to create a multi-line string to log in squirrel:
 
 ```
 @ Define a macro
 @macro some_macro(a, b, c)
     Hello, @{a}!
     Roses are @{b},
-    And violets are @{c} 
+    And violets are @{c}
 @end
-@
+
 // Use an inline Builder macro to create a multi-line string
 poem <- @"@{some_macro("username", "red", "blue")}";
 server.log(poem);
@@ -309,16 +321,16 @@ server.log(poem);
 
 #### Include Example ####
 
-Define macro and use if in an `@include` directive to create a multi-line string to log in squirrel.
+Define a macro and use it with `@include` to create a multi-line string to log in squirrel:
 
 ```
 @ Define a macro
 @macro some_macro(a, b, c)
     Hello, @{a}!
     Roses are @{b},
-    And violets are @{c} 
+    And violets are @{c}
 @end
-@
+
 // Use Builder include and macro directives to create a multi-line squirrel string
 poem <- @"
 @include some_macro("username", "red", "blue")
@@ -340,16 +352,16 @@ server.log(poem);
 
 #### Optional Parameter Example ####
 
-Use a [Builder function](#builder-functions) to configure and use a macro with an optional parameter.
+Use a [function](#builder-functions) to configure and use a macro with an optional parameter.
 
 ```
 @ Define a macro with an optional parameter
 @macro some_macro(a, b, c)
     Hello, @{a}!
     Roses are @{b},
-    And violets are @{defined(c) ? c : "of undefined color"}. 
+    And violets are @{defined(c) ? c : "of undefined color"}.
 @end
-@
+
 // Use Builder include and macro directives to create a multi-line squirrel string
 poem <- @"
 @include some_macro("username", "red")
@@ -364,34 +376,34 @@ This results in the following output:
 poem <- @"
     Hello, username!
     Roses are red,
-    And violets are of undefined color. 
+    And violets are of undefined color.
 ";
 server.log(poem);
 ```
 
 ### @include ###
 
-This directive can be used to include local files, external sources, or macros.
+This directive can be used to include local files, external sources or [macros](#macro).
 
 <pre>
 <b>@include</b> <i>&lt;source:expression&gt;</i>
 </pre>
 
-- For `@macro` directive
+- For a `@macro`:
 
     <pre><b>@include</b> some_macro("username", 123)</pre>
 
-- For a local file
+- For a local file:
 
     <pre><b>@include</b> "somefile.ext"</pre>
 
-- For a remote file
-
-    <pre><b>@include</b> "http://example.com/file.ext"</pre>
+- For a remote file:
 
     <pre><b>@include</b> "https://example.com/file.ext"</pre>
 
-- For a file from GitHub
+    For more detailed information on making use of remote includes, please see [below](#remote-includes).
+
+- For GitHub file, where:
 
     - `user` is the user/organization name.
     - `repo` is the repository name.
@@ -401,17 +413,17 @@ This directive can be used to include local files, external sources, or macros.
 
     - Head of the default branch
 
-    <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut"</pre>
+        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut"</pre>
 
     - Head of the _develop_ branch
-    
-    <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"</pre>
+
+        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"</pre>
 
     - Tag _v3.0.1_:
-    
-    <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
-When using the `@include` directive in complex file directories it is recommended you use the `__PATH__` variable to build references to your files. 
+        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
+
+When using the `@include` directive in complex file directories it is recommended you use the `__PATH__` variable to build references to your files.
 
 ```
 // Include supporting source files
@@ -427,164 +439,165 @@ When using GitHub `@includes`, authentication is optional. However, you should b
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub *username*, you need to provide either a *[personal access token](https://github.com/settings/tokens)* **or** *password* (which is less secure and not recommended). GitHub credentials can be stored using your system's environmental variables, in files that store Builder variables, or they a can be passed into the `pleasebuild` command. More information on how to set GitHub variables is included in the [Builder usage](#builder-usage) section.
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the `pleasebuild` command. More information on setting GitHub variables can be found [below](#github-files-dependencies).
 
 ### @include once ###
 
-This acts the same as `@include` but has no effect if *source* has already been included. Macros are always included.
+This directive acts just like `@include` but has no effect if the specified *source* has already been included. However, macros are always included.
 
 <pre><b>@include once</b> <i>&lt;source:expression&gt;</i></pre>
 
 ### @while ###
 
-This invokes a `while` loop. You can access the Builder loop variables in `@while` loops.
+This directive invokes a `while` loop. You can access Builder’s [loop variables](#loopvars) within `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
-  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
-  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
+    // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+    // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
 <b>@endwhile</b>
 </pre>
 
-**Note** `@endwhile` can be replaced with `@end`.
+**Note** `@end` may be used in place of `@endwhile` if you prefer.
 
 #### Example ####
+
+The following lines, when added to your source code:
 
 ```
 @set myvar = 12
 
 @while myvar > 9
-  @set myvar = myvar - 1
-  var: @{myvar}
+    @set myvar = myvar - 1
+var: @{myvar}
   loop.index: @{loop.index}
+    loop.iteration: @{loop.iteration}
 @end
 ```
 
-This outputs:
+will output:
 
 ```
 myvar: 11
-loop.index: 0
+  loop.index: 0
+    loop.iteration: 1
 myvar: 10
-loop.index: 1
+  loop.index: 1
+    loop.iteration: 2
 myvar: 9
-loop.index: 2
+  loop.index: 2
+    loop.iteration: 3
 ```
 
 ### @repeat ###
 
-This invokes a loop that repeats over a certain number of iterations. You can access the Builder loop variables in `@repeat` loops.
+This directive invokes a loop that repeats for a certain number of iterations. You can access Builder’s [loop variables](#loopvars) within `@repeat` loops.
 
 <pre>
 <b>@repeat</b> <i>&lt;times:expression&gt;</i>
-  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
-  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
+    // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+    // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
 <b>@endrepeat</b>
 </pre>
 
-**Note** `@endrepeat` can be replaced with `@end`.
+**Note** `@end` may be used in place of `@endrepeat` if you prefer.
 
 #### Example ####
 
+The following lines, when added to your source code:
+
 ```
 @repeat 3
-  loop.iteration: @{loop.iteration}
+    loop.iteration: @{loop.iteration}
 @end
 ```
 
-This outputs:
+will output:
 
 ```
-  loop.iteration: 1
-  loop.iteration: 2
-  loop.iteration: 3
+    loop.iteration: 1
+    loop.iteration: 2
+    loop.iteration: 3
 ```
 
-<a id="if-elseeif-else"></a>
+<a id="if-elif-else"></a>
+
 ### @if... @elseif... @else ###
 
-This directive invokes conditional branching.
+This directive provides conditional branching.
 
-```
-@if <test:expression>
+<pre>
+<b>@if</b> <i>&lt;test:expression&gt;</i>
+    // Consequent code
+<b>@elseif</b> <i>&lt;test:expression&gt;</i>
+    // else if #1 code
+<b>@else</b>
+    // Alternative code
+<b>@endif</b>
+</pre>
 
-  // Consequent code
-
-@elseif <test:expression>
-
-  // else if #1 code
-
-// ...more elseifs...
-
-@else
-
-  // Alternative code
-
-@endif
-```
-
-**Note** `@endif` can be replaced with `@end`.
+**Note** `@end` may be used in place of `@endif` if you prefer.
 
 #### Example ####
 
 ```
 @if __FILE__ == 'abc.ext'
-  // include something
+    // include something
 @elseif __FILE__ == 'def.ext'
-  // include something else
+    // include something else
 @else
-  // something completely different
+    // do something completely different
 @endif
 ```
 
 ### @error ###
 
+This directive simply emits an error.
+
 <pre>
 <b>@error</b> <i>&lt;message:expression&gt;</i>
 </pre>
-
-Emits an error.
 
 #### Example ####
 
 ```
 @if PLATFORM == "platform1"
-  // platform 1 code
+    // platform 1 code
 @elseif PLATFORM == "platform2"
-  // platform 2 code
+    // platform 2 code
 @elseif PLATFORM == "platform3"
-  // platform 3 code
+    // platform 3 code
 @else
-  @error "Platform is " + PLATFORM + " is unsupported"
+    @error "Platform " + PLATFORM + " is unsupported"
 @endif
 ```
 
 ### @warning ###
 
+This directive simply emits a warning.
+
 <pre>
 <b>@warning</b> <i>&lt;message:expression&gt;</i>
 </pre>
-
-Emits a warning.
 
 #### Example ####
 
 ```
 @if PLATFORM == "platform1"
-  // platform 1 code
+    // platform 1 code
 @elseif PLATFORM == "platform2"
-  // platform 2 code
+    // platform 2 code
 @elseif PLATFORM == "platform3"
-  // platform 3 code
+    // platform 3 code
 @else
-  @warning "Building for default platform"
-  // default platform code
+    @warning "Building for default platform"
+    // default platform code
 @endif
 ```
 
 ## Filters ##
 
-The `|` operator (filter) allows you to pass a value through any of the supported functions.
+The filter operator, `|`, allows you to pipe a value through any of the supported functions.
 
 <pre>
 <b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
@@ -596,13 +609,13 @@ This is equivalent to:
 <b>@{</b><i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
 </pre>
 
-### Example ###
+#### Example ####
 
 ```
-// Include external HTML to a string
+// Include external HTML piped through the escape processing function
 a = "@{include('index.html')|escape}"
 
-// Include external binary file to a base64-encoded string
+// Include an external binary piped through the base64 encoder function
 b = "@{include('file.bin')|base64}"
 ```
 
@@ -622,7 +635,7 @@ npm install -g Builder
 
 then use the `pleasebuild` command which is provided by Builder:
 
-```
+```sh
 pleasebuild [-l] [-D<variable> <value>]
     [--github-user <username> --github-token <token>]
     [--lib <path_to_file>]
@@ -633,11 +646,7 @@ pleasebuild [-l] [-D<variable> <value>]
     <input_file>
 ```
 
-where:
-
-`<input_file>` &mdash; is the path to source file which should be preprocessed
-
-and the options are:
+where `<input_file>` is the path to source file which should be preprocessed and the other options are:
 
 | Option | Synonym | Mandatory? | Value&nbsp;Required? | Description |
 | --- | --- | --- | --- | --- |
@@ -764,22 +773,22 @@ A typical `directives.json` file looks like this:
 
 ## Including JavaScript Libraries ##
 
-Builder can accept JavaScript libraries to add functionality to its global namespace. The library should export an object, the properties of which will be merged into the global namespace. For example, to include a function to convert strings to uppercase, define your library file like so:
+Builder can accept JavaScript libraries to add functionality to its global namespace. The library should export an object, the properties of which will be merged into the global namespace. For example, to include a function, *upper()*, to convert strings to uppercase, define your library file like so:
 
 ```js
 module.exports = {
-  upper: (s) => s.toUpperCase()
+    upper: (s) => s.toUpperCase()
 };
 ```
 
-Include directives, such as the following example, in your input file:
+Now include the function within directives in your input file:
 
 ```
 @{upper("warning:")}
 @{upper(include("warning.txt"))}
 ```
 
-Run builder with the option `--lib path/to/your/lib/file`.
+Finally, run Builder with the option `--lib path/to/your/lib/file`.
 
 ### Binding The Context Object Correctly ###
 
@@ -893,9 +902,9 @@ If `--use-remote-relative-includes` option is specified, every [local include](#
 All environment variables are optional here. The default for `SPEC_LOGLEVEL` is `error`.
 
 ```sh
-SPEC_LOGLEVEL=<debug|info|warning|error> 
-SPEC_GITHUB_USERNAME=<GitHub username> 
-SPEC_GITHUB_TOKEN=<GitHub password/access token> 
+SPEC_LOGLEVEL=<debug|info|warning|error>
+SPEC_GITHUB_USERNAME=<GitHub username>
+SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 
