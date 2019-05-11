@@ -7,6 +7,7 @@
 const fs = require('fs');
 const Log = require('log');
 const HttpReader = require('../src/Readers/HttpReader');
+const eol = require('eol');
 const AbstractReader = require('../src/Readers/AbstractReader');
 
 describe('HttpReader', () => {
@@ -24,13 +25,13 @@ describe('HttpReader', () => {
   it('should read sample#1 from githubusercontent.com (http)', () => {
     const remote = reader.read('http://raw.githubusercontent.com/electricimp/Builder/master/spec/fixtures/sample-1/input.nut');
     const local = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
-    expect(remote).toEqual(local);
+    expect(remote).toEqual(eol.lf(local));
   });
 
   it('should read sample#1 from githubusercontent.com (https)', () => {
     const remote = reader.read('https://raw.githubusercontent.com/electricimp/Builder/master/spec/fixtures/sample-1/input.nut');
     const local = fs.readFileSync(__dirname + '/fixtures/sample-1/input.nut', 'utf-8');
-    expect(remote).toEqual(local);
+    expect(remote).toEqual(eol.lf(local));
   });
 
   it('should throw a timeout error', () => {
