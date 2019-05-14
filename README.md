@@ -1,12 +1,15 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-**Current version: 2.8.1**
+### Current version: 2.8.1 ###
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
 ## Contents ##
 
 - [About Builder](#about-builder)
+- [Builder Installation](#builder-installation)
+    - [Command Line Tool Installation](#command-line-tool-installation)
+    - [Library Installation](#library-installation)
 - [Builder Syntax](#builder-syntax)
     - [Expressions](#expressions)
         - [Types](#types)
@@ -36,16 +39,13 @@
         - [@error](#error)
         - [@warning](#warning)
     - [Filters](#filters)
-- [Builder Usage](#builder-usage)
-    - [Installing And Running Builder](#installing-and-running-builder)
-        - [Command Line Tool Installation](#command-line-tool-installation)
-        - [Library Installation](#library-installation)
-    - [Reproducible Artifacts](#reproducible-artifacts)
+- [Advanced Builder Usage](#advanced-builder-usage)
+    - [Re-using Builder Artifacts](#re-using-builder-artifacts)
         - [GitHub Files: Dependencies](#github-files-dependencies)
         - [Builder Variables: Directives](#builder-variables-directives)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
-    - [Remote Includes](#remote-includes)
+    - [Managing Remote Includes](#managing-remote-includes)
         - [Caching Remote Includes](#caching-remote-includes)
         - [Proxy Access To Remote Includes](#proxy-access-to-remote-includes)
         - [Local Includes From Remote Files](#local-includes-from-remote-files)
@@ -56,15 +56,118 @@
 
 Builder combines a preprocessor with an expression language and advanced imports.
 
-There are a number of ways in which you can [install Builder](#installing-and-running-builder). Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to your chosen impCentral Device Group.
+There are a number of ways in which you can [install Builder](#builder-installation) depending on how you plan to integrate it into your workflow. Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to an impCentral™ Device Group.
 
-For example, you can use Builder the contents of separate code files into your main source code files. These additional files might contain library code that you make use of in a number of different products, or they might contain confidential data which you don’t want to include in source code files that are uploaded and shared on a site such as GitHub.
+You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
-You tell Builder which files to import, and where within your main source code they should be added, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a server file share, on a web site or hosted by a service such as GitHub.
+You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub.
 
-While Builder can be used to pull in code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
+While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
-Build components which are not expected to change between builds can be [cached for quick re-use](#reproducible-artifacts), as can [files that are stored remotely](#remote-includes).
+Build components which are not expected to change between builds can be [cached for quick re-use](#re-using-builder-artifacts), as can [files that are stored remotely](#managing-remote-includes). This speeds up the building process.
+
+For details on the commands that Builder offers, please see the [Directives](#directives) section. This is part of the [Builder Syntax](#builder-syntax) section, which also describes how Builder commands are structured.
+
+# Builder Installation #
+
+Builder requires Node.js 8.0.0 and above. It can be installed and used by two ways:
+
+- As an [_npm_ command line tool](#command-line-tool-installation)
+- As an [_npm_ library](#library-installation).
+
+## Command Line Tool Installation ##
+
+Install Builder:
+
+```sh
+npm install -g Builder
+```
+
+Now use Builder’s `pleasebuild` command to configure the newly installed utility:
+
+```sh
+pleasebuild [-l] [-D<variable> <value>]
+    [--github-user <username> --github-token <token>]
+    [--lib <path_to_file>]
+    [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
+    [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
+    [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
+    [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
+    <input_file>
+```
+
+where `<input_file>` is the path to source file which should be preprocessed and the other options are:
+
+| Option | Synonym | Mandatory? | Value&nbsp;Required? | Description |
+| --- | --- | --- | --- | --- |
+| -l |  | No | No | Generates line control statements. For a more detailed explanation, please read [this GCC page](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html) |
+| -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
+| --github-user | | No | Yes | A GitHub username. |
+| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
+| --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
+| --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
+| --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
+| --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
+| --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
+| --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
+| --save-dependencies | | No | No | Save references to the required GitHub files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts) |
+| --use-dependencies | | No | No | Use the specified file to set which GitHub files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts).  |
+| --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts) |
+| --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts) |
+
+## Library Installation ##
+
+Install Builder:
+
+```sh
+npm i --save Builder
+```
+
+Now instantiate, configure and execute Builder from within your source code. For example:
+
+```js
+const Builder = require('Builder');
+const builder = new Builder();
+
+// Specify whether you need line control statements. See the "-l" CLI option.
+builder.machine.generateLineControlStatements = <true|false>;
+
+// Cache all files included from remote sources. See the "--cache" CLI option.
+builder.machine.useCache = <true|false>;
+
+// Set GitHub credentials. See the "--github-user" and "--github-token" CLI options.
+builder.machine.readers.github.username = "<USERNAME>";
+builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
+
+// Path to the file that lists the resources which should be excluded from caching.
+// See the "--cache-exclude-list" CLI option.
+builder.machine.excludeList = "<PATH_TO_FILE>";
+
+// Replace local include paths to github URLs if requested.
+// See the "--use-remote-relative-includes" CLI option.
+builder.machine.remoteRelativeIncludes = <true|false>;
+
+// Suppress warning about duplicate includes.
+// See the "--suppress-duplicate-includes-warning" CLI option.
+builder.machine.suppressDupWarning = <true|false>;
+
+// See the "--save-dependencies" CLI option.
+builder.machine.dependenciesSaveFile = <false|"PATH_TO_FILE">;
+// See the "--use-dependencies" CLI option.
+builder.machine.dependenciesUseFile = <false|"PATH_TO_FILE">;
+
+// See the "--save-directives" CLI option.
+builder.machine.directivesSaveFile = <false|"PATH_TO_FILE">;
+// See the "--use-directives" CLI option.
+builder.machine.directivesUseFile = <false|"PATH_TO_FILE">;
+
+const inputFile = "PATH_TO_YOUR_INPUT_FILE";
+
+const result = builder.machine.execute(`@include "${inputFile}"`);
+console.log(result);
+```
+
+To understand Builder configuration, please review [this source code](./src/cli.js).
 
 # Builder Syntax #
 
@@ -110,9 +213,9 @@ Builder provides the standard ternary operator (`?:`) for evaluating basic condi
 
 Variables can be used in Builder expressions. Variable names can contain `$`, `_`, latin letters and digits, however they must not start with a digit. Variables can be defined in the following ways:
 
-- Builder's [`@set` directive](#set) statement.
+- Builder's [`@set`](#set) directive.
 - Your computer's [environment variables](#environment-variables).
-- Pass the option `-D<variable name> <variable value>` to Builder’s `pleasebuild` command.
+- Pass the option `-D<variable name> <variable value>` to Builder’s [`pleasebuild`](#command-line-tool-installation) command.
 
 All undefined variables are evaluated as `null`.
 
@@ -120,8 +223,8 @@ All undefined variables are evaluated as `null`.
 
 When resolving a variable’s value:
 
-1. Builder first looks for its definition among the command line parameters (as `-D<variable name> <variable value>`) passed to the `pleasebuild` command.
-2. If no such variable definition is found, the code is scanned for `@set` directive statements preceding the variable usage.
+1. Builder looks for its definition among the command line parameters (as `-D<variable name> <variable value>`) passed to the [`pleasebuild`](#command-line-tool-installation) command.
+2. If no such variable definition is found, the code is scanned for [`@set`](#set) directive statements preceding the variable usage.
 3. If no variable definitions are found in the previous steps, Builder looks in the host environment variables.
 
 #### Environment Variables ####
@@ -153,6 +256,7 @@ Builder provides the following pre-defined variables:
     `Hi from file @{__PATH__}!`
 
 <a id="loopvars"></a>
+
 Builder has two directives [`@while`](#while) and [`@repeat`](#repeat) for managing loops. Inside these loops the following variables are available:
 
 - `loop.index` &mdash; 0-indexed iteration counter
@@ -285,7 +389,7 @@ This directive defines a code block with its own parameters. Macros are declared
 
 #### Use A Macro ####
 
-Macros can be used either inline with the [`@{...}`](#-inline-expressionsmacros) director, or with the [@include](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
+Macros can be used either inline with the [`@{...}`](#-inline-expressionsmacros) director, or with the [`@include`](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
 
 <pre>
 <b>@{</b>macro<b>(</b>a, b ,c)<b>}</b>
@@ -321,7 +425,7 @@ server.log(poem);
 
 #### Include Example ####
 
-Define a macro and use it with `@include` to create a multi-line string to log in squirrel:
+Define a macro and use it with [`@include`](#include) to create a multi-line string to log in squirrel:
 
 ```
 @ Define a macro
@@ -389,7 +493,7 @@ This directive can be used to include local files, external sources or [macros](
 <b>@include</b> <i>&lt;source:expression&gt;</i>
 </pre>
 
-- For a `@macro`:
+- For a [`@macro`](#macro):
 
     <pre><b>@include</b> some_macro("username", 123)</pre>
 
@@ -401,7 +505,7 @@ This directive can be used to include local files, external sources or [macros](
 
     <pre><b>@include</b> "https://example.com/file.ext"</pre>
 
-    For more detailed information on making use of remote includes, please see [below](#remote-includes).
+    For more detailed information on making use of remote includes, please see [below](#managing-remote-includes).
 
 - For GitHub file, where:
 
@@ -423,7 +527,7 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
-When using the `@include` directive in complex file directories it is recommended you use the `__PATH__` variable to build references to your files.
+When using the `@include` directive in complex file directories it is recommended you use the `__PATH__` [variable](#builder-variables) to build references to your files.
 
 ```
 // Include supporting source files
@@ -434,12 +538,12 @@ When using the `@include` directive in complex file directories it is recommende
 
 #### GitHub Authentication ####
 
-When using GitHub `@includes`, authentication is optional. However, you should bear in mind that:
+When using GitHub `@include` statements, authentication is optional. However, you should bear in mind that:
 
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the `pleasebuild` command. More information on setting GitHub variables can be found [below](#github-files-dependencies).
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the [`pleasebuild`](#command-line-tool-installation) command. More information on setting GitHub variables can be found [below](#github-files-dependencies).
 
 ### @include once ###
 
@@ -449,7 +553,7 @@ This directive acts just like `@include` but has no effect if the specified *sou
 
 ### @while ###
 
-This directive invokes a `while` loop. You can access Builder’s [loop variables](#loopvars) within `@while` loops.
+This directive invokes a loop which only ends when specified conditions are met. You can access Builder’s [loop variables](#loopvars) within `@while` loops.
 
 <pre>
 <b>@while</b> <i>&lt;test:expression&gt;</i>
@@ -597,7 +701,7 @@ This directive simply emits a warning.
 
 ## Filters ##
 
-The filter operator, `|`, allows you to pipe a value through any of the supported functions.
+The filter operator, `|`, allows you to pipe a value output by an operation into any of the supported functions.
 
 <pre>
 <b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
@@ -619,109 +723,17 @@ a = "@{include('index.html')|escape}"
 b = "@{include('file.bin')|base64}"
 ```
 
-# Builder Usage #
+# Advanced Builder Usage #
 
-## Installing And Running Builder ##
+This section contains information that will help you work with Builder more effectively, but may not be needed for more basic Builder tasks. These advanced options include:
 
-Builder requires Node.js 8.0.0 and above. It can be installed and used by two ways: as an _npm_ command line tool or as an _npm_ library.
+- [Re-using Builder Artifacts](#re-using-builder-artifacts)
+- [Including JavaScript Libraries](#including-javascript-libraries)
+- [Managing Remote Includes](#managing-remote-includes)
 
-### Command Line Tool Installation ###
+## Re-using Builder Artifacts ##
 
-Install Builder
-
-```sh
-npm install -g Builder
-```
-
-then use the `pleasebuild` command which is provided by Builder:
-
-```sh
-pleasebuild [-l] [-D<variable> <value>]
-    [--github-user <username> --github-token <token>]
-    [--lib <path_to_file>]
-    [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
-    [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
-    [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
-    [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
-    <input_file>
-```
-
-where `<input_file>` is the path to source file which should be preprocessed and the other options are:
-
-| Option | Synonym | Mandatory? | Value&nbsp;Required? | Description |
-| --- | --- | --- | --- | --- |
-| -l |  | No | No | Generates line control statements. For a more detailed explanation, please read [this GCC page](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html) |
-| -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
-| --github-user | | No | Yes | A GitHub username. |
-| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
-| --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
-| --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
-| --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
-| --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --save-dependencies | | No | No | Save references to the required GitHub files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
-| --use-dependencies | | No | No | Use the specified file to set which GitHub files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
-| --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
-| --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
-
-### Library Installation ###
-
-Install Builder
-
-```sh
-npm i --save Builder
-```
-
-then instantiate, setup and execute Builder from the source code, for example:
-
-```js
-const Builder = require('Builder');
-const builder = new Builder();
-
-// Specify whether you need line control statements. See the "-l" CLI option.
-builder.machine.generateLineControlStatements = <true|false>;
-
-// Cache all files included from remote sources. See the "--cache" CLI option.
-builder.machine.useCache = <true|false>;
-
-// Set GitHub credentials. See the "--github-user" and "--github-token" CLI options.
-builder.machine.readers.github.username = "<USERNAME>";
-builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
-
-// Path to the file that lists the resources which should be excluded from caching.
-// See the "--cache-exclude-list" CLI option.
-builder.machine.excludeList = "<PATH_TO_FILE>";
-
-// Replace local include paths to github URLs if requested.
-// See the "--use-remote-relative-includes" CLI option.
-builder.machine.remoteRelativeIncludes = <true|false>;
-
-// Suppress warning about duplicate includes.
-// See the "--suppress-duplicate-includes-warning" CLI option.
-builder.machine.suppressDupWarning = <true|false>;
-
-// See the "--save-dependencies" CLI option.
-builder.machine.dependenciesSaveFile = <false|"PATH_TO_FILE">;
-// See the "--use-dependencies" CLI option.
-builder.machine.dependenciesUseFile = <false|"PATH_TO_FILE">;
-
-// See the "--save-directives" CLI option.
-builder.machine.directivesSaveFile = <false|"PATH_TO_FILE">;
-// See the "--use-directives" CLI option.
-builder.machine.directivesUseFile = <false|"PATH_TO_FILE">;
-
-const inputFile = "PATH_TO_YOUR_INPUT_FILE";
-
-const result = builder.machine.execute(`@include "${inputFile}"`);
-console.log(result);
-```
-
-To understand Builder setup, please review [this source code](./src/cli.js).
-
-## Reproducible Artifacts ##
-
-It is possible to save the build configuration used for preprocessing a source file &mdash; ie. Builder variable definitions and references to the concrete versions of GitHub files and libraries that are used &mdash; and preprocess the source file again later with the saved configuration.
+It is possible to save the build configuration data used for preprocessing a source file &mdash; ie. Builder variable definitions ([‘directives’](#builder-variables-directives)), and references to the concrete versions of GitHub files and libraries ([‘dependencies’](#github-files-dependencies)) that are used &mdash; and preprocess the source file again later with the saved configuration.
 
 ### GitHub Files: Dependencies ###
 
@@ -834,7 +846,9 @@ module.exports = {
 };
 ```
 
-## Remote Includes ##
+## Managing Remote Includes ##
+
+There are a number of advanced techniques you may apply when including remote files in your source code using Builder.
 
 ### Caching Remote Includes ###
 
