@@ -40,7 +40,7 @@
         - [@warning](#warning)
     - [Filters](#filters)
 - [Advanced Builder Usage](#advanced-builder-usage)
-    - [Re-using Builder Artifacts](#re-using-builder-artifacts)
+    - [Reproducible Artifacts](#reproducible-artifacts)
         - [GitHub Files: Dependencies](#github-files-dependencies)
         - [Builder Variables: Directives](#builder-variables-directives)
     - [Including JavaScript Libraries](#including-javascript-libraries)
@@ -56,7 +56,7 @@
 
 Builder combines a preprocessor with an expression language and advanced imports.
 
-There are a number of ways in which you can [install Builder](#builder-installation) depending on how you plan to integrate it into your workflow. Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to an impCentral™ Device Group.
+There are a number of ways in which you can [install Builder](#builder-installation) depending on how you plan to integrate it into your workflow. Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to an impCentral™ Device Group. The [Electric Imp VS Code extension](https://github.com/electricimp/vscode) already combines Builder and with commands to upload code to an impCentral™ Device Group. If you are using the extension there is no need to do a separate install of Builder to take advantage of its features. 
 
 You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
@@ -64,7 +64,7 @@ You tell Builder which files to import, and where within your main source code t
 
 While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
-Build components which are not expected to change between builds can be [cached for quick re-use](#re-using-builder-artifacts), as can [files that are stored remotely](#managing-remote-includes). This speeds up the building process.
+To speed up the process, [files that are stored remotely](#managing-remote-includes) which are not expected to change between builds can be cached for quick re-use. With the [reproducible artifacts](#reproducible-artifacts) feature, it is possible to store references to all files and variables, so that builds can be re-created for future debugging. 
 
 For details on the commands that Builder offers, please see the [Directives](#directives) section. This is part of the [Builder Syntax](#builder-syntax) section, which also describes how Builder commands are structured.
 
@@ -110,10 +110,10 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --save-dependencies | | No | No | Save references to the required GitHub files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts) |
-| --use-dependencies | | No | No | Use the specified file to set which GitHub files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts).  |
-| --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts) |
-| --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#re-using-builder-artifacts) |
+| --save-dependencies | | No | No | Save references to the required GitHub files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
+| --use-dependencies | | No | No | Use the specified file to set which GitHub files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
+| --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
+| --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 
 ## Library Installation ##
 
@@ -389,7 +389,7 @@ This directive defines a code block with its own parameters. Macros are declared
 
 #### Use A Macro ####
 
-Macros can be used either inline with the [`@{...}`](#-inline-expressionsmacros) director, or with the [`@include`](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
+Macros can be used either inline with the [`@{...}`](#-inline-expressionsmacros) directive, or with the [`@include`](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
 
 <pre>
 <b>@{</b>macro<b>(</b>a, b ,c)<b>}</b>
@@ -407,7 +407,7 @@ Define a macro and use the [`@{...}`](#-inline-expressionsmacros) directive to c
     Roses are @{b},
     And violets are @{c}
 @end
-
+@
 // Use an inline Builder macro to create a multi-line string
 poem <- @"@{some_macro("username", "red", "blue")}";
 server.log(poem);
@@ -434,7 +434,7 @@ Define a macro and use it with [`@include`](#include) to create a multi-line str
     Roses are @{b},
     And violets are @{c}
 @end
-
+@
 // Use Builder include and macro directives to create a multi-line squirrel string
 poem <- @"
 @include some_macro("username", "red", "blue")
@@ -465,7 +465,7 @@ Use a [function](#builder-functions) to configure and use a macro with an option
     Roses are @{b},
     And violets are @{defined(c) ? c : "of undefined color"}.
 @end
-
+@
 // Use Builder include and macro directives to create a multi-line squirrel string
 poem <- @"
 @include some_macro("username", "red")
@@ -505,7 +505,7 @@ This directive can be used to include local files, external sources or [macros](
 
     <pre><b>@include</b> "https://example.com/file.ext"</pre>
 
-    For more detailed information on making use of remote includes, please see [below](#managing-remote-includes).
+    For more detailed information on making use of remote includes, please see [Managing Remote Includes](#managing-remote-includes).
 
 - For GitHub file, where:
 
@@ -527,7 +527,7 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
-When using the `@include` directive in complex file directories it is recommended you use the `__PATH__` [variable](#builder-variables) to build references to your files.
+The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
 ```
 // Include supporting source files
@@ -543,7 +543,7 @@ When using GitHub `@include` statements, authentication is optional. However, yo
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the [`pleasebuild`](#command-line-tool-installation) command. More information on setting GitHub variables can be found [below](#github-files-dependencies).
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the [`pleasebuild`](#command-line-tool-installation) command. More information on setting GitHub variables can be found in [GitHub File Dependencies](#github-files-dependencies).
 
 ### @include once ###
 
@@ -574,7 +574,7 @@ The following lines, when added to your source code:
 @while myvar > 9
     @set myvar = myvar - 1
 var: @{myvar}
-  loop.index: @{loop.index}
+    loop.index: @{loop.index}
     loop.iteration: @{loop.iteration}
 @end
 ```
@@ -582,14 +582,14 @@ var: @{myvar}
 will output:
 
 ```
-myvar: 11
-  loop.index: 0
+var: 11
+    loop.index: 0
     loop.iteration: 1
-myvar: 10
-  loop.index: 1
+var: 10
+    loop.index: 1
     loop.iteration: 2
-myvar: 9
-  loop.index: 2
+var: 9
+    loop.index: 2
     loop.iteration: 3
 ```
 
@@ -612,16 +612,24 @@ The following lines, when added to your source code:
 
 ```
 @repeat 3
+    loop.index: @{loop.index}
     loop.iteration: @{loop.iteration}
+
 @end
 ```
 
 will output:
 
 ```
+    loop.index: 0
     loop.iteration: 1
+    
+    loop.index: 1
     loop.iteration: 2
+    
+    loop.index: 2
     loop.iteration: 3
+    
 ```
 
 <a id="if-elif-else"></a>
@@ -701,7 +709,7 @@ This directive simply emits a warning.
 
 ## Filters ##
 
-The filter operator, `|`, allows you to pipe a value output by an operation into any of the supported functions.
+The filter operator, `|`, allows you to pipe a value output by an operation into any of the supported [functions](#builder-function).
 
 <pre>
 <b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
@@ -727,11 +735,11 @@ b = "@{include('file.bin')|base64}"
 
 This section contains information that will help you work with Builder more effectively, but may not be needed for more basic Builder tasks. These advanced options include:
 
-- [Re-using Builder Artifacts](#re-using-builder-artifacts)
+- [Reproducible Artifacts](#reproducible-artifacts)
 - [Including JavaScript Libraries](#including-javascript-libraries)
 - [Managing Remote Includes](#managing-remote-includes)
 
-## Re-using Builder Artifacts ##
+## Reproducible Artifacts ##
 
 It is possible to save the build configuration data used for preprocessing a source file &mdash; ie. Builder variable definitions ([‘directives’](#builder-variables-directives)), and references to the concrete versions of GitHub files and libraries ([‘dependencies’](#github-files-dependencies)) that are used &mdash; and preprocess the source file again later with the saved configuration.
 
