@@ -920,12 +920,13 @@ If `--use-remote-relative-includes` option is specified, every [local include](#
 
 # Testing #
 
-All environment variables are optional here. The default for `SPEC_LOGLEVEL` is `error`.
+When running tests locally please test on both Windows and Mac OS. All environment variables are optional, however without the GitHub credentials rate limits may cause test failures. The default for `SPEC_LOGLEVEL` is `error`.
 
 ```sh
-SPEC_LOGLEVEL=<debug|info|warning|error>
-SPEC_GITHUB_USERNAME=<GitHub username>
-SPEC_GITHUB_TOKEN=<GitHub password/access token>
+npm install
+SPEC_LOGLEVEL=<debug|info|warning|error> 
+SPEC_GITHUB_USERNAME=<GitHub username> 
+SPEC_GITHUB_TOKEN=<GitHub password/access token> 
 npm test
 ```
 
