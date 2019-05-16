@@ -177,11 +177,10 @@ To understand Builder configuration, please review [this source code](./src/cli.
 
 The following value types are supported in expressions:
 
-- _numbers_ (eg. `1`, `1E6`, `1e-6`, `1.567`)
-- _strings_ (eg. `"abc"`, `'abc'`)
+- *numbers* (eg. `1`, `1E6`, `1e-6`, `1.567`)
+- *strings* (eg. `"abc"`, `'abc'`)
+- *booleans* (eg. `true`, `false`)
 - `null`
-- `true`
-- `false`
 
 ### Operators ###
 
@@ -543,7 +542,7 @@ When using GitHub `@include` statements, authentication is optional. However, yo
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the [`pleasebuild`](#command-line-tool-installation) command. More information on setting GitHub variables can be found in [GitHub File Dependencies](#github-files-dependencies).
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the [`pleasebuild`](#command-line-tool-installation) command. 
 
 ### @include once ###
 
