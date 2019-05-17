@@ -56,7 +56,9 @@
 
 Builder combines a preprocessor with an expression language and advanced imports.
 
-There are a number of ways in which you can [install Builder](#builder-installation) depending on how you plan to integrate it into your workflow. Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to an impCentral™ Device Group. The [Electric Imp VS Code extension](https://github.com/electricimp/vscode) already combines Builder and with commands to upload code to an impCentral™ Device Group. If you are using the extension there is no need to do a separate install of Builder to take advantage of its features. 
+There are a number of ways in which you can [install Builder](#builder-installation) depending on how you plan to integrate it into your workflow. Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to an impCentral™ Device Group.
+
+**Note** The [Electric Imp VS Code extension](https://github.com/electricimp/vscode) already incorporates Builder and can be used to upload code to Device Groups. If you are using the VS Code extension, there is no need install Builder separately to take advantage of its features.
 
 You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
@@ -64,7 +66,7 @@ You tell Builder which files to import, and where within your main source code t
 
 While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
-To speed up the process, [files that are stored remotely](#managing-remote-includes) which are not expected to change between builds can be cached for quick re-use. With the [reproducible artifacts](#reproducible-artifacts) feature, it is possible to store references to all files and variables, so that builds can be re-created for future debugging. 
+To speed up the process, [files that are stored remotely](#managing-remote-includes) which are not expected to change between builds can be cached for quick re-use. Builder's [reproducible artifacts](#reproducible-artifacts) feature makes it possible to store references to all files and variables, so that builds can be re-created for future debugging.
 
 For details on the commands that Builder offers, please see the [Directives](#directives) section. This is part of the [Builder Syntax](#builder-syntax) section, which also describes how Builder commands are structured.
 
@@ -542,7 +544,7 @@ When using GitHub `@include` statements, authentication is optional. However, yo
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they a can be passed into the [`pleasebuild`](#command-line-tool-installation) command. 
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they can be passed into the [`pleasebuild`](#command-line-tool-installation) command.
 
 ### @include once ###
 
@@ -622,13 +624,13 @@ will output:
 ```
     loop.index: 0
     loop.iteration: 1
-    
+
     loop.index: 1
     loop.iteration: 2
-    
+
     loop.index: 2
     loop.iteration: 3
-    
+
 ```
 
 <a id="if-elif-else"></a>
@@ -920,13 +922,13 @@ If `--use-remote-relative-includes` option is specified, every [local include](#
 
 # Testing #
 
-When running tests locally please test on both Windows and Mac OS. All environment variables are optional, however without the GitHub credentials rate limits may cause test failures. The default for `SPEC_LOGLEVEL` is `error`.
+When running tests locally, please test on both Windows and macOS. All environment variables are optional. However, if you are working with `@includes` from GitHub and do not provide GitHub credentials, rate limits imposed by GitHub may cause test failures. The default for `SPEC_LOGLEVEL` is `error`.
 
 ```sh
 npm install
-SPEC_LOGLEVEL=<debug|info|warning|error> 
-SPEC_GITHUB_USERNAME=<GitHub username> 
-SPEC_GITHUB_TOKEN=<GitHub password/access token> 
+SPEC_LOGLEVEL=<debug|info|warning|error>
+SPEC_GITHUB_USERNAME=<GitHub username>
+SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 
