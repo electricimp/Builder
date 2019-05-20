@@ -5,8 +5,8 @@
 // Main agent file:
 // Path from Project root directory: Builder/examples/includeExample/src/agent/main.agent.nut
 
-@include __PATH__ + "/../shared/constants.shared.nut"
-@include __PATH__ + "/../../libs/myLibrary.lib.nut"
+@ @include __PATH__ + "/../shared/constants.shared.nut"
+@ @include __PATH__ + "/../../libs/myLibrary.lib.nut"
 
 
 server.log("Main agent file running...");
