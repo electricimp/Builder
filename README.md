@@ -41,8 +41,8 @@
     - [Filters](#filters)
 - [Advanced Builder Usage](#advanced-builder-usage)
     - [Reproducible Artifacts](#reproducible-artifacts)
-        - [GitHub Files: Dependencies](#github-files-dependencies)
         - [Builder Variables: Directives](#builder-variables-directives)
+        - [GitHub Files: Dependencies](#github-files-dependencies)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
     - [Managing Remote Includes](#managing-remote-includes)
@@ -528,7 +528,7 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
-The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
+The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files. 
 
 ```
 // Include supporting source files
@@ -544,7 +544,9 @@ When using GitHub `@include` statements, authentication is optional. However, yo
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). GitHub credentials can be stored using your system's environment variables, in files that store Builder variables, or they can be passed into the [`pleasebuild`](#command-line-tool-installation) command.
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). 
+
+If using Builder as a [library](#library-installation) GitHub credentials can be stored using your system's environment variables or in files that store Builder variables. When using Builder's [command line tool]((#command-line-tool-installation)) your GitHub credentials will need to be passed into the `pleasebuild` command. 
 
 ### @include once ###
 
@@ -710,7 +712,7 @@ This directive simply emits a warning.
 
 ## Filters ##
 
-The filter operator, `|`, allows you to pipe a value output by an operation into any of the supported [functions](#builder-function).
+The filter operator, `|`, allows you to pass a value through any of the supported [functions](#builder-functions).
 
 <pre>
 <b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
@@ -742,7 +744,22 @@ This section contains information that will help you work with Builder more effe
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration data used for preprocessing a source file &mdash; ie. Builder variable definitions ([‘directives’](#builder-variables-directives)), and references to the concrete versions of GitHub files and libraries ([‘dependencies’](#github-files-dependencies)) that are used &mdash; and preprocess the source file again later with the saved configuration.
+It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of GitHub files and libraries are stored in a [‘dependencies.json’](#github-files-dependencies) file.
+
+### Builder Variables: Directives ###
+
+The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file name is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
+
+When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
+
+A typical `directives.json` file looks like this:
+
+```json
+{
+  "Variable0": "value0",
+  "Variable1": "value1"
+}
+```
 
 ### GitHub Files: Dependencies ###
 
@@ -775,21 +792,6 @@ A typical `dependencies.json` file looks like this:
     "a01b64f9ce764f226f52c6b9364396d4a8bd550b"
   ]
 ]
-```
-
-### Builder Variables: Directives ###
-
-The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file name is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
-
-When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
-
-A typical `directives.json` file looks like this:
-
-```json
-{
-  "Variable0": "value0",
-  "Variable1": "value1"
-}
 ```
 
 ## Including JavaScript Libraries ##
@@ -861,9 +863,7 @@ There are a number of advanced techniques you may apply when including remote fi
 
 ### Caching Remote Includes ###
 
-To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub or remote HTTP/HTTPs servers).
-
-If this file cache is enabled, remote files are cached locally in the *.builder-cache* folder. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
+To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* folder. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
 
 To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
 
