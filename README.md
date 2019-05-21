@@ -528,7 +528,7 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
-The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files. This is recommended if you plan to use [remote relative includes](#local-includes-from-remote-files).
+The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files. 
 
 ```
 // Include supporting source files
@@ -919,8 +919,6 @@ If `--use-remote-relative-includes` option is specified, every [local include](#
 `--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#include).
 
 **Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from GitHub only.
-
-See [includeExample](./examples/includeExample) for full usage of `@include` with `--use-remote-relative-includes`.
 
 # Testing #
 
