@@ -528,7 +528,7 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
 
-The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files. 
+The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
 ```
 // Include supporting source files
@@ -544,9 +544,7 @@ When using GitHub `@include` statements, authentication is optional. However, yo
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). 
-
-If using Builder as a [library](#library-installation) GitHub credentials can be stored using your system's environment variables or in files that store Builder variables. When using Builder's [command line tool]((#command-line-tool-installation)) your GitHub credentials will need to be passed into the `pleasebuild` command. 
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). If you are using Builder as a [library](#library-installation), GitHub credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your GitHub credentials will need to be passed into the `pleasebuild` command.
 
 ### @include once ###
 
@@ -863,9 +861,9 @@ There are a number of advanced techniques you may apply when including remote fi
 
 ### Caching Remote Includes ###
 
-To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* folder. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
+To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* directory. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
 
-To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
+To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exists and is valid &mdash; it will continue to query remote resources on every execution.
 
 To reset the cache, use both the `--cache` and the `--clear-cache` options.
 
