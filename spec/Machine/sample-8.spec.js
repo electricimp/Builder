@@ -24,7 +24,7 @@ describe('Machine', () => {
 
   it('should run sample #8', () => {
     machine.generateLineControlStatements = false;
-    const result = machine.execute(src);
+    const result = eol.lf(machine.execute(src));
     expect(result).toEqual(init.getResult());
   });
 

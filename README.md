@@ -1,31 +1,16 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-_Builder_ combines a preprocessor with an expression language and advanced imports.
-
-**Current version: 2.8.0**
+### Current version: 2.8.1 ###
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
 ## Contents ##
 
+- [About Builder](#about-builder)
+- [Builder Installation](#builder-installation)
+    - [Command Line Tool Installation](#command-line-tool-installation)
+    - [Library Installation](#library-installation)
 - [Builder Syntax](#builder-syntax)
-    - [Directives](#directives)
-        - [@set](#set)
-        - [@macro](#macro)
-        - [@include](#include)
-            - [Macros](#macros)
-            - [Local Files](#local-files)
-            - [Remote Files](#remote-files)
-            - [Files From GitHub](#files-from-github)
-            - [Single Line Comments](#single-line-comments)
-        - [@include once](#include-once)
-        - [@{...} – Inline Expressions/Macros](#inline-expressions-macros)
-        - [@while](#while)
-        - [@repeat](#repeat)
-        - [@if... @elseif... @else](#if-elseeif-else)
-        - [@error](#error)
-        - [@warning](#warning)
-    - [Filters](#filters)
     - [Expressions](#expressions)
         - [Types](#types)
         - [Operators](#operators)
@@ -35,564 +20,74 @@ _Builder_ combines a preprocessor with an expression language and advanced impor
         - [Conditional Expressions](#conditional-expressions)
         - [Variables](#variables)
             - [Variable Definition Order](#variable-definition-order)
-            - [\_\_LINE\_\_](#__line__)
-            - [\_\_FILE\_\_](#__file__)
-            - [\_\_PATH\_\_](#__path__)
-            - [Loops](#loops)
             - [Environment Variables](#environment-variables)
-        - [Functions](#functions)
+            - [Builder Variables](#builder-variables)
+        - [Builder Functions](#builder-functions)
     - [Comments](#comments)
-- [Builder Usage](#builder-usage)
-    - [Installing And Running Builder](#installing-and-running-builder)
-        - [Command Line Tool Installation](#command-line-tool-installation)
-        - [Library Installation](#library-installation)
+    - [Directives](#directives)
+        - [@{...} – Inline Expressions/Macros](#-inline-expressionsmacros)
+        - [@set](#set)
+        - [@macro](#macro)
+            - [Define A Macro](#define-a-macro)
+            - [Use A Macro](#use-a-macro)
+        - [@include](#include)
+            - [GitHub Authentication](#github-authentication)
+        - [@include once](#include-once)
+        - [@while](#while)
+        - [@repeat](#repeat)
+        - [@if... @elseif... @else](#if-elif-else)
+        - [@error](#error)
+        - [@warning](#warning)
+    - [Filters](#filters)
+- [Advanced Builder Usage](#advanced-builder-usage)
     - [Reproducible Artifacts](#reproducible-artifacts)
-        - [GitHub Files: Dependencies](#github-files-dependencies)
         - [Builder Variables: Directives](#builder-variables-directives)
+        - [GitHub Files: Dependencies](#github-files-dependencies)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
-    - [Remote Includes](#remote-includes)
+    - [Managing Remote Includes](#managing-remote-includes)
         - [Caching Remote Includes](#caching-remote-includes)
         - [Proxy Access To Remote Includes](#proxy-access-to-remote-includes)
         - [Local Includes From Remote Files](#local-includes-from-remote-files)
 - [Testing](#testing)
 - [License](#license)
 
-# Builder Syntax #
+# About Builder #
 
-## Directives ##
+Builder combines a preprocessor with an expression language and advanced imports.
 
-Directives start with the <code><b>@</b></code> symbol.
+There are a number of ways in which you can [install Builder](#builder-installation) depending on how you plan to integrate it into your workflow. Once installed on your computer, you can use it to process your Squirrel application and factory firmware before you transfer the code to an impCentral™ Device Group.
 
-### @set ###
+**Note** The [Electric Imp VS Code extension](https://github.com/electricimp/vscode) already incorporates Builder and can be used to upload code to Device Groups. If you are using the VS Code extension, there is no need install Builder separately to take advantage of its features.
 
-<pre>
-<b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> <i>&lt;value:expression&gt;</i>
-</pre>
+You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
-<pre>
-<b><b>@set</b></b> <i>&lt;variable:identifier&gt;</i> = <i>&lt;value:expression&gt;</i>
-</pre>
+You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub.
 
-This directive assigns the value of an _expression_ to a _variable_. Variables are defined in a global context.
+While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
-#### Example ####
+To speed up the process, [files that are stored remotely](#managing-remote-includes) which are not expected to change between builds can be cached for quick re-use. Builder's [reproducible artifacts](#reproducible-artifacts) feature makes it possible to store references to all files and variables, so that builds can be re-created for future debugging.
 
-Sets *SOMEVAR* to 1:
+For details on the commands that Builder offers, please see the [Directives](#directives) section. This is part of the [Builder Syntax](#builder-syntax) section, which also describes how Builder commands are structured.
 
-<pre>
-<b>@set</b> SOMEVAR min(1, 2, 3)
-</pre>
+# Builder Installation #
 
-### @macro ###
+Builder requires Node.js 8.0.0 and above. It can be installed and used by two ways:
 
-<pre>
-<b>@macro</b> <i>&lt;name&gt;</i>(<i>&lt;arguments&gt;</i>)
-  <i>&lt;body&gt;</i>
-<b>@endmacro</b>
-</pre>
+- As an [_npm_ command line tool](#command-line-tool-installation)
+- As an [_npm_ library](#library-installation).
 
-<code><b>@endmacro</b></code> can be replaced with <code><b>@end</b></code>.
+## Command Line Tool Installation ##
 
-This directive defines a code block that can take its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them). Macros can be used:
-
-- via the <code><b>@include</b></code> directive:
-
-	<pre>
-	<b>@include</b> macro(a, b, c)
-	</pre>
-
-- inline:
-
-	<pre>
-	<b>@{</b>macro(a, b, c)<b>}</b>
-	</pre>
-
-When macros are used inline:
-
-	- No line-control statements are generated for the output inside the macro scope.
-	- Trailing newlines are trimmed from the macro output.
-
-#### Examples ####
-
-<pre>
-<b>@macro</b> some_macro(a, b, c)
-  Hello, <b>@{</b>a<b>}</b>!
-  Roses are <b>@{</b>b<b>}</b>,
-  And violets are <b>@{</b>defined(c) ? c : "of undefined color"<b>}</b>.
-<b>@end</b>
-</pre>
-
-Then <code>some_macro</code> can be used as:
-
-<pre>
-<b>@include</b> some_macro("username", "red")
-</pre>
-
-This will produce:
-
-```
-Hello, username!
-Roses are red,
-And violets are of undefined color.
-```
-
-Here is the same macro used inline:
-
-<pre>
-[[[ <b>@{</b>some_macro("username", "red", "blue")<b>}</b> ]]]
-</pre>
-
-This will output:
-
-```
-[[[ Hello, username!
-Roses are red,
-And violets are blue. ]]]
-```
-
-### @include ###
-
-Use this directive to includes local files, external sources, or macros.
-
-<pre>
-<b>@include</b> <i>&lt;source:expression&gt;</i>
-</pre>
-
-#### Macros ####
-
-<pre>
-<b>@include</b> some_macro("username", 123)
-</pre>
-
-#### Local Files ####
-
-<pre>
-<b>@include</b> "somefile.ext"
-</pre>
-
-#### Remote Files ####
-
-<pre>
-<b>@include</b> "http://example.com/file.ext"
-</pre>
-
-<pre>
-<b>@include</b> "https://example.com/file.ext"
-</pre>
-
-#### Files From GitHub ####
-
-<pre>
-<b>@include</b> "github:<i>&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
-</pre>
-
-- `user` is the user/organization name.
-- `repo` is the repository name.
-- `ref` is the git reference (branch name or tag, defaults to _master_).
-
-##### Authentication #####
-
-When using GitHub `@includes`, authentication is optional. However, you should bear in mind that:
-
-- If you use authentication, the GitHub API provides much higher rate limits.
-- Authentication is required to access private repositories.
-
-Apart from a GitHub _username_, you need to provide either a _[personal access token](https://github.com/settings/tokens)_ **or** _password_ (which is less secure and not recommended). More information on how to provide those parameters is included in the [usage](#builder-usage) section.
-
-##### Examples #####
-
-- Head of the default branch
-
-  <pre>
-  <b>@include</b> "github:electricimp/Promise/promise.class.nut"
-  </pre>
-
-- Head of the _develop_ branch
-
-  <pre>
-  <b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"
-  </pre>
-
-- Tag _v3.0.1_:
-
-  <pre>
-  <b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"
-  </pre>
-
-#### Single Line Comments ####
-
-Any text after any _Builder_ expression statement, starting with `//` and extending to the end of the line, will be ignored by _Builder_ and will not appear in the result output.
-
-<pre>
-<b>@include</b> "https://example.com/file.ext" // Need update to file2.ext
-</pre>
-
-### @include once ###
-
-<pre>
-<b>@include once</b> <i>&lt;source:expression&gt;</i>
-</pre>
-
-This acts the same as <code><b>@include</b></code> but has no effect if _source_ has already been included. Macros are always included.
-
-<a id="inline-expressions-macros"></a>
-### @{...} Inline Expressions/Macros ###
-
-<pre>
-<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
-</pre>
-
-<pre>
-<b>@{</b>macro(a, b, c)<b>}</b>
-</pre>
-
-This directive inserts the value of the enclosed expression or executes a macro.
-
-#### Example ####
-
-<pre>
-<b>@set</b> name "Someone"
-Hello, <b>@{</b>name<b>}</b>, the result is: <b>@{</b>123 * 456<b>}</b>.
-</pre>
-
-This results in the following output:
-
-```
-Hello, Someone, the result is: 56088.
-```
-
-### @while ###
-
-This invokes a `while` loop. You can access the [loop](#loops) variable in `@while` loops.
-
-<pre>
-<b>@while</b> <i>&lt;test:expression&gt;</i>
-  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
-  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
-<b>@endwhile</b>
-</pre>
-
-**Note** <code><b>@endwhile</b></code> can be replaced with <code><b>@end</b></code>.
-
-#### Example ####
-
-See [Loops](#loops).
-
-### @repeat ###
-
-This invokes a loop that repeats over a certain number of iterations. You can access the [loop](#loops) variable in `@repeat` loops.
-
-<pre>
-<b>@repeat</b> <i>&lt;times:expression&gt;</i>
-  // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
-  // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
-<b>@endrepeat</b>
-</pre>
-
-**Note** <code><b>@endrepeat</b></code> can be replaced with <code><b>@end</b></code>.
-
-#### Example ####
-
-<pre>
-<b>@repeat</b> 3
-  loop.iteration: <b>@{</b>loop.iteration<b>}</b>
-<b>@end</b>
-</pre>
-
-This outputs:
-
-```
-  loop.iteration: 1
-  loop.iteration: 2
-  loop.iteration: 3
-```
-
-<a id="if-elseeif-else"></a>
-### @if... @elseif... @else ###
-
-This directive invokes conditional branching.
-
-<pre>
-<b>@if</b> <test:expression>
-
-  // Consequent code
-
-<b>@elseif</b> <i>&lt;test:expression&gt;</i>
-
-  // else if #1 code
-
-// ...more elseifs...
-
-<b>@else</b>
-
-  // Alternative code
-
-<b>@endif</b>
-</pre>
-
-**Note** <code><b>@endif</b></code> can be replaced with <code><b>@end</b></code>.
-
-#### Example ####
-
-<pre>
-<b>@if</b> __FILE__ == 'abc.ext'
-  // include something
-<b>@elseif</b> __FILE__ == 'def.ext'
-  // include something else
-<b>@else</b>
-  // something completely different
-<b>@endif</b>
-</pre>
-
-### @error ###
-
-<pre>
-<b>@error</b> <i>&lt;message:expression&gt;</i>
-</pre>
-
-Emits an error.
-
-#### Example ####
-
-<pre>
-<b>@if</b> PLATFORM == "platform1"
-  // platform 1 code
-<b>@elseif</b> PLATFORM == "platform2"
-  // platform 2 code
-<b>@elseif</b> PLATFORM == "platform3"
-  // platform 3 code
-<b>@else</b>
-  <b>@error</b> "Platform is " + PLATFORM + " is unsupported"
-<b>@endif</b>
-</pre>
-
-### @warning ###
-
-<pre>
-<b>@warning</b> <i>&lt;message:expression&gt;</i>
-</pre>
-
-Emits a warning.
-
-#### Example ####
-
-<pre>
-<b>@if</b> PLATFORM == "platform1"
-  // platform 1 code
-<b>@elseif</b> PLATFORM == "platform2"
-  // platform 2 code
-<b>@elseif</b> PLATFORM == "platform3"
-  // platform 3 code
-<b>@else</b>
-  <b>@warning</b> "Building for default platform"
-  // default platform code
-<b>@endif</b>
-</pre>
-
-## Filters ##
-
-The `|` operator (filter) allows you to pass a value through any of the supported functions.
-
-<pre>
-<b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
-</pre>
-
-This is equivalent to:
-
-<pre>
-<b>@{</b><i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
-</pre>
-
-#### Example ####
-
-<pre>
-// Include external HTML to a string
-a = "<b>@{</b>include('index.html')|escape<b>}</b>"
-
-// Include external binary file to a base64-encoded string
-b = "<b>@{</b>include('file.bin')|base64<b>}</b>"
-</pre>
-
-## Expressions ##
-
-Directives that take parameters allow the usage of _expression_ syntax. For example:
-
-- <code><b>@include</b> <i>&lt;source:expression&gt;</i></code>
-- <code><b>@set</b> <i>&lt;variable:identifier&gt; &lt;value:expression&gt;</i></code>
-- <code><b>@if</b> <i>&lt;condition:expression&gt;</i></code>
-- <code><b>@elseif</b> <i>&lt;condition:expression&gt;</i></code>
-- <code><b>@{</b><i>&lt;expression&gt;</i><b>}</b></code> (inline expressions)
-
-### Types ###
-
-The following types are supported in expressions:
-
-- _numbers_ (eg. `1`, `1E6`, `1e-6`, `1.567`)
-- _strings_ (eg. `"abc"`, `'abc'`)
-- `null`
-- `true`
-- `false`
-
-### Operators ###
-
-#### Binary ####
-
-`||`&nbsp;&nbsp;`&&`&nbsp;&nbsp;`==`&nbsp;&nbsp;`!=`&nbsp;&nbsp;`<`&nbsp;&nbsp;`>`&nbsp;&nbsp;`<=`&nbsp;&nbsp;`>=`&nbsp;&nbsp;`+`&nbsp;&nbsp;`-`&nbsp;&nbsp;`*`&nbsp;&nbsp;`/`&nbsp;&nbsp;`%`
-
-#### Unary ####
-
-`+`&nbsp;&nbsp;`-`&nbsp;&nbsp;`!`
-
-### Member Expressions ###
-
-- `somevar.member`
-- `somevar["member"]`
-- `([1, 2, 3])[1]`
-
-### Conditional Expressions ###
-
-`test ? consequent : alternate`
-
-### Variables ###
-
-Variables can be used in `Builder` expression evaluation.
-
-- Variables can be defined by:
-    - The `-D<variable name> <variable value>` command line parameter.
-    - A <code><b>@set</b></code> statement.
-    - An [environment variable](#environment-variables).
-- Undefined variables are evaluated as `null`.
-- Variable names can contain `$`, `_`, latin letters and digits. They must not start with a digit.
-
-#### Variable Definition Order ####
-
-1. When resolving a variable’s value, *Builder* first looks for its definition in the command line `-D` parameters (`-D<variable name> <variable value>`) passed to the *pleasebuild* command.
-1. If no such variable definition is found, Squirrel code is scanned for `@set` statements preceding the variable usage.
-1. If no variable definitions are found in the previous steps, *Builder* looks in the host environment variables.
-
-#### \_\_LINE\_\_ ####
-
-Line number (relative to the file in which this variable appears).
-
-#### Example ####
-
-<pre>
-Hi from line <b>@{</b>__LINE__<b>}</b>!
-</pre>
-
-#### \_\_FILE\_\_ ####
-
-Name of the file in which this variable appears.
-
-#### Example ####
-
-<pre>
-Hi from file <b>@{</b>__FILE__<b>}</b>!
-</pre>
-
-#### \_\_PATH\_\_ ####
-
-Absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes.
-
-#### Example ####
-
-<pre>
-Hi from file <b>@{</b>__PATH__<b>}</b>!
-</pre>
-
-#### Loops ####
-
-Defined inside <code><b>@while</b></code> and <code><b>@repeat</b></code> loops. Contains information about the current loop:
-
- - `loop.index` &mdash; 0-indexed iteration counter
- - `loop.iteration` &mdash; 1-indexed iteration counter
-
-#### Example ####
-
-<pre>
-<b>@set</b> myvar = 12
-
-<b>@while</b> myvar > 9
-  <b>@set</b> myvar = myvar - 1
-  var: <b>@{</b>myvar<b>}</b>
-  loop.index: <b>@{</b>loop.index<b>}</b>
-<b>@end</b>
-</pre>
-
-This outputs:
-
-```
-myvar: 11
-loop.index: 0
-myvar: 10
-loop.index: 1
-myvar: 9
-loop.index: 2
-```
-
-#### Environment Variables ####
-
-There is no special predicate required to make use of environment variables. *Builder* tries to resolve the macro from the context provided via the command line defines or from process environment variables. For example:
-
-```squirrel
-server.log("Host home path is @{HOME}");
-```
-
-will print the home directory path of the current user of the system where *Builder* was executed.
-
-### Functions ###
-
-- <code>defined(<i>&lt;variable_name&gt;</i>)</code> &mdash; returns `true` if a variable is defined, `false` otherwise.
-- <code>include(<i>&lt;source&gt;</i>)</code> &mdash; includes external source.
-- <code>escape(<i>&lt;value&gt;</i>)</code> &mdash; escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`).
-- <code>base64(<i>&lt;value&gt;</i>)</code> &mdash; encodes value as base64.
-- <code>min(<i>&lt;numbers&gt;</i>)</code>
-- <code>max(<i>&lt;numbers&gt;</i>)</code>
-- <code>abs(<i>&lt;number&gt;</i>)</code>
-- **String functions**<br />The following functions, based on the JavaScript methods of the same names, are available under the namespace `S`. The first argument of each function is always the string to be operated on. For documentation on the remaining arguments, please see [‘JavaScript String Methods’](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String).
-    - <code>S.concat()</code>
-    - <code>S.endsWith()</code>
-    - <code>S.includes()</code>
-    - <code>S.repeat()</code>
-    - <code>S.split()</code>
-    - <code>S.startsWith()</code>
-    - <code>S.substr()</code>
-    - <code>S.substring()</code>
-    - <code>S.toLowerCase()</code>
-    - <code>S.toUpperCase()</code>
-    - <code>S.trim()</code>
-    - <code>S.trimLeft()</code>
-    - <code>S.trimRight()</code>
-
-## Comments ##
-
-Lines starting with `@` followed by space or a line break are treated as comments and not added to the output.
-
-#### Example ####
-
-<pre>
-<i>@ something about platform #1</i>
-<b>@set</b> PLATFORM "platform1"
-</pre>
-
-# Builder Usage #
-
-## Installing And Running Builder ##
-
-Builder requires Node.js 8.0.0 and above. It can be installed and used by two ways: as an _npm_ command line tool or as an _npm_ library.
-
-### Command Line Tool Installation ###
-
-Install Builder
+Install Builder:
 
 ```sh
 npm install -g Builder
 ```
 
-then use the `pleasebuild` command which is provided by Builder:
+Now use Builder’s `pleasebuild` command to configure the newly installed utility:
 
-```
+```sh
 pleasebuild [-l] [-D<variable> <value>]
     [--github-user <username> --github-token <token>]
     [--lib <path_to_file>]
@@ -603,20 +98,16 @@ pleasebuild [-l] [-D<variable> <value>]
     <input_file>
 ```
 
-where:
-
-`<input_file>` &mdash; is the path to source file which should be preprocessed
-
-and the options are:
+where `<input_file>` is the path to source file which should be preprocessed and the other options are:
 
 | Option | Synonym | Mandatory? | Value&nbsp;Required? | Description |
 | --- | --- | --- | --- | --- |
 | -l |  | No | No | Generates line control statements. For a more detailed explanation, please read [this GCC page](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html) |
 | -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
-| --github-user | | No | Yes | A GitHub username. See [‘Files From GitHub’](#files-from-github) |
-| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. See [‘Files From GitHub’](#files-from-github) |
+| --github-user | | No | Yes | A GitHub username. |
+| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
-| --use-remote-relative-includes | | No | No | Interpret every [local include](#local-files) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
+| --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
 | --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
@@ -626,15 +117,15 @@ and the options are:
 | --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 | --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 
-### Library Installation ###
+## Library Installation ##
 
-Install Builder
+Install Builder:
 
 ```sh
 npm i --save Builder
 ```
 
-then instantiate, setup and execute Builder from the source code, for example:
+Now instantiate, configure and execute Builder from within your source code. For example:
 
 ```js
 const Builder = require('Builder');
@@ -678,11 +169,595 @@ const result = builder.machine.execute(`@include "${inputFile}"`);
 console.log(result);
 ```
 
-To understand Builder setup, please review [this source code](./src/cli.js).
+To understand Builder configuration, please review [this source code](./src/cli.js).
+
+# Builder Syntax #
+
+## Expressions ##
+
+### Types ###
+
+The following value types are supported in expressions:
+
+- *numbers* (eg. `1`, `1E6`, `1e-6`, `1.567`)
+- *strings* (eg. `"abc"`, `'abc'`)
+- *booleans* (eg. `true`, `false`)
+- `null`
+
+### Operators ###
+
+Builder supports the following operators:
+
+#### Binary ####
+
+`||`&nbsp;&nbsp;`&&`&nbsp;&nbsp;`==`&nbsp;&nbsp;`!=`&nbsp;&nbsp;`<`&nbsp;&nbsp;`>`&nbsp;&nbsp;`<=`&nbsp;&nbsp;`>=`&nbsp;&nbsp;`+`&nbsp;&nbsp;`-`&nbsp;&nbsp;`*`&nbsp;&nbsp;`/`&nbsp;&nbsp;`%`
+
+#### Unary ####
+
+`+`&nbsp;&nbsp;`-`&nbsp;&nbsp;`!`
+
+### Member Expressions ###
+
+Membership of an object is expressed using any of the following expressions:
+
+- `somevar.member`
+- `somevar["member"]`
+- `([1, 2, 3])[1]`
+
+### Conditional Expressions ###
+
+Builder provides the standard ternary operator (`?:`) for evaluating basic conditions:
+
+`<condition> ? <if_condition_true> : <if_condition_false>`
+
+### Variables ###
+
+Variables can be used in Builder expressions. Variable names can contain `$`, `_`, latin letters and digits, however they must not start with a digit. Variables can be defined in the following ways:
+
+- Builder's [`@set`](#set) directive.
+- Your computer's [environment variables](#environment-variables).
+- Pass the option `-D<variable name> <variable value>` to Builder’s [`pleasebuild`](#command-line-tool-installation) command.
+
+All undefined variables are evaluated as `null`.
+
+#### Variable Definition Order ####
+
+When resolving a variable’s value:
+
+1. Builder looks for its definition among the command line parameters (as `-D<variable name> <variable value>`) passed to the [`pleasebuild`](#command-line-tool-installation) command.
+2. If no such variable definition is found, the code is scanned for [`@set`](#set) directive statements preceding the variable usage.
+3. If no variable definitions are found in the previous steps, Builder looks in the host environment variables.
+
+#### Environment Variables ####
+
+There is no special predicate required to make use of environment variables. Builder looks in the host environment variables to try and resolve the expressions if no command line or local variables have been set.
+
+For example, on a Mac:
+
+```squirrel
+server.log("Host home path is @{HOME}");
+```
+
+will print the home directory path of the current user of the system where Builder was executed.
+
+Environment variables differ based on OS. If you wish to use environment variables with Builder, a quick internet search will give you details on how to *list* the variables currently available on your system and also how to *set* new variables.
+
+#### Builder Variables ####
+
+Builder provides the following pre-defined variables:
+
+- `__LINE__` &mdash; The line number (relative to the file in which this variable appears). For example:
+
+    `Hi from line @{__LINE__}!`
+- `__FILE__` &mdash; The name of the file in which this variable appears. For example:
+
+    `Hi from file @{__FILE__}!`
+- `__PATH__` &mdash; The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes. For example:
+
+    `Hi from file @{__PATH__}!`
+
+<a id="loopvars"></a>
+
+Builder has two directives [`@while`](#while) and [`@repeat`](#repeat) for managing loops. Inside these loops the following variables are available:
+
+- `loop.index` &mdash; 0-indexed iteration counter
+- `loop.iteration` &mdash; 1-indexed iteration counter
+
+Usage examples for these variables can be found in the [`@while`](#while) and [`@repeat`](#repeat) directive examples.
+
+### Builder Functions ###
+
+Builder provides the following helper functions:
+
+- `defined(<variable_name>)` &mdash; returns `true` if a variable is defined, `false` otherwise.
+- `include(<source>)` &mdash; includes external source.
+- `escape(<value>)` &mdash; escapes special characters in string (`\b`, `\f`, `\n`, `\r`, `\t`,  `\`, `'`, `"`).
+- `base64(<value>)` &mdash; encodes value as base64.
+- `min(<numbers>)` &mdash; returns a number equal to the lowest number in the supplied list.
+- `max(<numbers>)` &mdash; returns a number equal to the highest number in the supplied list.
+- `abs(<number>)` &mdash; returns the absolute value of the supplied number.
+
+Builder also comes with some string functions, based on the JavaScript methods of the same names. These functions are available under the namespace `S`. The first argument of each function is always the string to be operated on. For documentation on the remaining arguments, please see [‘JavaScript String Methods’](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String).
+
+- `S.concat()`
+- `S.endsWith()`
+- `S.includes()`
+- `S.repeat()`
+- `S.split()`
+- `S.startsWith()`
+- `S.substr()`
+- `S.substring()`
+- `S.toLowerCase()`
+- `S.toUpperCase()`
+- `S.trim()`
+- `S.trimLeft()`
+- `S.trimRight()`
+
+## Comments ##
+
+Lines starting with `@` followed by space or a line break are treated as comments and not added to the output. For example:
+
+```
+@ This is a Builder comment and will not appear in the output
+```
+
+Any text following `//` and extending to the end of the line will be ignored by Builder* and will not appear in the result output. For example:
+
+```
+@set SOME_STRING = "my string" // This is a Builder comment that will not appear in output
+```
+
+## Directives ##
+
+All of Builder’s directives start with the `@` symbol. Don’t include a space or line break between the `@` and the required directive’s name as this will be interpreted as a [comment](#comments).
+
+### @{...} Inline Expressions/Macros ###
+
+This directive evaluates the expression enclosed by braces (`{` and  `}`) and inserts the result into the output. The enclosure can be the value of a named variable, an expression or a macro.
+
+<pre>
+<b>@{</b><i>&lt;variable:identifier&gt;</i><b>}</b>
+<b>@{</b><i>&lt;expression&gt;</i><b>}</b>
+<b>@{</b><i>macro(a, b, c)</i><b>}</b>
+</pre>
+
+#### Example ####
+
+The line:
+
+```
+The result is: @{123 * 456}.
+```
+
+results in the following output:
+
+```
+The result is: 56088.
+```
+
+### @set ###
+
+This directive assigns a value or the value of an expression to a [variable](#variables). Variables are defined in a global context. A value can be any supported [type](#types) or [function](#builder-functions).
+
+<pre>
+<b>@set </b><i>&lt;variable:identifier&gt; &lt;value:expression&gt;</i>
+<b>@set </b><i>&lt;variable:identifier&gt;</i> <b>=</b> <i>&lt;value:expression&gt;</i>
+</pre>
+
+#### Example ####
+
+In this example, we define a number of variables using `@set`, then use [`@{...}`](#-inline-expressionsmacros) to create squirrel log messages with those variables. If the following lines are added to your source code:
+
+```
+@ Set Builder global variables
+@set SOME_INT    = 10
+@set SOME_STRING = "my string"
+@set BOOL_VAL    = (12 > 4)
+@
+@ Use a Builder function to set a global variable
+@set MIN_INT min(1, 2, 3)
+@
+// Use Builder global variables in squirrel log messages
+server.log(@{SOME_INT});
+server.log("@{SOME_STRING}");
+server.log(@{BOOL_VAL});
+server.log(@{MIN_INT});
+```
+
+then during processing, Builder will output:
+
+```
+// Use Builder global variables in squirrel log messages
+server.log(10);
+server.log("my string");
+server.log(true);
+server.log(1);
+```
+
+### @macro ###
+
+This directive defines a code block with its own parameters. Macros are declared in a global scope. Macro parameters are only available within the macro scope and override global variables with the same name (but do not affect them).
+
+#### Define A Macro ####
+
+<pre>
+<b>@macro</b> <i>&lt;name&gt;</i>(<i>&lt;arguments&gt;</i>)
+    <i>&lt;body&gt;</i>
+<b>@endmacro</b>
+</pre>
+
+**Note** `@end` can be used in place of `@endmacro` if you prefer.
+
+#### Use A Macro ####
+
+Macros can be used either inline with the [`@{...}`](#-inline-expressionsmacros) directive, or with the [`@include`](#include) directive. When macros are used inline no line-control statements are generated for the output inside the macro scope and trailing newlines are trimmed from the macro output.
+
+<pre>
+<b>@{</b>macro<b>(</b>a, b ,c)<b>}</b>
+<b>@include</b> macro(a, b ,c)
+</pre>
+
+#### Inline Example ####
+
+Define a macro and use the [`@{...}`](#-inline-expressionsmacros) directive to create a multi-line string to log in squirrel:
+
+```
+@ Define a macro
+@macro some_macro(a, b, c)
+    Hello, @{a}!
+    Roses are @{b},
+    And violets are @{c}
+@end
+@
+// Use an inline Builder macro to create a multi-line string
+poem <- @"@{some_macro("username", "red", "blue")}";
+server.log(poem);
+```
+
+This results in the following output:
+
+```
+// Use an inline Builder macro to create a multi-line string
+poem <- @"    Hello, username!
+    Roses are red,
+    And violets are blue";
+server.log(poem);
+```
+
+#### Include Example ####
+
+Define a macro and use it with [`@include`](#include) to create a multi-line string to log in squirrel:
+
+```
+@ Define a macro
+@macro some_macro(a, b, c)
+    Hello, @{a}!
+    Roses are @{b},
+    And violets are @{c}
+@end
+@
+// Use Builder include and macro directives to create a multi-line squirrel string
+poem <- @"
+@include some_macro("username", "red", "blue")
+";
+server.log(poem);
+```
+
+This results in the following output:
+
+```
+// Use Builder include and macro directives to create a multi-line squirrel string
+poem <- @"
+    Hello, username!
+    Roses are red,
+    And violets are blue
+";
+server.log(poem);
+```
+
+#### Optional Parameter Example ####
+
+Use a [function](#builder-functions) to configure and use a macro with an optional parameter.
+
+```
+@ Define a macro with an optional parameter
+@macro some_macro(a, b, c)
+    Hello, @{a}!
+    Roses are @{b},
+    And violets are @{defined(c) ? c : "of undefined color"}.
+@end
+@
+// Use Builder include and macro directives to create a multi-line squirrel string
+poem <- @"
+@include some_macro("username", "red")
+";
+server.log(poem);
+```
+
+This results in the following output:
+
+```
+// Use Builder include and macro directives to create a multi-line squirrel string
+poem <- @"
+    Hello, username!
+    Roses are red,
+    And violets are of undefined color.
+";
+server.log(poem);
+```
+
+### @include ###
+
+This directive can be used to include local files, external sources or [macros](#macro).
+
+<pre>
+<b>@include</b> <i>&lt;source:expression&gt;</i>
+</pre>
+
+- For a [`@macro`](#macro):
+
+    <pre><b>@include</b> some_macro("username", 123)</pre>
+
+- For a local file:
+
+    <pre><b>@include</b> "somefile.ext"</pre>
+
+- For a remote file:
+
+    <pre><b>@include</b> "https://example.com/file.ext"</pre>
+
+    For more detailed information on making use of remote includes, please see [Managing Remote Includes](#managing-remote-includes).
+
+- For GitHub file, where:
+
+    - `user` is the user/organization name.
+    - `repo` is the repository name.
+    - `ref` is the git reference (branch name or tag, defaults to _master_).
+
+    <pre><b>@include</b> "github:<i>&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
+
+    - Head of the default branch
+
+        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut"</pre>
+
+    - Head of the _develop_ branch
+
+        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"</pre>
+
+    - Tag _v3.0.1_:
+
+        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
+
+The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
+
+```
+// Include supporting source files
+@include __PATH__ + "Hardware.device.nut"
+@include __PATH__ + "/../shared/Logger.shared.nut"
+@include __PATH__ + "/../shared/Constants.shared.nut"
+```
+
+#### GitHub Authentication ####
+
+When using GitHub `@include` statements, authentication is optional. However, you should bear in mind that:
+
+- If you use authentication, the GitHub API provides much higher rate limits.
+- Authentication is required to access private repositories.
+
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). If you are using Builder as a [library](#library-installation), GitHub credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your GitHub credentials will need to be passed into the `pleasebuild` command.
+
+### @include once ###
+
+This directive acts just like `@include` but has no effect if the specified *source* has already been included. However, macros are always included.
+
+<pre><b>@include once</b> <i>&lt;source:expression&gt;</i></pre>
+
+### @while ###
+
+This directive invokes a loop which only ends when specified conditions are met. You can access Builder’s [loop variables](#loopvars) within `@while` loops.
+
+<pre>
+<b>@while</b> <i>&lt;test:expression&gt;</i>
+    // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+    // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
+<b>@endwhile</b>
+</pre>
+
+**Note** `@end` may be used in place of `@endwhile` if you prefer.
+
+#### Example ####
+
+The following lines, when added to your source code:
+
+```
+@set myvar = 12
+
+@while myvar > 9
+    @set myvar = myvar - 1
+var: @{myvar}
+    loop.index: @{loop.index}
+    loop.iteration: @{loop.iteration}
+@end
+```
+
+will output:
+
+```
+var: 11
+    loop.index: 0
+    loop.iteration: 1
+var: 10
+    loop.index: 1
+    loop.iteration: 2
+var: 9
+    loop.index: 2
+    loop.iteration: 3
+```
+
+### @repeat ###
+
+This directive invokes a loop that repeats for a certain number of iterations. You can access Builder’s [loop variables](#loopvars) within `@repeat` loops.
+
+<pre>
+<b>@repeat</b> <i>&lt;times:expression&gt;</i>
+    // 0-based iteration counter: <b>@{</b>loop.index<b>}</b>
+    // 1-based iteration counter: <b>@{</b>loop.iteration<b>}</b>
+<b>@endrepeat</b>
+</pre>
+
+**Note** `@end` may be used in place of `@endrepeat` if you prefer.
+
+#### Example ####
+
+The following lines, when added to your source code:
+
+```
+@repeat 3
+    loop.index: @{loop.index}
+    loop.iteration: @{loop.iteration}
+
+@end
+```
+
+will output:
+
+```
+    loop.index: 0
+    loop.iteration: 1
+
+    loop.index: 1
+    loop.iteration: 2
+
+    loop.index: 2
+    loop.iteration: 3
+
+```
+
+<a id="if-elif-else"></a>
+
+### @if... @elseif... @else ###
+
+This directive provides conditional branching.
+
+<pre>
+<b>@if</b> <i>&lt;test:expression&gt;</i>
+    // Consequent code
+<b>@elseif</b> <i>&lt;test:expression&gt;</i>
+    // else if #1 code
+<b>@else</b>
+    // Alternative code
+<b>@endif</b>
+</pre>
+
+**Note** `@end` may be used in place of `@endif` if you prefer.
+
+#### Example ####
+
+```
+@if __FILE__ == 'abc.ext'
+    // include something
+@elseif __FILE__ == 'def.ext'
+    // include something else
+@else
+    // do something completely different
+@endif
+```
+
+### @error ###
+
+This directive simply emits an error.
+
+<pre>
+<b>@error</b> <i>&lt;message:expression&gt;</i>
+</pre>
+
+#### Example ####
+
+```
+@if PLATFORM == "platform1"
+    // platform 1 code
+@elseif PLATFORM == "platform2"
+    // platform 2 code
+@elseif PLATFORM == "platform3"
+    // platform 3 code
+@else
+    @error "Platform " + PLATFORM + " is unsupported"
+@endif
+```
+
+### @warning ###
+
+This directive simply emits a warning.
+
+<pre>
+<b>@warning</b> <i>&lt;message:expression&gt;</i>
+</pre>
+
+#### Example ####
+
+```
+@if PLATFORM == "platform1"
+    // platform 1 code
+@elseif PLATFORM == "platform2"
+    // platform 2 code
+@elseif PLATFORM == "platform3"
+    // platform 3 code
+@else
+    @warning "Building for default platform"
+    // default platform code
+@endif
+```
+
+## Filters ##
+
+The filter operator, `|`, allows you to pass a value through any of the supported [functions](#builder-functions).
+
+<pre>
+<b>@{</b>&lt;expression&gt;</i> | <i>&lt;filter&gt;</i><b>}</b>
+</pre>
+
+This is equivalent to:
+
+<pre>
+<b>@{</b><i>&lt;filter&gt;(&lt;expression&gt;)</i><b>}</b>
+</pre>
+
+#### Example ####
+
+```
+// Include external HTML piped through the escape processing function
+a = "@{include('index.html')|escape}"
+
+// Include an external binary piped through the base64 encoder function
+b = "@{include('file.bin')|base64}"
+```
+
+# Advanced Builder Usage #
+
+This section contains information that will help you work with Builder more effectively, but may not be needed for more basic Builder tasks. These advanced options include:
+
+- [Reproducible Artifacts](#reproducible-artifacts)
+- [Including JavaScript Libraries](#including-javascript-libraries)
+- [Managing Remote Includes](#managing-remote-includes)
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration used for preprocessing a source file &mdash; references to the concrete versions of GitHub files and libraries that are used, and Builder variable definitions which are used &mdash; and preprocess the source file again later with the saved configuration.
+It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of GitHub files and libraries are stored in a [‘dependencies.json’](#github-files-dependencies) file.
+
+### Builder Variables: Directives ###
+
+The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file name is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
+
+When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
+
+A typical `directives.json` file looks like this:
+
+```json
+{
+  "Variable0": "value0",
+  "Variable1": "value1"
+}
+```
 
 ### GitHub Files: Dependencies ###
 
@@ -717,43 +792,28 @@ A typical `dependencies.json` file looks like this:
 ]
 ```
 
-### Builder Variables: Directives ###
-
-The `--save-directives [<path_to_file>]` and `--use-directives [<path_to_file>]` options are used to, respectively, save and reuse Builder variable definitions. The definitions are saved in a JSON file. If a file is not specified, the `directives.json` file in the local directory is used. These options are processed the similar way as the `--save-dependencies` and `--use-dependencies` options, above.
-
-When the `--use-directives [<path_to_file>]` option is used, the saved Builder variable definitions are merged with definitions specified by `-D<variable> <value>` options.
-
-A typical `directives.json` file looks like this:
-
-```json
-{
-  "Variable0": "value0",
-  "Variable1": "value1"
-}
-```
-
 ## Including JavaScript Libraries ##
 
-Builder can accept JavaScript libraries to add functionality to its global namespace. The library should export an object, the properties of which will be merged into the global namespace. For example, to include a function to convert strings to uppercase, define your library file like so:
+Builder can accept JavaScript libraries to add functionality to its global namespace. The library should export an object, the properties of which will be merged into the global namespace. For example, to include a function, *upper()*, to convert strings to uppercase, define your library file like so:
 
 ```js
 module.exports = {
-  upper: (s) => s.toUpperCase()
+    upper: (s) => s.toUpperCase()
 };
 ```
 
-Include directives, such as the following example, in your input file:
+Now include the function within directives in your input file:
 
 ```
 @{upper("warning:")}
 @{upper(include("warning.txt"))}
 ```
 
-Run builder with the option `--lib path/to/your/lib/file`.
+Finally, run Builder with the option `--lib path/to/your/lib/file`.
 
 ### Binding The Context Object Correctly ###
 
-Functions called by Builder will be called with their *this* argument set to a Builder context object. Within the context object, Builder [variables](#variables) like `__FILE__`, [functions](#functions) like `max()`, and other included library functions will be made available at the top level. Variables defined in your input code with `@macro` or `@set` will be available under the key *globals*.
+Functions called by Builder will be called with their *this* argument set to a Builder context object. Within the context object, Builder [variables](#variables) like `__FILE__`, [functions](#builder-functions) like `max()`, and other included library functions will be made available at the top level. Variables defined in your input code with `@macro` or `@set` will be available under the key *globals*.
 
 Ignoring the binding of *this* may cause unexpected behavior, for example when calling methods on objects. Take the following example library:
 
@@ -795,15 +855,15 @@ module.exports = {
 };
 ```
 
-## Remote Includes ##
+## Managing Remote Includes ##
+
+There are a number of advanced techniques you may apply when including remote files in your source code using Builder.
 
 ### Caching Remote Includes ###
 
-To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub or remote HTTP/HTTPs servers).
+To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* directory. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
 
-If this file cache is enabled, remote files are cached locally in the *.builder-cache* folder. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
-
-To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exist and is valid &mdash; it will query remote resources on every execution.
+To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exists and is valid &mdash; it will continue to query remote resources on every execution.
 
 To reset the cache, use both the `--cache` and the `--clear-cache` options.
 
@@ -850,24 +910,25 @@ For example, to operate through a proxy running at IP address 192.168.10.2 on po
 
 ### Local Includes From Remote Files ###
 
-By default, all [local includes](#local-files), even if they are mentioned in remote source files, are always interpreted as relative to the system where Builder is running.
+By default, all [local includes](#include), even if they are mentioned in remote source files, are interpreted as relative to the system where Builder is running.
 
-If `--use-remote-relative-includes` option is specified, every [local include](#local-files) is interpreted as relative to the location of the source file where it is mentioned. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
+If `--use-remote-relative-includes` option is specified, every [local include](#include) is interpreted as relative to the location of the source file where it is mentioned, excluding absolute local includes, like `/home/user/etc` or `C:\Users\user\etc`. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
 
-`--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#remote-files).
+`--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#include).
 
 **Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from GitHub only.
 
 # Testing #
 
+When running tests locally, please test on both Windows and macOS. All environment variables are optional. However, if you are working with `@includes` from GitHub and do not provide GitHub credentials, rate limits imposed by GitHub may cause test failures. The default for `SPEC_LOGLEVEL` is `error`.
+
 ```sh
-SPEC_LOGLEVEL=<debug|info|warning|error> \
-SPEC_GITHUB_USERNAME=<GitHub username> \
-SPEC_GITHUB_TOKEN=<GitHub password/access token> \
+npm install
+SPEC_LOGLEVEL=<debug|info|warning|error>
+SPEC_GITHUB_USERNAME=<GitHub username>
+SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
-
-All environment variables are optional here. The default for `SPEC_LOGLEVEL` is `error`.
 
 # License #
 
