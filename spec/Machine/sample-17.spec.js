@@ -9,7 +9,7 @@ require('jasmine-expect');
 const eol = require('eol');
 const init = require('./init')('main');
 
-const githubPath = 'github:electricimp/Builder/spec/fixtures/sample-17/lib/lib.nut@develop';
+const githubPath = 'github:electricimp/Builder/spec/fixtures/sample-17/lib/lib.nut';
 
 describe('Machine', () => {
   let machine;
