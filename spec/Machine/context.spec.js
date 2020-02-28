@@ -7,12 +7,20 @@
 require('jasmine-expect');
 
 const init = require('./init')('main');
+const fs = require('fs');
 
 describe('Machine', () => {
   let machine;
 
   beforeEach(() => {
     machine = init.createMachine();
+    machine.fileCache.cacheDir = './test-cache';
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(machine.fileCache.cacheDir)) {
+      machine.clearCache();
+    }
   });
 
   it('should handle context switches', () => {
@@ -34,5 +42,17 @@ describe('Machine', () => {
   11 22 33
 1 2 3
 `);
+  });
+
+  it('should not change includePathParsed object', () => {
+    let includePath = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
+    machine.clearCache();
+    machine.useCache = true;
+    let context = {};
+    const reader = machine._getReader(includePath);
+    const resFirst = machine.fileCache.read(reader, includePath, machine.dependencies, context);
+    const resSecond = machine.fileCache.read(reader, includePath, machine.dependencies, context);
+    expect(resSecond.includePathParsed.__PATH__).toBe('github:electricimp/Builder/spec/fixtures/sample-11');
+
   });
 });
