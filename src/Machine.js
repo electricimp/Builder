@@ -174,7 +174,7 @@ class Machine {
   _formatPath(filepath, filename) {
     return path.normalize(path.join(filepath, filename));
   }
-  
+
   /**
    * Execute AST
    * @param {[]} ast
@@ -361,7 +361,7 @@ class Machine {
 
     // if once flag is set, then check if source has already been included
     if (once && this._includedSources.has(includePath)) {
-      this.logger.debug(`Skipping source "${includePath}": has already been included`);
+      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
       return;
     }
 
@@ -369,7 +369,7 @@ class Machine {
     includePath = this._remoteRelativeIncludes(includePath, context);
 
     const reader = this._getReader(includePath);
-    this.logger.info(`Including source "${includePath}"`);
+    this.logger.info(`Including source "${includePath}" with context.__PATH__ = "${context.__PATH__}"`);
 
     // read
     const res = this.fileCache.read(reader, includePath, this.dependencies);
@@ -963,4 +963,3 @@ class Machine {
 module.exports = Machine;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;
 module.exports.Errors = Errors;
-
