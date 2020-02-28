@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -157,6 +157,16 @@ describe('FileCache', () => {
       expect(linksSet.has(path)).toEqual(false);
       linksSet.add(path);
     });
+  });
+
+  it('should not change includePathParsed object', () => {
+    let includePath = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
+    machine.clearCache();
+    machine.useCache = true;
+    const reader = machine._getReader(includePath);
+    const resFirst = machine.fileCache.read(reader, includePath, machine.dependencies);
+    const resSecond = machine.fileCache.read(reader, includePath, machine.dependencies);
+    expect(resSecond.includePathParsed.__PATH__).toBe('github:electricimp/Builder/spec/fixtures/sample-11');
   });
 
 });
