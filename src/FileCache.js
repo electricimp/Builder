@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -140,7 +140,12 @@ class FileCache {
    */
   read(reader, includePath, dependencies) {
     let needCache = false;
-    if (!dependencies && this._toBeCached(includePath) && this._isCachedReader(reader)) {
+    // Cache file or read from cache only if --cache option is on and no
+    // --save-dependencies option is used
+    // If --use-dependencies option is used (together with --cache, of course),
+    // then cache file or read from cache if no reference to it found in the specified file
+    const depCondition = (!dependencies || dependencies.get(includePath) === undefined) && !this.machine.dependenciesSaveFile;
+    if (depCondition && this._toBeCached(includePath) && this._isCachedReader(reader)) {
       let result;
       if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
         // change reader to local reader

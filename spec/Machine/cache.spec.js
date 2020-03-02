@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -7,6 +7,7 @@
 require('jasmine-expect');
 
 const init = require('./init')('main');
+const path = require('path');
 const Machine = require('../../src/Machine');
 const fs = require('fs');
 
@@ -157,6 +158,92 @@ describe('FileCache', () => {
       expect(linksSet.has(path)).toEqual(false);
       linksSet.add(path);
     });
+  });
+
+  it('should cache files or read from cache if use-dependencies options is on, save-dependencies if off, and dependencies do not include the file', () => {
+    const dependenciesFile = path.join(process.cwd(), 'test-dependencies.json');
+    const link1 = 'github:electricimp/Builder/spec/fixtures/sample-1/input.nut.out';
+    const link2 = 'github:electricimp/Builder/spec/fixtures/sample-1/input.nut.json';
+    const link3 = 'github:electricimp/Builder/spec/fixtures/sample-1/inc-b.nut';
+    machine.clearCache();
+    machine.useCache = true;
+
+    // --save-dependencies is on, --use-dependencies is off, reference to file
+    // is not included
+    machine.clearCache();
+    machine.dependenciesSaveFile = dependenciesFile;
+    machine.dependenciesUseFile = undefined;
+    machine.execute(`@include "${link2}"`);
+    let ghRes = machine.fileCache._getCachedPath(link2);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+
+    // --save-dependencies is on, --use-dependencies is off, reference to file
+    // is included
+    machine.clearCache();
+    machine.execute(`@include "${link2}"`);
+    ghRes = machine.fileCache._getCachedPath(link2);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+
+    // --save-dependencies is off, --use-dependencies is on, reference to file
+    // is not included
+    machine.clearCache();
+    machine.dependenciesSaveFile = undefined;
+    machine.dependenciesUseFile = dependenciesFile;
+    machine.execute(`@include "${link1}"`);
+    ghRes = machine.fileCache._getCachedPath(link1);
+    expect(fs.existsSync(ghRes)).toEqual(true);
+
+    // prepare to next check
+    fs.unlinkSync(dependenciesFile);
+    machine.clearCache();
+    machine.dependenciesSaveFile = dependenciesFile;
+    machine.dependenciesUseFile = undefined;
+    machine.execute(`@include "${link1}"`);
+
+    // --save-dependencies is off, --use-dependencies is on, reference to file
+    // is included
+    machine.clearCache();
+    machine.dependenciesSaveFile = undefined;
+    machine.dependenciesUseFile = dependenciesFile;
+    machine.execute(`@include "${link1}"`);
+    ghRes = machine.fileCache._getCachedPath(link1);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+
+    // prepare to next check
+    fs.unlinkSync(dependenciesFile);
+    machine.clearCache();
+    machine.dependenciesSaveFile = dependenciesFile;
+    machine.dependenciesUseFile = undefined;
+    machine.execute(`@include "${link1}"`);
+
+    // --save-dependencies is on, --use-dependencies is on, reference to file
+    // is not included
+    machine.clearCache();
+    machine.dependenciesSaveFile = dependenciesFile;
+    machine.dependenciesUseFile = dependenciesFile;
+    machine.execute(
+      `@include "${link2}"
+@include "${link3}"`);
+    ghRes = machine.fileCache._getCachedPath(link2);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+    ghRes = machine.fileCache._getCachedPath(link3);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+
+    // --save-dependencies is on, --use-dependencies is on, reference to file
+    // is included
+    machine.clearCache();
+    machine.execute(
+      `@include "${link2}"
+@include "${link3}"`);
+    ghRes = machine.fileCache._getCachedPath(link2);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+    ghRes = machine.fileCache._getCachedPath(link3);
+    expect(fs.existsSync(ghRes)).toEqual(false);
+
+    machine.clearCache();
+    machine.dependenciesSaveFile = undefined;
+    machine.dependenciesUseFile = undefined;
+    fs.unlinkSync(dependenciesFile);
   });
 
 });
