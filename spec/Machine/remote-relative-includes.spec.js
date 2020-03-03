@@ -11,6 +11,7 @@ const init = require('./init')('main');
 const backslashToSlash = require('../backslashToSlash');
 
 const githubPathA = 'github:electricimp/Builder/spec/fixtures/sample-1/inc-a.nut';
+const githubPathB = 'github:electricimp/Builder/spec/fixtures/sample-10/inc-c.nut';
 
 describe('Machine', () => {
   let machine;
@@ -32,5 +33,11 @@ describe('Machine', () => {
     machine.remoteRelativeIncludes = true;
     const res = eol.lf(machine.execute(`@include once "${githubPathA}"`));
     expect(res).toEqual('// included file a\n// included file b\n');
+  });
+
+  it('check that more paths added for remote github include file searching', () => {
+    machine.remoteRelativeIncludes = true;
+    const res = eol.lf(machine.execute(`@include once "${githubPathB}"`));
+    expect(res).toEqual('inc-d.nut\n');
   });
 });

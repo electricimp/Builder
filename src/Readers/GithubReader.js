@@ -142,7 +142,8 @@ class GithubReader extends AbstractReader {
     return {
       __FILE__: path.basename(parsed.path),
       __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
-      __REF__: parsed.ref
+      __REPO_REF__: parsed.ref,
+      __REPO_PREFIX__: `github:${parsed.owner}/${parsed.repo}`
     };
   }
 
@@ -184,16 +185,12 @@ class GithubReader extends AbstractReader {
         agent: agent,
         timeout: 5000
       },
-    });
-
-    // authorization
-    if (username != '' && password !== '') {
-      octokit.authenticate({
+      auth: {
         type: 'basic',
-        username,
-        password
-      });
-    }
+        "username": username,
+        "password": password
+      }
+    });
 
     if (gitBlobID !== 'undefined') {
       const args = {

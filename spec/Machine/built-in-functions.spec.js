@@ -34,4 +34,17 @@ describe('Machine', () => {
       expect(e.message).toBe('Wrong number of arguments for include() (main:2)');
     }
   });
+
+  it('should add more paths for local include file searching', () => {
+    const dirname = __dirname;
+    process.chdir(__dirname + "/../fixtures/sample-10/1");
+    let context = { __PATH__ : "/../2/3" };
+    const res = machine.execute(
+      `@include "inc-e.nut"`,
+      context
+    );
+    // eol normalize \r\n at end of line only. Replace \r\n inside line.
+    expect(res).toEqual(`more paths for include file searching\n`);
+    process.chdir(dirname);
+  });
 });

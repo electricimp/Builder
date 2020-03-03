@@ -174,7 +174,7 @@ class Machine {
   _formatPath(filepath, filename) {
     return path.normalize(path.join(filepath, filename));
   }
-  
+
   /**
    * Execute AST
    * @param {[]} ast
@@ -323,21 +323,41 @@ class Machine {
      * function and implemented for every reader type independently.
      */
 
-    // check if the file is included locally
-    if (this._getReader(includePath) !== this.readers.file) {
-      return includePath;
+    // Check to see if file is a github absolute remote path, in which case we should return that path back directly
+    if(this._getReader(includePath) === this.readers.github) {
+      if(includePath.indexOf(context.__REPO_PREFIX__) > -1) {
+        var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+        if(process.platform === "win32") {
+          rv = rv.replace(/\\/g, '/');
+        }
+        return rv
+      } else {
+        return includePath  // Absolute github include
+      }
     }
 
-    // check that path is not absolute
-    if (path.isAbsolute(includePath)) {
-      return includePath;
-    }
-
-    // check if file is included from github source
+    // check if file is included from github source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._getReader(remotePath) === this.readers.github) {
-      return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
+      return context.__REPO_REF__ ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
+
+    // Both FileReader and GithubReader now search in this order:
+    // - Relative to process.cwd() / repo root
+    // - Relative to process.cwd() / repo root + current context.__PATH__
+    // - Absolute path of context.__PATH__ + includePath
+    // - Absolute path of includePath
+
+    // // check that path is not absolute
+    // if (path.isAbsolute(includePath)) {
+    //   return includePath;
+    // }
+
+    // // check if the file is included locally
+    // if (this._getReader(includePath) === this.readers.file) {
+    //   return includePath
+    //   // return context.__PATH__ + "/" + includePath;
+    // }
 
     return includePath;
   }
@@ -359,20 +379,20 @@ class Machine {
       context,
     ).trim();
 
-    // if once flag is set, then check if source has already been included
+    // checkout local includes in the github sources from github
+    includePath = this._remoteRelativeIncludes(includePath, context);
+
+    // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
     if (once && this._includedSources.has(includePath)) {
       this.logger.debug(`Skipping source "${includePath}": has already been included`);
       return;
     }
 
-    // checkout local includes in the github sources from github
-    includePath = this._remoteRelativeIncludes(includePath, context);
-
     const reader = this._getReader(includePath);
     this.logger.info(`Including source "${includePath}"`);
 
     // read
-    const res = this.fileCache.read(reader, includePath, this.dependencies);
+    const res = this.fileCache.read(reader, includePath, this.dependencies, context);
 
     // Check if source with same hash value has already been included
     if (!this.suppressDupWarning) {
@@ -963,4 +983,3 @@ class Machine {
 module.exports = Machine;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;
 module.exports.Errors = Errors;
-
