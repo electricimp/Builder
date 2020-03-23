@@ -164,8 +164,6 @@ describe('FileCache', () => {
     const dependenciesFile = path.join(process.cwd(), 'test-dependencies.json');
     const link1 = 'github:electricimp/Builder/spec/fixtures/sample-1/input.nut.out';
     const link2 = 'github:electricimp/Builder/spec/fixtures/sample-1/input.nut.json';
-    const link3 = 'github:electricimp/Builder/spec/fixtures/sample-1/inc-b.nut';
-    machine.clearCache();
     machine.useCache = true;
 
     // --save-dependencies is on, --use-dependencies is off, reference to file
@@ -221,23 +219,15 @@ describe('FileCache', () => {
     machine.clearCache();
     machine.dependenciesSaveFile = dependenciesFile;
     machine.dependenciesUseFile = dependenciesFile;
-    machine.execute(
-      `@include "${link2}"
-@include "${link3}"`);
+    machine.execute(`@include "${link2}"`);
     ghRes = machine.fileCache._getCachedPath(link2);
-    expect(fs.existsSync(ghRes)).toEqual(false);
-    ghRes = machine.fileCache._getCachedPath(link3);
     expect(fs.existsSync(ghRes)).toEqual(false);
 
     // --save-dependencies is on, --use-dependencies is on, reference to file
     // is included
     machine.clearCache();
-    machine.execute(
-      `@include "${link2}"
-@include "${link3}"`);
+    machine.execute(`@include "${link2}"`);
     ghRes = machine.fileCache._getCachedPath(link2);
-    expect(fs.existsSync(ghRes)).toEqual(false);
-    ghRes = machine.fileCache._getCachedPath(link3);
     expect(fs.existsSync(ghRes)).toEqual(false);
 
     machine.clearCache();
