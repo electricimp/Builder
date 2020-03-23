@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -318,14 +318,14 @@ class Machine {
       return includePath;
     }
 
-    /*
-     * The logic below could be moved to the _getReader()
-     * function and implemented for every reader type independently.
-     */
+    // check that path is not absolute
+    if (path.isAbsolute(includePath)) {
+      return includePath;
+    }
 
     // Check to see if file is a github absolute remote path, in which case we should return that path back directly
     if(this._getReader(includePath) === this.readers.github) {
-      if(includePath.indexOf(context.__REPO_PREFIX__) > -1) {
+      if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
         if(process.platform === "win32") {
           rv = rv.replace(/\\/g, '/');
@@ -339,25 +339,8 @@ class Machine {
     // check if file is included from github source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._getReader(remotePath) === this.readers.github) {
-      return context.__REPO_REF__ ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
+      return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
-
-    // Both FileReader and GithubReader now search in this order:
-    // - Relative to process.cwd() / repo root
-    // - Relative to process.cwd() / repo root + current context.__PATH__
-    // - Absolute path of context.__PATH__ + includePath
-    // - Absolute path of includePath
-
-    // // check that path is not absolute
-    // if (path.isAbsolute(includePath)) {
-    //   return includePath;
-    // }
-
-    // // check if the file is included locally
-    // if (this._getReader(includePath) === this.readers.file) {
-    //   return includePath
-    //   // return context.__PATH__ + "/" + includePath;
-    // }
 
     return includePath;
   }

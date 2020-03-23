@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -36,7 +36,7 @@ class FileReader extends AbstractReader {
   constructor() {
     super();
     this.searchDirs = [
-      path.resolve('.'),
+      path.resolve('.')
     ];
   }
 
@@ -53,7 +53,6 @@ class FileReader extends AbstractReader {
    read(filePath, options) {
 
      var searchDirs = this.searchDirs.concat(
-       path.resolve(".") + options.context.__PATH__,
        options.context.__PATH__,
        '' /* to try as absolute path */
      )

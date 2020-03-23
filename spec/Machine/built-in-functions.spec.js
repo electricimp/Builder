@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2019 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -36,15 +36,8 @@ describe('Machine', () => {
   });
 
   it('should add more paths for local include file searching', () => {
-    const dirname = __dirname;
-    process.chdir(__dirname + "/../fixtures/sample-10/1");
-    let context = { __PATH__ : "/../2/3" };
-    const res = machine.execute(
-      `@include "inc-e.nut"`,
-      context
-    );
-    // eol normalize \r\n at end of line only. Replace \r\n inside line.
-    expect(res).toEqual(`more paths for include file searching\n`);
-    process.chdir(dirname);
+    machine.remoteRelativeIncludes = true;
+    const res = machine.execute(`@include once "${backslashToSlash(__dirname)}/../fixtures/sample-10/inc-c.nut"`);
+    expect(res).toEqual('// included file d\n');
   });
 });

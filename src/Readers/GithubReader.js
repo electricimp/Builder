@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -185,12 +185,16 @@ class GithubReader extends AbstractReader {
         agent: agent,
         timeout: 5000
       },
-      auth: {
-        type: 'basic',
-        "username": username,
-        "password": password
-      }
     });
+
+    // authorization
+    if (username != '' && password !== '') {
+      octokit.authenticate({
+        type: 'basic',
+        username,
+        password
+      });
+    }
 
     if (gitBlobID !== 'undefined') {
       const args = {
