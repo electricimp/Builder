@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -174,7 +174,7 @@ class Machine {
   _formatPath(filepath, filename) {
     return path.normalize(path.join(filepath, filename));
   }
-  
+
   /**
    * Execute AST
    * @param {[]} ast
@@ -361,7 +361,7 @@ class Machine {
 
     // if once flag is set, then check if source has already been included
     if (once && this._includedSources.has(includePath)) {
-      this.logger.debug(`Skipping source "${includePath}": has already been included`);
+      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
       return;
     }
 
@@ -374,31 +374,37 @@ class Machine {
     // read
     const res = this.fileCache.read(reader, includePath, this.dependencies);
 
+    const md5sum = md5(res.content);
+
+    // if once flag is set, then check if source has already been included
+    if (once && this._includedSourcesHashes.has(md5sum)) {
+      this._includedSources.add(includePath)  // Prevent fetches in the future for the same path
+      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
+      return;
+    }
+
     // Check if source with same hash value has already been included
-    if (!this.suppressDupWarning) {
-      const md5sum = md5(res.content);
-      if (this._includedSourcesHashes.has(md5sum)) {
-        const path = this._includedSourcesHashes.get(md5sum).path;
-        const file = this._includedSourcesHashes.get(md5sum).file;
-        const line = this._includedSourcesHashes.get(md5sum).line;
-        const dupPath = includePath;
-        const dupFile = context.__FILE__;
-        const dupLine = context.__LINE__;
-        const message = `Warning: duplicated includes detected! The same exact file content is included from
+    if (!this.suppressDupWarning && this._includedSourcesHashes.has(md5sum)) {
+      const path = this._includedSourcesHashes.get(md5sum).path;
+      const file = this._includedSourcesHashes.get(md5sum).file;
+      const line = this._includedSourcesHashes.get(md5sum).line;
+      const dupPath = includePath;
+      const dupFile = context.__FILE__;
+      const dupLine = context.__LINE__;
+      const message = `Warning: duplicated includes detected! The same exact file content is included from
     ${file}:${line} (${path})
     ${dupFile}:${dupLine} (${dupPath})`;
 
-        console.error("\x1b[33m" + message + '\u001b[39m');
-      }
-
-      const info = {
-        path: includePath,
-        file: context.__FILE__,
-        line: context.__LINE__,
-      };
-
-      this._includedSourcesHashes.set(md5sum, info);
+      console.error("\x1b[33m" + message + '\u001b[39m');
     }
+
+    const info = {
+      path: includePath,
+      file: context.__FILE__,
+      line: context.__LINE__,
+    };
+
+    this._includedSourcesHashes.set(md5sum, info);
 
     // provide filename for correct error messages
     this.parser.file = res.includePathParsed.__FILE__;
@@ -963,4 +969,3 @@ class Machine {
 module.exports = Machine;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;
 module.exports.Errors = Errors;
-

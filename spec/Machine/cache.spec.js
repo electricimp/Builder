@@ -159,6 +159,16 @@ describe('FileCache', () => {
       linksSet.add(path);
     });
   });
+  
+  it('should not change includePathParsed object', () => {
+    let includePath = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
+    machine.clearCache();
+    machine.useCache = true;
+    const reader = machine._getReader(includePath);
+    const resFirst = machine.fileCache.read(reader, includePath, machine.dependencies);
+    const resSecond = machine.fileCache.read(reader, includePath, machine.dependencies);
+    expect(resSecond.includePathParsed.__PATH__).toBe('github:electricimp/Builder/spec/fixtures/sample-11');
+  });
 
   it('should cache files or read from cache if use-dependencies options is on, save-dependencies if off, and dependencies do not include the file', () => {
     const dependenciesFile = path.join(process.cwd(), 'test-dependencies.json');

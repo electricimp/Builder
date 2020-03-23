@@ -1,6 +1,6 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-### Current version: 2.8.1 ###
+### Current version: 3.0.0 ###
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
@@ -920,13 +920,13 @@ If `--use-remote-relative-includes` option is specified, every [local include](#
 
 # Testing #
 
-When running tests locally, please test on both Windows and macOS. All environment variables are optional. However, if you are working with `@includes` from GitHub and do not provide GitHub credentials, rate limits imposed by GitHub may cause test failures. The default for `SPEC_LOGLEVEL` is `error`.
+When running tests locally, please test on both Windows and macOS. All environment variables are optional. However, if you are working with `@includes` from GitHub and do not provide GitHub credentials, rate limits imposed by GitHub may cause test failures. The default for `SPEC_LOGLEVEL` is `error`. The example below is written for mac terminal.
 
 ```sh
 npm install
-SPEC_LOGLEVEL=<debug|info|warning|error>
-SPEC_GITHUB_USERNAME=<GitHub username>
-SPEC_GITHUB_TOKEN=<GitHub password/access token>
+export SPEC_LOGLEVEL=<debug|info|warning|error>
+export SPEC_GITHUB_USERNAME=<GitHub username>
+export SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 

@@ -139,6 +139,9 @@ class FileCache {
    * @private
    */
   read(reader, includePath, dependencies) {
+    // Do this first as our includePath and reader may change on us if we have a cache hit
+    const includePathParsed = reader.parsePath(includePath);
+
     let needCache = false;
     // Cache file or read from cache only if --cache option is on and no
     // --save-dependencies option is used
@@ -157,7 +160,6 @@ class FileCache {
       }
     }
 
-    const includePathParsed = reader.parsePath(includePath);
     let content = reader.read(includePath, { dependencies: dependencies });
 
     // if content doesn't have line separator at the end, then add it
