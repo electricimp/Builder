@@ -323,10 +323,11 @@ class Machine {
       return includePath;
     }
 
-    // Check to see if file is a github absolute remote path, in which case we should return that path back directly
+    // check to see if file is a github absolute remote path, in which case we should return that path back directly
     if(this._getReader(includePath) === this.readers.github) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+        // replace backslashes with slashes as backslashes in path cause error at Windows.
         if(process.platform === "win32") {
           rv = rv.replace(/\\/g, '/');
         }
@@ -367,7 +368,7 @@ class Machine {
 
     // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
     if (once && this._includedSources.has(includePath)) {
-      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
+      this.logger.debug(`Skipping source "${includePath}" - path has already been included previously`);
       return;
     }
 
@@ -377,7 +378,8 @@ class Machine {
     // read
     const res = this.fileCache.read(reader, includePath, this.dependencies, context);
 
-    const md5sum = md5(res.content);
+    // calculate md5 hash, making difference between local and github sources
+    const md5sum = md5(res.content + this._getSource(includePath));
 
     // if once flag is set, then check if source has already been included
     if (once && this._includedSourcesHashes.has(md5sum)) {
@@ -719,6 +721,22 @@ class Machine {
     }
 
     throw new Error(`Source "${source}" is not supported`);
+  }
+
+
+  /**
+   * Get source of included file (local or github)
+   *
+   * @param {*} includePath
+   * @return {string}
+   * @private
+   */
+  _getSource(includePath) {
+    if(this._getReader(includePath) === this.readers.github) {
+      return "github";
+    } else {
+      return "local";
+    }
   }
 
 

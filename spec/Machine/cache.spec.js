@@ -161,11 +161,12 @@ describe('FileCache', () => {
 
   it('should not change includePathParsed object', () => {
     let includePath = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
+    let context = {};
     machine.clearCache();
     machine.useCache = true;
     const reader = machine._getReader(includePath);
-    const resFirst = machine.fileCache.read(reader, includePath, machine.dependencies);
-    const resSecond = machine.fileCache.read(reader, includePath, machine.dependencies);
+    const resFirst = machine.fileCache.read(reader, includePath, machine.dependencies, context);
+    const resSecond = machine.fileCache.read(reader, includePath, machine.dependencies, context);
     expect(resSecond.includePathParsed.__PATH__).toBe('github:electricimp/Builder/spec/fixtures/sample-11');
   });
 

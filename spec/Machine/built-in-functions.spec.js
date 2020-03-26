@@ -36,7 +36,6 @@ describe('Machine', () => {
   });
 
   it('should add more paths for local include file searching', () => {
-    machine.remoteRelativeIncludes = true;
     const res = machine.execute(`@include once "${backslashToSlash(__dirname)}/../fixtures/sample-10/inc-c.nut"`);
     expect(res).toEqual('// included file d\n');
   });
