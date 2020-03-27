@@ -378,8 +378,8 @@ class Machine {
     // read
     const res = this.fileCache.read(reader, includePath, this.dependencies, context);
 
-    // calculate md5 hash, making difference between local and github sources
-    const md5sum = md5(res.content + this._getSource(includePath));
+    // calculate md5 hash
+    const md5sum = md5(res.content);
 
     // if once flag is set, then check if source has already been included
     if (once && this._includedSourcesHashes.has(md5sum)) {
@@ -721,22 +721,6 @@ class Machine {
     }
 
     throw new Error(`Source "${source}" is not supported`);
-  }
-
-
-  /**
-   * Get source of included file (local or github)
-   *
-   * @param {*} includePath
-   * @return {string}
-   * @private
-   */
-  _getSource(includePath) {
-    if(this._getReader(includePath) === this.readers.github) {
-      return "github";
-    } else {
-      return "local";
-    }
   }
 
 

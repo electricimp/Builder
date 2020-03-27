@@ -11,7 +11,7 @@ const init = require('./init')('main');
 const backslashToSlash = require('../backslashToSlash');
 
 const githubPathA = 'github:electricimp/Builder/spec/fixtures/sample-1/inc-a.nut';
-const githubPathB = 'github:electricimp/Builder/spec/fixtures/sample-1/inc-b.nut';
+const githubPathB = 'github:electricimp/Builder/spec/fixtures/sample-2/inc-c.nut';
 
 describe('Machine', () => {
   let machine;
@@ -37,8 +37,8 @@ describe('Machine', () => {
 
   it('check that include once directive makes distinguish between local and github files', () => {
     machine.remoteRelativeIncludes = true;
-    const res = eol.lf(machine.execute(`@include once "${backslashToSlash(__dirname)}/../fixtures/sample-1/inc-b.nut"
+    const res = eol.lf(machine.execute(`@include once "${backslashToSlash(__dirname)}/../fixtures/sample-1/inc-a.nut"
 @include once "${githubPathB}"`));
-    expect(res).toEqual('// included file b\n// included file b\n');
+    expect(res).toEqual('// included file a\n// included file b\n// inc-b.nut:1 # inc-b.nut:1\n');
   });
 });
