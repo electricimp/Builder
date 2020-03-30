@@ -50,24 +50,24 @@ class FileReader extends AbstractReader {
    * @param {string} filePath
    * @return {string}
    */
-   read(filePath, options) {
+  read(filePath, options) {
 
-     var searchDirs = this.searchDirs.concat(
-       options.context.__PATH__,
-       '' /* to try as absolute path */
-     )
+    var searchDirs = this.searchDirs.concat (
+      options.context.__PATH__,
+      '' /* to try as absolute path */
+    )
 
-     // iterate through the search dirs
-     for (const dir of searchDirs) {
-       const sourcePath = path.join(dir, filePath);
+    // iterate through the search dirs
+    for (const dir of searchDirs) {
+      const sourcePath = path.join(dir, filePath);
 
-       if (fs.existsSync(sourcePath)) {
-         this.logger.debug(`Reading local file "${sourcePath}"`);
-         return fs.readFileSync(sourcePath, 'utf-8');
-       }
-     }
+      if (fs.existsSync(sourcePath)) {
+        this.logger.debug(`Reading local file "${sourcePath}"`);
+          return fs.readFileSync(sourcePath, 'utf-8');
+      }
+    }
 
-     throw new AbstractReader.Errors.SourceReadingError('Local file "' + path.normalize(filePath) + '" not found');
+    throw new AbstractReader.Errors.SourceReadingError('Local file "' + path.normalize(filePath) + '" not found');
   }
 
   // <editor-fold desc="Accessors" defaultstate="collapsed">
