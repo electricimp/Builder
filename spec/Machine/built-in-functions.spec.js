@@ -37,6 +37,6 @@ describe('Machine', () => {
 
   it('should add more paths for local include file searching', () => {
     const res = machine.execute(`@include once "${backslashToSlash(__dirname)}/../fixtures/sample-10/inc-c.nut"`);
-    expect(res).toEqual('// included file d\n');
+    expect(res.replace('\r\n','\n')).toEqual('// included file d\n');
   });
 });
