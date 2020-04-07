@@ -64,7 +64,7 @@ describe('Machine', () => {
       Int0: 990,
       Int1: 991,
     };
-  
+
     const directivesSource = "@{Int0} @{Int1}";
     const expectedOutput = `990 991`;
 
@@ -96,7 +96,7 @@ describe('Machine', () => {
       Int1: 551,
       Int2: 552,
     };
-  
+
     const directivesSource = "@{Int0} @{Int1} @{Int2}";
     const expectedOutput = `550 551 552`;
 
@@ -137,7 +137,7 @@ describe('Machine', () => {
       Int1: 551,
       Int2: 552,
     };
-  
+
     const directivesSource = "@{Int0} @{Int1} @{Int2}";
     const expectedOutput = `550 551 552`;
 

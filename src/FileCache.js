@@ -30,9 +30,10 @@ const minimatch = require('minimatch');
 const XXHash = require('xxhashjs');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const BitbucketServerReader = require('./Readers/BitbucketServerReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const CACHED_READERS = [GithubReader, HttpReader];
+const CACHED_READERS = [GithubReader, BitbucketServerReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
@@ -49,7 +50,7 @@ class FileCache {
   }
 
   /**
-   * Transform url or github link to path and filename
+   * Transform url or github/bitbucket link to path and filename
    * It is important, that path and filename are unique,
    * because collision can break the build
    * @param {string} link link to the file
@@ -57,6 +58,7 @@ class FileCache {
    * @private
    */
   _getCachedPath(link) {
+    link = link.replace(/^bitbucket-server\:/, 'bitbucket-server#'); // replace ':' for '#' in bitbucket-server protocol
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
     link = link.replace(/\:\/\//, '#'); // replace '://' for '#' in url
     link = link.replace(/\//g, '-'); // replace '/' for '-'

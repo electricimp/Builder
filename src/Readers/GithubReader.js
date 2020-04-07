@@ -178,23 +178,25 @@ class GithubReader extends AbstractReader {
       agent = HttpsProxyAgent(process.env.https_proxy);
     }
 
-    const octokit = new Octokit({
+    const octokitConfig = {
       userAgent: packageJson.name + '/' + packageJson.version,
       baseUrl: 'https://api.github.com',
       request: {
         agent: agent,
         timeout: 5000
-      },
-    });
+      }
+    };
 
     // authorization
     if (username != '' && password !== '') {
-      octokit.authenticate({
+      octokitConfig.auth = {
         type: 'basic',
         username,
         password
-      });
+      };
     }
+
+    const octokit = new Octokit(octokitConfig);
 
     if (gitBlobID !== 'undefined') {
       const args = {

@@ -285,19 +285,14 @@ class Machine {
   }
 
   /**
-   * Concatenate github URL prefix and local relative include
+   * Concatenate github/bitbucket URL prefix and local relative include
    * @param {string[]} prefix
    * @param {string[]} includePath
    * @private
    */
   _formatURL(prefix, includePath) {
-
-    const URL = url.parse(prefix);
-    if (!URL.protocol) {
-      return undefined;
-    }
-
-    const res = prefix.match(/(github:)(.*)/);
+    const res = prefix.match(/^(github:)(.*)/) ||
+                prefix.match(/^(bitbucket-server:)(.*)/);
     if (res === null) {
       return undefined;
     }
@@ -307,7 +302,7 @@ class Machine {
   }
 
   /**
-   * Replace local includes to github URLs if requested
+   * Replace local includes to github/bitbucket URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -323,8 +318,8 @@ class Machine {
       return includePath;
     }
 
-    // check to see if file is a github absolute remote path, in which case we should return that path back directly
-    if(this._getReader(includePath) === this.readers.github) {
+    // Check to see if file is a github or Bitbucket server absolute remote path, in which case we should return that path back directly
+    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
         // replace backslashes with slashes as backslashes in path cause error at Windows.
@@ -337,9 +332,9 @@ class Machine {
       }
     }
 
-    // check if file is included from github source - if so, modify the path and return it relative to the repo root
+    // check if file is included from github or Bitbucket server source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && this._getReader(remotePath) === this.readers.github) {
+    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv)) {
       return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
