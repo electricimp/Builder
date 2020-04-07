@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -142,7 +142,8 @@ class GithubReader extends AbstractReader {
     return {
       __FILE__: path.basename(parsed.path),
       __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
-      __REF__: parsed.ref
+      __REPO_REF__: parsed.ref,
+      __REPO_PREFIX__: `github:${parsed.owner}/${parsed.repo}`
     };
   }
 

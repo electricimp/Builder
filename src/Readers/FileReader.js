@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -50,14 +50,20 @@ class FileReader extends AbstractReader {
    * @param {string} filePath
    * @return {string}
    */
-  read(filePath) {
+  read(filePath, options) {
+
+    var searchDirs = this.searchDirs.concat (
+      options.context.__PATH__,
+      '' /* to try as absolute path */
+    )
+
     // iterate through the search dirs
-    for (const dir of this.searchDirs.concat('' /* to try as absolute path */)) {
+    for (const dir of searchDirs) {
       const sourcePath = path.join(dir, filePath);
 
       if (fs.existsSync(sourcePath)) {
         this.logger.debug(`Reading local file "${sourcePath}"`);
-        return fs.readFileSync(sourcePath, 'utf-8');
+          return fs.readFileSync(sourcePath, 'utf-8');
       }
     }
 

@@ -138,7 +138,7 @@ class FileCache {
    * @return {content: string, includePathParsed} content and parsed path
    * @private
    */
-  read(reader, includePath, dependencies) {
+  read(reader, includePath, dependencies, context) {
     // Do this first as our includePath and reader may change on us if we have a cache hit
     const includePathParsed = reader.parsePath(includePath);
 
@@ -160,7 +160,7 @@ class FileCache {
       }
     }
 
-    let content = reader.read(includePath, { dependencies: dependencies });
+    let content = reader.read(includePath, { dependencies: dependencies, context: context });
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {

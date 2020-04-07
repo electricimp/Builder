@@ -65,8 +65,7 @@ describe('HttpReader', () => {
       fail();
     } catch (e) {
       expect(e instanceof AbstractReader.Errors.SourceReadingError).toBeTruthy();
-      expect(e.message).toEqual('Failed to fetch url "http://__unknowndomain__/": ' +
-                                'Error: getaddrinfo ENOTFOUND __unknowndomain__ __unknowndomain__:80');
+      expect(e.message.indexOf('Failed to fetch url "http://__unknowndomain__/":')).toEqual(0);
     }
   });
 
