@@ -109,7 +109,7 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
 | --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
-| --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
+| --cache | -c | No | No | Turn on caching for all files included from remote resources. See [‘Caching Remote Includes’](#caching-remote-includes). This option is ignored if the `--save-dependencies` option is specified (the cache is turned off for all files in this case). If the `--use-dependencies` option is specified the cache is turned off for the files referenced in the dependency file and is turned on for all other remote files |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --save-dependencies | | No | No | Save references to the required GitHub files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
@@ -775,7 +775,7 @@ These options are processed the following way:
     3. Builder performs the preprocessing operation.
     4. References to all source files retrieved from GitHub are saved in the JSON file passed to the `--save-dependencies` option (or `dependencies.json`).
 
-**Note** If either `--save-dependencies` or `--use-dependencies` is specified, the `--cache` option is ignored.
+**Note** If `--save-dependencies` is specified, the `--cache` option is ignored. If `--use-dependencies` is specified, the `--cache` option does not affect the files referenced in the dependency file.
 
 A typical `dependencies.json` file looks like this:
 
