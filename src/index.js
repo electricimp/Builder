@@ -33,6 +33,7 @@ const Expression = require('./Expression');
 const FileReader = require('./Readers/FileReader');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const AzureReposReader = require('./Readers/AzureReposReader');
 
 /**
  * Main Builder class
@@ -109,11 +110,13 @@ class Builder {
     const fileReader = new FileReader();
     const httpReader = new HttpReader();
     const githubReader = new GithubReader();
+    const azureReposReader = new AzureReposReader();
 
     const parser = new AstParser();
     const machine = new Machine();
     const expression = new Expression(machine);
 
+    machine.readers.azureRepos = azureReposReader;
     machine.readers.github = githubReader;
     machine.readers.http = httpReader;
     machine.readers.file = fileReader;

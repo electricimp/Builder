@@ -30,9 +30,10 @@ const minimatch = require('minimatch');
 const XXHash = require('xxhashjs');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const AzureReposReader = require('./Readers/AzureReposReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const CACHED_READERS = [GithubReader, HttpReader];
+const CACHED_READERS = [GithubReader, AzureReposReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
