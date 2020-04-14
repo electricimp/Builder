@@ -61,7 +61,7 @@ function usageInfo() {
 \u001b[36m${packageJson.name} v${packageJson.version} CLI\u001b[39m
 
 usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<variable> <value>]
-\t\t[--github-user <username> --github-token <token>]
+\t\t[--github-user <username> --github-token <token>] [--azure-user <username> --azure-token <token>]
 \t\t[--bitbucket-server-addr <address>] [--bitbucket-server-user <username> --bitbucket-server-token <token>]
 \t\t[--lib <path_to_file>] [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
 \t\t[--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
@@ -73,6 +73,8 @@ where:
 \t\u001b[34m-D<varname> <value>\u001b[39m - defines a variable
 \t\u001b[34m--github-user <username>\u001b[39m - a GitHub username
 \t\u001b[34m--github-token <token>\u001b[39m - a GitHub personal access token or password
+\t\u001b[34m--azure-user <username>\u001b[39m - an Azure Repos username
+\t\u001b[34m--azure-token <token>\u001b[39m - an Azure Repos personal access token or password
 \t\u001b[34m--bitbucket-server-addr <address>\u001b[39m - a Bitbucket Server address
 \t\u001b[34m--bitbucket-server-user <username>\u001b[39m - a Bitbucket Server username
 \t\u001b[34m--bitbucket-server-token <token>\u001b[39m - a Bitbucket Server personal access token or password
@@ -119,6 +121,7 @@ function readArgs() {
     lineControl: false,
     input: null,
     gh: {user: null, token: null},
+    ar: {user: null, token: null},
     bbSrv: {addr: null, user: null, token: null},
     clean : false,
     excludeFile : '',
@@ -144,6 +147,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.gh.user = args.shift();
+    } else if (argument === '--azure-user') {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.ar.user = args.shift();
     } else if (argument === '--cache-exclude-list') {
       if (!args.length) {
         throw Error('Expected filename after ' + argument);
@@ -154,6 +162,11 @@ function readArgs() {
         throw Error('Expected argument value after ' + argument);
       }
       res.gh.token = args.shift();
+    } else if (argument === '--azure-token') {
+      if (!args.length) {
+        throw Error('Expected argument value after ' + argument);
+      }
+      res.ar.token = args.shift();
     } else if (argument === '--bitbucket-server-addr') {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
@@ -230,6 +243,9 @@ try {
   // set GH credentials
   builder.machine.readers.github.username = args.gh.user;
   builder.machine.readers.github.token = args.gh.token;
+  // set Azure Repos credentials
+  builder.machine.readers.azureRepos.username = args.ar.user;
+  builder.machine.readers.azureRepos.token = args.ar.token;
   // set BB-Server addr and credentials
   builder.machine.readers.bitbucketSrv.serverAddr = args.bbSrv.addr;
   builder.machine.readers.bitbucketSrv.username = args.bbSrv.user;

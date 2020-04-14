@@ -318,8 +318,8 @@ class Machine {
       return includePath;
     }
 
-    // Check to see if file is a github or Bitbucket server absolute remote path, in which case we should return that path back directly
-    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv) {
+    // Check to see if file is a github, Bitbucket server ot Azure Repos absolute remote path, in which case we should return that path back directly
+    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv || this._getReader(includePath) === this.readers.azureRepos) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
         // replace backslashes with slashes as backslashes in path cause error at Windows.
@@ -332,9 +332,9 @@ class Machine {
       }
     }
 
-    // check if file is included from github or Bitbucket server source - if so, modify the path and return it relative to the repo root
+    // check if file is included from github, Bitbucket server ot Azure Repos source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv)) {
+    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv || this._getReader(remotePath) === this.readers.azureRepos)) {
       return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
@@ -351,7 +351,6 @@ class Machine {
    * @private
    */
   _includeSource(source, context, buffer, once, evaluated) {
-
     // path is an expression, evaluate it
     let includePath = evaluated ? source : this.expression.evaluate(
       source,
