@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -30,9 +30,10 @@ const minimatch = require('minimatch');
 const XXHash = require('xxhashjs');
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
+const BitbucketServerReader = require('./Readers/BitbucketServerReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const CACHED_READERS = [GithubReader, HttpReader];
+const CACHED_READERS = [GithubReader, BitbucketServerReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
@@ -49,7 +50,7 @@ class FileCache {
   }
 
   /**
-   * Transform url or github link to path and filename
+   * Transform url or github/bitbucket link to path and filename
    * It is important, that path and filename are unique,
    * because collision can break the build
    * @param {string} link link to the file
@@ -57,6 +58,7 @@ class FileCache {
    * @private
    */
   _getCachedPath(link) {
+    link = link.replace(/^bitbucket-server\:/, 'bitbucket-server#'); // replace ':' for '#' in bitbucket-server protocol
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
     link = link.replace(/\:\/\//, '#'); // replace '://' for '#' in url
     link = link.replace(/\//g, '-'); // replace '/' for '-'
@@ -138,9 +140,17 @@ class FileCache {
    * @return {content: string, includePathParsed} content and parsed path
    * @private
    */
-  read(reader, includePath, dependencies) {
+  read(reader, includePath, dependencies, context) {
+    // Do this first as our includePath and reader may change on us if we have a cache hit
+    const includePathParsed = reader.parsePath(includePath);
+
     let needCache = false;
-    if (!dependencies && this._toBeCached(includePath) && this._isCachedReader(reader)) {
+    // Cache file or read from cache only if --cache option is on and no
+    // --save-dependencies option is used
+    // If --use-dependencies option is used (together with --cache, of course),
+    // then cache file or read from cache if no reference to it found in the specified file
+    const depCondition = (!dependencies || dependencies.get(includePath) === undefined) && !this.machine.dependenciesSaveFile;
+    if (depCondition && this._toBeCached(includePath) && this._isCachedReader(reader)) {
       let result;
       if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
         // change reader to local reader
@@ -152,8 +162,7 @@ class FileCache {
       }
     }
 
-    const includePathParsed = reader.parsePath(includePath);
-    let content = reader.read(includePath, { dependencies: dependencies });
+    let content = reader.read(includePath, { dependencies: dependencies, context: context });
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {

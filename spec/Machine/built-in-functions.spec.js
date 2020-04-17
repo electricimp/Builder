@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2019 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -33,5 +33,10 @@ describe('Machine', () => {
       expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBe(true);
       expect(e.message).toBe('Wrong number of arguments for include() (main:2)');
     }
+  });
+
+  it('should add more paths for local include file searching', () => {
+    const res = machine.execute(`@include once "${backslashToSlash(__dirname)}/../fixtures/sample-10/inc-c.nut"`);
+    expect(res.replace('\r\n','\n')).toEqual('// included file d\n');
   });
 });

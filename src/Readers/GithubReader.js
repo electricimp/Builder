@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -142,7 +142,8 @@ class GithubReader extends AbstractReader {
     return {
       __FILE__: path.basename(parsed.path),
       __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
-      __REF__: parsed.ref
+      __REPO_REF__: parsed.ref,
+      __REPO_PREFIX__: `github:${parsed.owner}/${parsed.repo}`
     };
   }
 
@@ -177,23 +178,25 @@ class GithubReader extends AbstractReader {
       agent = HttpsProxyAgent(process.env.https_proxy);
     }
 
-    const octokit = new Octokit({
+    const octokitConfig = {
       userAgent: packageJson.name + '/' + packageJson.version,
       baseUrl: 'https://api.github.com',
       request: {
         agent: agent,
         timeout: 5000
-      },
-    });
+      }
+    };
 
     // authorization
     if (username != '' && password !== '') {
-      octokit.authenticate({
+      octokitConfig.auth = {
         type: 'basic',
         username,
         password
-      });
+      };
     }
+
+    const octokit = new Octokit(octokitConfig);
 
     if (gitBlobID !== 'undefined') {
       const args = {

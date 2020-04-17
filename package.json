@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "2.8.1",
+  "version": "3.0.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "jasmine",
+    "test:bitbucket-server": "node ./spec/BitbucketServerExecutor.js",
     "build": "src/cli.js input"
   },
   "repository": {
@@ -35,7 +36,7 @@
     "upath": "^1.1.2"
   },
   "devDependencies": {
-    "jasmine": "^2.4.1",
+    "jasmine": "^3.5.0",
     "jasmine-expect": "^2.0.2",
     "log": "^1.4.0",
     "eol": "^0.9.1",

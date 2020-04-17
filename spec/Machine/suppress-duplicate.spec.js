@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2019 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -44,8 +44,8 @@ describe('Machine', () => {
 
       machine.suppressDupWarning = false;
       const res = eol.lf(machine.execute(
-        `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
-@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+        `@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
       ));
       expect(res).toEqual(`a.builder\na.builder\n`);
     } catch (e) {
@@ -64,8 +64,8 @@ describe('Machine', () => {
       });
 
       const res = eol.lf(machine.execute(
-        `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
-@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+        `@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
       ));
       expect(res).toEqual(`a.builder\na.builder\n`);
     } catch (e) {

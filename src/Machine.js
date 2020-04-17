@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -174,7 +174,7 @@ class Machine {
   _formatPath(filepath, filename) {
     return path.normalize(path.join(filepath, filename));
   }
-  
+
   /**
    * Execute AST
    * @param {[]} ast
@@ -285,19 +285,14 @@ class Machine {
   }
 
   /**
-   * Concatenate github URL prefix and local relative include
+   * Concatenate github/bitbucket URL prefix and local relative include
    * @param {string[]} prefix
    * @param {string[]} includePath
    * @private
    */
   _formatURL(prefix, includePath) {
-
-    const URL = url.parse(prefix);
-    if (!URL.protocol) {
-      return undefined;
-    }
-
-    const res = prefix.match(/(github:)(.*)/);
+    const res = prefix.match(/^(github:)(.*)/) ||
+                prefix.match(/^(bitbucket-server:)(.*)/);
     if (res === null) {
       return undefined;
     }
@@ -307,7 +302,7 @@ class Machine {
   }
 
   /**
-   * Replace local includes to github URLs if requested
+   * Replace local includes to github/bitbucket URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -318,25 +313,29 @@ class Machine {
       return includePath;
     }
 
-    /*
-     * The logic below could be moved to the _getReader()
-     * function and implemented for every reader type independently.
-     */
-
-    // check if the file is included locally
-    if (this._getReader(includePath) !== this.readers.file) {
-      return includePath;
-    }
-
     // check that path is not absolute
     if (path.isAbsolute(includePath)) {
       return includePath;
     }
 
-    // check if file is included from github source
+    // Check to see if file is a github or Bitbucket server absolute remote path, in which case we should return that path back directly
+    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv) {
+      if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
+        var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+        // replace backslashes with slashes as backslashes in path cause error at Windows.
+        if(process.platform === "win32") {
+          rv = rv.replace(/\\/g, '/');
+        }
+        return rv
+      } else {
+        return includePath  // Absolute github include
+      }
+    }
+
+    // check if file is included from github or Bitbucket server source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && this._getReader(remotePath) === this.readers.github) {
-      return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
+    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv)) {
+      return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
     return includePath;
@@ -359,46 +358,53 @@ class Machine {
       context,
     ).trim();
 
-    // if once flag is set, then check if source has already been included
-    if (once && this._includedSources.has(includePath)) {
-      this.logger.debug(`Skipping source "${includePath}": has already been included`);
-      return;
-    }
-
     // checkout local includes in the github sources from github
     includePath = this._remoteRelativeIncludes(includePath, context);
+
+    // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
+    if (once && this._includedSources.has(includePath)) {
+      this.logger.debug(`Skipping source "${includePath}" - path has already been included previously`);
+      return;
+    }
 
     const reader = this._getReader(includePath);
     this.logger.info(`Including source "${includePath}"`);
 
     // read
-    const res = this.fileCache.read(reader, includePath, this.dependencies);
+    const res = this.fileCache.read(reader, includePath, this.dependencies, context);
+
+    // calculate md5 hash
+    const md5sum = md5(res.content);
+
+    // if once flag is set, then check if source has already been included
+    if (once && this._includedSourcesHashes.has(md5sum)) {
+      this._includedSources.add(includePath)  // Prevent fetches in the future for the same path
+      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
+      return;
+    }
 
     // Check if source with same hash value has already been included
-    if (!this.suppressDupWarning) {
-      const md5sum = md5(res.content);
-      if (this._includedSourcesHashes.has(md5sum)) {
-        const path = this._includedSourcesHashes.get(md5sum).path;
-        const file = this._includedSourcesHashes.get(md5sum).file;
-        const line = this._includedSourcesHashes.get(md5sum).line;
-        const dupPath = includePath;
-        const dupFile = context.__FILE__;
-        const dupLine = context.__LINE__;
-        const message = `Warning: duplicated includes detected! The same exact file content is included from
+    if (!this.suppressDupWarning && this._includedSourcesHashes.has(md5sum)) {
+      const path = this._includedSourcesHashes.get(md5sum).path;
+      const file = this._includedSourcesHashes.get(md5sum).file;
+      const line = this._includedSourcesHashes.get(md5sum).line;
+      const dupPath = includePath;
+      const dupFile = context.__FILE__;
+      const dupLine = context.__LINE__;
+      const message = `Warning: duplicated includes detected! The same exact file content is included from
     ${file}:${line} (${path})
     ${dupFile}:${dupLine} (${dupPath})`;
 
-        console.error("\x1b[33m" + message + '\u001b[39m');
-      }
-
-      const info = {
-        path: includePath,
-        file: context.__FILE__,
-        line: context.__LINE__,
-      };
-
-      this._includedSourcesHashes.set(md5sum, info);
+      console.error("\x1b[33m" + message + '\u001b[39m');
     }
+
+    const info = {
+      path: includePath,
+      file: context.__FILE__,
+      line: context.__LINE__,
+    };
+
+    this._includedSourcesHashes.set(md5sum, info);
 
     // provide filename for correct error messages
     this.parser.file = res.includePathParsed.__FILE__;
@@ -963,4 +969,3 @@ class Machine {
 module.exports = Machine;
 module.exports.INSTRUCTIONS = INSTRUCTIONS;
 module.exports.Errors = Errors;
-
