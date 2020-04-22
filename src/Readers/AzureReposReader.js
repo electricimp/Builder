@@ -67,13 +67,13 @@ class AzureReposReader extends AbstractReader {
     var needCommitID = false;
 
     // Process dependencies
-    /*if (options && options.dependencies) {
+    if (options && options.dependencies) {
       if (options.dependencies.has(source)) {
         commitID = options.dependencies.get(source);
       } else {
         needCommitID = true;
       }
-    }*/
+    }
 
     // spawn child process
     const child = childProcess.spawnSync(
@@ -82,7 +82,9 @@ class AzureReposReader extends AbstractReader {
         WORKER_MARKER,
         source,
         this.username,
-        this.token
+        this.token,
+        commitID,
+        needCommitID
       ],
       { timeout: this.timeout }
     );
@@ -116,8 +118,7 @@ class AzureReposReader extends AbstractReader {
         );
       } else {
         // Success
-        //const ret = JSON.parse(child.output[1].toString());
-        const ret = { data: child.output[1].toString() };
+        const ret = JSON.parse(child.output[1].toString());
 
         // Update dependencies map if needed
         if (needCommitID) {
@@ -151,7 +152,7 @@ class AzureReposReader extends AbstractReader {
    * @param {string} password - password or token (if required)
    * @return {{data}}
    */
-  static fetch(source, username, password) {
+  static fetch(source, username, password, commitID, needCommitID) {
     var auth = null;
 
     if (username !== '' && password !== '') {
@@ -163,16 +164,26 @@ class AzureReposReader extends AbstractReader {
     }
 
     const sourceParsed = this.parseUrl(source);
-
     var apiRequest = null;
-
-    const promises = [AzureReposReader.downloadFile(auth, sourceParsed)];
+    const promises = [AzureReposReader.downloadFile(auth, sourceParsed, commitID, needCommitID)];
 
     Promise.all(promises).then(function(results) {
-      /*const ret = {
-        data: results[0],
-      };*/
-      process.stdout.write(results);
+      if(AzureReposReader.isJsonString(results[0])) {
+        const data = JSON.parse(results[0]);
+        if(data.commitId) {
+          const ret = {
+            data: data.content,
+            commitID: data.commitId
+          };
+          process.stdout.write(JSON.stringify(ret));
+        }
+      } else {
+        const ret = {
+          data: results[0],
+          commitID: null
+        };
+        process.stdout.write(JSON.stringify(ret));
+      }
     });
   }
 
@@ -181,32 +192,101 @@ class AzureReposReader extends AbstractReader {
    * @param {object} sourceParsed - parsed source URI
    * @return {Promise}
    */
-  static downloadFile(auth, sourceParsed) {
+  static downloadFile(auth, sourceParsed, commitID, needCommitID) {
     var url = null;
     var authHeaderValue = 'Basic ' + Buffer.from(auth.username + ":" + auth.password).toString('base64');
 
-    if(sourceParsed.ref === undefined) {
-      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
-          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1";
-    } else {
-      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
-          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
-          + "&api-version=5.1&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=branch"
-    }
-
-    const params = {
+    var params = {
       url: url,
       headers: {
         'Authorization': authHeaderValue
       }
     };
 
-    return new Promise(function(resolve, reject) {
-      request.get(params, (error, resp, body) => {
-        AzureReposReader.checkResponse(url, error, resp);
-        resolve(body);
+    if(!sourceParsed.ref && needCommitID !== 'true' && commitID === 'null') {
+      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1";
+      params.url = url;
+
+      return new Promise(function(resolve, reject) {
+        request.get(params, (error, resp, body) => {
+          AzureReposReader.checkResponse(url, error, resp);
+          resolve(body);
+        });
       });
-    });
+
+    } else if(sourceParsed.ref && needCommitID !== 'true' && commitID === 'null') {
+      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
+          + "&api-version=5.1&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=branch";
+      params.url = url;
+
+      return new Promise(function(resolve, reject) {
+        request.get(params, (error, resp, body) => {
+          if(resp.statusCode == 404) {
+            url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+                + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
+                + "&api-version=5.1&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=tag";
+            params.url = url;
+            request.get(params, (error, resp, body) => {
+              AzureReposReader.checkResponse(url, error, resp);
+              resolve(body);
+            });
+          } else {
+            AzureReposReader.checkResponse(url, error, resp);
+            resolve(body);
+          }
+        });
+      });
+
+    } else if(!sourceParsed.ref && needCommitID === 'true' && commitID === 'null') {
+      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1"
+          + "&$format=json&includeContent=true";
+      params.url = url;
+
+      return new Promise(function(resolve, reject) {
+        request.get(params, (error, resp, body) => {
+          AzureReposReader.checkResponse(url, error, resp);
+          resolve(body);
+        });
+      });
+    } else if(sourceParsed.ref && needCommitID === 'true' && commitID === 'null') {
+      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
+          + "&api-version=5.1&$format=json&includeContent=true&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=branch";
+      params.url = url;
+
+      return new Promise(function(resolve, reject) {
+        request.get(params, (error, resp, body) => {
+          if(resp.statusCode == 404) {
+            url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+                + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
+                + "&api-version=5.1&$format=json&includeContent=true&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=tag";
+            params.url = url;
+            request.get(params, (error, resp, body) => {
+              AzureReposReader.checkResponse(url, error, resp);
+              resolve(body);
+            });
+          } else {
+            AzureReposReader.checkResponse(url, error, resp);
+            resolve(body);
+          }
+        });
+      });
+    } else if(commitID !== 'null') {
+      url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+          + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1"
+          + "&versionDescriptor.version=" + commitID + "&versionDescriptor.versionType=commit";
+      params.url = url;
+
+      return new Promise(function(resolve, reject) {
+        request.get(params, (error, resp, body) => {
+          AzureReposReader.checkResponse(url, error, resp);
+          resolve(body);
+        });
+      });
+    }
   }
 
   /**
@@ -262,11 +342,20 @@ class AzureReposReader extends AbstractReader {
     return false;
   }
 
+  static isJsonString(source) {
+    try {
+      JSON.parse(source);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
 }
 
 if (process.argv.indexOf(WORKER_MARKER) !== -1) {
   // Launch worker
-  AzureReposReader.fetch(process.argv[3], process.argv[4], process.argv[5]);
+  AzureReposReader.fetch(process.argv[3], process.argv[4], process.argv[5], process.argv[6], process.argv[7]);
 } else {
   module.exports = AzureReposReader;
 }
