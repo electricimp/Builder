@@ -46,11 +46,17 @@ describe('AzureReposReader', () => {
     reader.token = process.env.SPEC_AZURE_REPOS_TOKEN || process.env.SPEC_AZURE_REPOS_PASSWORD;
   });
 
-  it('should read sample#1 from Azure Repos', () => {
+  it('should read sample#1 from Azure Repos with refs', () => {
     let remote;
     const local = eol.lf(fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut', 'utf-8'));
 
-    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut`);
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut@master`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut@v0.1.0`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut@d390dbe849da349e29db850779173887c5e9babd`);
     expect(remote).toEqual(local);
   });
 });

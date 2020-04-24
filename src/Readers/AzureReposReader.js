@@ -139,9 +139,9 @@ class AzureReposReader extends AbstractReader {
     const parsed = AzureReposReader.parseUrl(source);
     return {
       __FILE__: path.basename(parsed.path),
-      __PATH__: `git-azure-repos:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
+      __PATH__: `git-azure-repos:${parsed.org}/${parsed.project}/${parsed.repo}/${path.dirname(parsed.path)}`,
       __REPO_REF__: parsed.ref,
-      __REPO_PREFIX__: `git-azure-repos:${parsed.owner}/${parsed.repo}`
+      __REPO_PREFIX__: `git-azure-repos:${parsed.org}/${parsed.project}/${parsed.repo}`
     };
   }
 
@@ -229,8 +229,19 @@ class AzureReposReader extends AbstractReader {
                 + "&api-version=5.1&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=tag";
             params.url = url;
             request.get(params, (error, resp, body) => {
-              AzureReposReader.checkResponse(url, error, resp);
-              resolve(body);
+              if(resp.statusCode == 404) {
+                url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+                    + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1"
+                    + "&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=commit";
+                params.url = url;
+                request.get(params, (error, resp, body) => {
+                  AzureReposReader.checkResponse(url, error, resp);
+                  resolve(body);
+                });
+              } else {
+                AzureReposReader.checkResponse(url, error, resp);
+                resolve(body);
+              }
             });
           } else {
             AzureReposReader.checkResponse(url, error, resp);
@@ -265,8 +276,19 @@ class AzureReposReader extends AbstractReader {
                 + "&api-version=5.1&$format=json&includeContent=true&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=tag";
             params.url = url;
             request.get(params, (error, resp, body) => {
-              AzureReposReader.checkResponse(url, error, resp);
-              resolve(body);
+              if(resp.statusCode == 404) {
+                url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
+                    + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
+                    + "&api-version=5.1&$format=json&includeContent=true&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=commit";
+                params.url = url;
+                request.get(params, (error, resp, body) => {
+                  AzureReposReader.checkResponse(url, error, resp);
+                  resolve(body);
+                });
+              } else {
+                AzureReposReader.checkResponse(url, error, resp);
+                resolve(body);
+              }
             });
           } else {
             AzureReposReader.checkResponse(url, error, resp);

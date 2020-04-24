@@ -24,33 +24,45 @@
 
 'use strict';
 
-const fs = require('fs');
-const Log = require('log');
+// require('jasmine-expect');
+
 const eol = require('eol');
-const AzureReposReader = require('../../src/Readers/AzureReposReader');
+const Log = require('log');
+const backslashToSlash = require('../backslashToSlash');
+const Builder = require('../../src/');
 
-describe('AzureReposReader', () => {
-  let reader;
+// File inc-a.nut contains `@include "inc-b.nut"`
+const azureReposPathA = `git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/inc-a.nut`;
 
-  beforeEach(function() {
+describe('remote-relative-includes', () => {
+  let machine;
+
+  beforeEach(function () {
     if (!process.env.SPEC_AZURE_REPOS_REPO_PATH) {
       fail('Some of the required environment variables are not set');
       return;
     }
 
-    reader = new AzureReposReader();
-
-    // @see https://www.npmjs.com/package/log#log-levels
-    reader.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
-    reader.username = process.env.SPEC_AZURE_REPOS_USERNAME;
-    reader.token = process.env.SPEC_AZURE_REPOS_TOKEN || process.env.SPEC_AZURE_REPOS_PASSWORD;
+    const builder = new Builder();
+    builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
+    builder.machine.readers.azureRepos.username = process.env.SPEC_AZURE_REPOS_USERNAME;
+    builder.machine.readers.azureRepos.token = process.env.SPEC_AZURE_REPOS_TOKEN || process.env.SPEC_AZURE_REPOS_PASSWORD;
+    machine = builder.machine;
   });
 
-  it('should read sample#1 from Azure Repos', () => {
-    let remote;
-    const local = eol.lf(fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut', 'utf-8'));
+  it('fetch local include from Azure repos', () => {
+    const fileNotFoundMessage = `Local file "inc-b.nut" not found (${azureReposPathA}:2)`;
+    //console.log(azureReposPathA);
+    try {
+      eol.lf(machine.execute(`@include once "${azureReposPathA}"`));
+      fail();
+    } catch (e) {
+      expect(backslashToSlash(e.message)).toEqual(fileNotFoundMessage);
+    }
 
-    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut`);
-    expect(remote).toEqual(local);
+    // Enable remote-relative-includes feature
+    machine.remoteRelativeIncludes = true;
+    const res = eol.lf(machine.execute(`@include once "${azureReposPathA}"`));
+    expect(res).toEqual('// included file a\n// included file b\n');
   });
 });

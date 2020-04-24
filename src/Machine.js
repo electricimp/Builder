@@ -292,7 +292,8 @@ class Machine {
    */
   _formatURL(prefix, includePath) {
     const res = prefix.match(/^(github:)(.*)/) ||
-                prefix.match(/^(bitbucket-server:)(.*)/);
+                prefix.match(/^(bitbucket-server:)(.*)/) ||
+                prefix.match(/^(git-azure-repos:)(.*)/);
     if (res === null) {
       return undefined;
     }
