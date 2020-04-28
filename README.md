@@ -42,7 +42,7 @@
 - [Advanced Builder Usage](#advanced-builder-usage)
     - [Reproducible Artifacts](#reproducible-artifacts)
         - [Builder Variables: Directives](#builder-variables-directives)
-        - [GitHub And Bitbucket Server Files: Dependencies](#github-and-bitbucket-server-files-dependencies)
+        - [GitHub, Bitbucket Server And Azure Repos Files: Dependencies](#github-bitbucket-server-and-azure-repos-files-dependencies)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
     - [Managing Remote Includes](#managing-remote-includes)
@@ -62,7 +62,7 @@ There are a number of ways in which you can [install Builder](#builder-installat
 
 You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
-You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub or [Bitbucket Server](https://www.atlassian.com/software/bitbucket/download).
+You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub, [Bitbucket Server](https://www.atlassian.com/software/bitbucket/download) or [Azure Repos](https://azure.microsoft.com/en-us/services/devops/repos/).
 
 While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
@@ -89,7 +89,7 @@ Now use Builder’s `pleasebuild` command to configure the newly installed utili
 
 ```sh
 pleasebuild [-l] [-D<variable> <value>]
-    [--github-user <username> --github-token <token>]
+    [--github-user <username> --github-token <token>] [--azure-user <username> --azure-token <token>]
     [--bitbucket-server-addr <address>] [--bitbucket-server-user <username> --bitbucket-server-token <token>]
     [--lib <path_to_file>] [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
     [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
@@ -106,6 +106,8 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
 | --github-user | | No | Yes | A GitHub username. |
 | --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
+| --azure-user | | No | Yes | An Azure Repos username. |
+| --azure-token | | No | Yes | An Azure Repos personal access token|
 | --bitbucket-server-addr | | No | Yes | A Bitbucket Server address. E.g., `https://bitbucket-srv.itd.example.com`. **Note**: this option is mandatory to handle [Bitbucket Server include@ statements](#include-bitbucket) |
 | --bitbucket-server-user | | No | Yes | A Bitbucket Server username. |
 | --bitbucket-server-token | | No | Yes | A Bitbucket Server [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) or password (not recommended). Should be specified if the `--bitbucket-server-user` option is specified. |
@@ -115,8 +117,8 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | --cache | -c | No | No | Turn on caching for all files included from remote resources. See [‘Caching Remote Includes’](#caching-remote-includes). This option is ignored if the `--save-dependencies` option is specified (the cache is turned off for all files in this case). If the `--use-dependencies` option is specified the cache is turned off for the files referenced in the dependency file and is turned on for all other remote files |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --save-dependencies | | No | No | Save references to the required GitHub/Bitbucket files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
-| --use-dependencies | | No | No | Use the specified file to set which GitHub/Bitbucket files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
+| --save-dependencies | | No | No | Save references to the required GitHub/Bitbucket/Azure files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
+| --use-dependencies | | No | No | Use the specified file to set which GitHub/Bitbucket/Azure files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
 | --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 | --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 
@@ -144,6 +146,10 @@ builder.machine.useCache = <true|false>;
 builder.machine.readers.github.username = "<USERNAME>";
 builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
 
+// Set Azure Repos credentials. See the "--azure-user" and "--azure-token" CLI options.
+builder.machine.readers.azureRepos.username = "<USERNAME>";
+builder.machine.readers.azureRepos.token = "<ACCESS_TOKEN>";
+
 // Set Bitbucket Server address and credentials. See the "--bitbucket-server-*" CLI options.
 builder.machine.readers.bitbucketSrv.serverAddr = "<ADDRESS>";
 builder.machine.readers.bitbucketSrv.username = "<USERNAME>";
@@ -153,7 +159,7 @@ builder.machine.readers.bitbucketSrv.token = "<PASSWORD_OR_ACCESS_TOKEN>";
 // See the "--cache-exclude-list" CLI option.
 builder.machine.excludeList = "<PATH_TO_FILE>";
 
-// Replace local include paths to github/bitbucket URLs if requested.
+// Replace local include paths to github/bitbucket/azure URLs if requested.
 // See the "--use-remote-relative-includes" CLI option.
 builder.machine.remoteRelativeIncludes = <true|false>;
 
@@ -563,6 +569,27 @@ This directive can be used to include local files, external sources or [macros](
     **Note 1**: This section describes [**Bitbucket Server**](https://www.atlassian.com/software/bitbucket/download) (version **5.3.0** or above supported) includes. You can't use this to include files from [Bitbucket.org](https://bitbucket.org/).
 
     **Note 2**: Currently, only one server can be specified/used to fetch all Bitbucket Server includes.
+    
+- For Azure Repos file, where:
+
+    - `org` is the organization name.
+    - `project` is the project name.
+    - `repo` is the repository name.
+    - `ref` is the git reference (branch name or tag, defaults to _master_).
+
+    <pre><b>@include</b> "git-azure-repos:<i>&lt;org&gt;</i>/<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
+
+    - Head of the default branch
+
+        <pre><b>@include</b> "git-azure-repos:org/project/repo/path/some.class.nut"</pre>
+
+    - Head of the _develop_ branch
+
+        <pre><b>@include</b> "git-azure-repos:org/project/repo/path/some.class.nut@develop"</pre>
+
+    - Tag _v3.0.1_ (personal repo)
+
+        <pre><b>@include</b> "git-azure-repos:org/project/repo/path/some.class.nut@v3.0.1"</pre>
 
 The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
@@ -590,9 +617,15 @@ When using Bitbucket Server `@include` statements, authentication is optional bu
 
 Apart from a Bitbucket Server username, you need to provide either a [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) **or** a password (which is less secure and not recommended).
 
+##### Azure Repos #####
+
+When using Azure Repos `@include` statements, authentication is optional but is required to access private repositories.
+
+Apart from an Azure Repos username, you need to provide a personal access token.
+
 ##### Credentials passing / storing #####
 
-If you are using Builder as a [library](#library-installation), GitHub / Bitbucket Server credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your credentials will need to be passed into the `pleasebuild` command.
+If you are using Builder as a [library](#library-installation), GitHub / Bitbucket Server / Azure Repos credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your credentials will need to be passed into the `pleasebuild` command.
 
 ### @include once ###
 
@@ -790,7 +823,7 @@ This section contains information that will help you work with Builder more effe
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of GitHub / Bitbucket Server files and libraries are stored in a [‘dependencies.json’](#github-and-bitbucket-server-files-dependencies) file.
+It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of GitHub / Bitbucket Server / Azure Repos files and libraries are stored in a [‘dependencies.json’](#github-bitbucket-server-and-azure-repos-files-dependencies) file.
 
 ### Builder Variables: Directives ###
 
@@ -807,24 +840,24 @@ A typical `directives.json` file looks like this:
 }
 ```
 
-### GitHub And Bitbucket Server Files: Dependencies ###
+### GitHub, Bitbucket Server and Azure Repos Files: Dependencies ###
 
-`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of GitHub and Bitbucket Server files and libraries. The references are saved in a JSON file. If a file name is not specified, the `dependencies.json` file in the local directory is used. Every reference consists of GitHub / Bitbucket Server file URL and:
+`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of GitHub, Bitbucket Server and Azure Repos files and libraries. The references are saved in a JSON file. If a file name is not specified, the `dependencies.json` file in the local directory is used. Every reference consists of GitHub / Bitbucket Server / Azure Repos file URL and:
 - Git Blob ID (Git Blob SHA) &mdash; for GitHub files<br>
 **Note** It is possible to obtain the Git Blob ID of a GitHub file using the following *git* command: `git hash-object <path_to_file>`
-- Git Commit ID (Git Commit SHA) &mdash; for Bitbucket Server files
+- Git Commit ID (Git Commit SHA) &mdash; for Bitbucket Server and Azure Repos files
 
 For more information, please see [the Git Manual](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [the Git API](https://developer.github.com/v3/git/blobs/).
 
 These options are processed the following way:
 
-- If only `--save-dependencies [<path_to_file>]` is specified, the references to all source files retrieved from GitHub and Bitbucket Server are saved in the provided JSON file (or `dependencies.json`).
-- If only `--use-dependencies [<path_to_file>]` is specified, the source files from GitHub and Bitbucket Server are retrieved using the references read from the provided JSON file (or `dependencies.json`).
+- If only `--save-dependencies [<path_to_file>]` is specified, the references to all source files retrieved from GitHub, Bitbucket Server and Azure Repos are saved in the provided JSON file (or `dependencies.json`).
+- If only `--use-dependencies [<path_to_file>]` is specified, the source files from GitHub, Bitbucket Server and Azure Repos are retrieved using the references read from the provided JSON file (or `dependencies.json`).
 - If both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, then:
-    1. The source files from GitHub and Bitbucket Server are retrieved using the references read from the JSON file passed to the `--use-dependencies` option (or `dependencies.json`).
-    2. If the source code contains @includes for files from GitHub or Bitbucket Server which have not yet been retrieved, they are retrieved now.
+    1. The source files from GitHub, Bitbucket Server and Azure Repos are retrieved using the references read from the JSON file passed to the `--use-dependencies` option (or `dependencies.json`).
+    2. If the source code contains @includes for files from GitHub, Bitbucket Server and Azure Repos which have not yet been retrieved, they are retrieved now.
     3. Builder performs the preprocessing operation.
-    4. References to all source files retrieved from GitHub and Bitbucket Server are saved in the JSON file passed to the `--save-dependencies` option (or `dependencies.json`).
+    4. References to all source files retrieved from GitHub, Bitbucket Server and Azure Repos are saved in the JSON file passed to the `--save-dependencies` option (or `dependencies.json`).
 
 **Note** If `--save-dependencies` is specified, the `--cache` option is ignored. If `--use-dependencies` is specified, the `--cache` option does not affect the files referenced in the dependency file.
 
@@ -843,6 +876,10 @@ A typical `dependencies.json` file looks like this:
   [
     "bitbucket-server:projectC/repositoryC/fileC",
     "4bc4024f1f2ad99e8bd2ade73d151912e031d1f5"
+  ]
+  [
+    "git-azure-repos:org/projectD/repositoryD/fileD",
+    "d1ccee9ed6e250c6d5e1f052107125659d3ba9d0"
   ]
 ]
 ```
@@ -916,7 +953,7 @@ There are a number of advanced techniques you may apply when including remote fi
 
 ### Caching Remote Includes ###
 
-To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub, Bitbucket Server or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* directory. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
+To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. GitHub, Bitbucket Server, Azure Repos or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* directory. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
 
 To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exists and is valid &mdash; it will continue to query remote resources on every execution.
 
@@ -957,7 +994,7 @@ github:*/**/*@*
 
 ### Proxy Access To Remote Includes ###
 
-To specify a proxy that should be used when you are including files from remote resources (ie. GitHub, Bitbucket Server or remote HTTP/HTTPs servers), set the environment variables `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` for HTTP and HTTPS protocols respectively.
+To specify a proxy that should be used when you are including files from remote resources (ie. GitHub, Bitbucket Server, Azure Repos or remote HTTP/HTTPs servers), set the environment variables `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` for HTTP and HTTPS protocols respectively.
 
 For example, to operate through a proxy running at IP address 192.168.10.2 on port 3128 for HTTP requests, you should set the environment variable: `HTTP_PROXY='http://192.168.10.2:3128'`. All of Builder’s HTTP requests will now go through the proxy.
 
@@ -971,7 +1008,7 @@ If `--use-remote-relative-includes` option is specified, every [local include](#
 
 `--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#include).
 
-**Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from GitHub and Bitbucket Server only.
+**Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from GitHub, Bitbucket Server and Azure Repos only.
 
 # Testing #
 
@@ -985,7 +1022,7 @@ SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 
-**Note**: The standard set of tests doesn't include Bitbucket Server integration testing. To run Bitbucket Server tests, please see the section below.
+**Note**: The standard set of tests doesn't include Bitbucket Server and Azure Repos integration testing. To run Bitbucket Server or Azure Repos tests, please see the sections below.
 
 ## Bitbucket Server ##
 
@@ -1005,6 +1042,22 @@ SPEC_BITBUCKET_SERVER_REPO_PATH=<Path to the cloned Builder repo on the server>
 SPEC_BITBUCKET_SERVER_USERNAME=<Bitbucket Server username>
 SPEC_BITBUCKET_SERVER_TOKEN=<Bitbucket Server password/access token>
 npm run test:bitbucket-server
+```
+
+## Azure Repos ##
+
+**Prerequisites**:
+1. A clone of [Builder](./) repo placed at Azure Repos
+1. An account (username and token) with permissions to access the repo
+
+```sh
+npm install
+SPEC_LOGLEVEL=<debug|info|warning|error>
+# Format: "<org>/<project>/<repo>". E.g., "myOrg/myProj/BuilderClone"
+SPEC_AZURE_REPOS_REPO_PATH=<Path to the cloned Builder repo at the Azure Repos>
+SPEC_AZURE_REPOS_USERNAME=<Azure Repos username>
+SPEC_AZURE_REPOS_TOKEN=<Azure Repos access token>
+npm run test:azure-repos
 ```
 
 # License #
