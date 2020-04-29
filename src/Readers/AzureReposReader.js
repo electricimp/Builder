@@ -30,8 +30,6 @@ const upath = require('upath');
 const childProcess = require('child_process');
 const AbstractReader = require('./AbstractReader');
 
-// Common API path
-const API_PATH = "https://dev.azure.com/";
 // Child process timeout
 const TIMEOUT = 30000;
 // Child process error return code

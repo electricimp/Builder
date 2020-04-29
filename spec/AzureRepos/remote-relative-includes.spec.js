@@ -24,8 +24,6 @@
 
 'use strict';
 
-// require('jasmine-expect');
-
 const eol = require('eol');
 const Log = require('log');
 const backslashToSlash = require('../backslashToSlash');
