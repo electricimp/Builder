@@ -81,7 +81,7 @@ describe('FileCache', () => {
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
   });
 
-  it('should generate unique paths for different bitbucket-server links', () => {
+  it('should generate unique paths for different Azure Repos links', () => {
     const linksSet = new Set();
     const links = ['git-azure-repos:a/b/c.js',
                    'git-azure-repos:b/a/c.js',

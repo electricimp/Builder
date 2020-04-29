@@ -52,7 +52,6 @@ describe('remote-relative-includes', () => {
 
   it('fetch local include from Azure repos', () => {
     const fileNotFoundMessage = `Local file "inc-b.nut" not found (${azureReposPathA}:2)`;
-    //console.log(azureReposPathA);
     try {
       eol.lf(machine.execute(`@include once "${azureReposPathA}"`));
       fail();

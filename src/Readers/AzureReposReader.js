@@ -203,6 +203,8 @@ class AzureReposReader extends AbstractReader {
       }
     };
 
+    // Without save-dependencies/use-dependencies and without ref
+    // commitID is always a string because it was passed as an arg of a process (childProcess.spawnSync)
     if (!sourceParsed.ref && needCommitID !== 'true' && commitID === 'null') {
       url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
           + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1";
@@ -215,6 +217,8 @@ class AzureReposReader extends AbstractReader {
         });
       });
 
+    // Without save-dependencies/use-dependencies and with ref
+    // Trying ref as branch
     } else if (sourceParsed.ref && needCommitID !== 'true' && commitID === 'null') {
       url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
           + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
@@ -224,12 +228,14 @@ class AzureReposReader extends AbstractReader {
       return new Promise(function(resolve, reject) {
         request.get(params, (error, resp, body) => {
           if (resp.statusCode == 404) {
+            // If branch is not found, trying ref as tag
             url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
                 + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
                 + "&api-version=5.1&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=tag";
             params.url = url;
             request.get(params, (error, resp, body) => {
               if (resp.statusCode == 404) {
+                // If tag is not found, trying ref as commit
                 url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
                     + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1"
                     + "&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=commit";
@@ -250,6 +256,7 @@ class AzureReposReader extends AbstractReader {
         });
       });
 
+    // With save-dependencies and without ref
     } else if (!sourceParsed.ref && needCommitID === 'true' && commitID === 'null') {
       url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
           + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1"
@@ -262,6 +269,8 @@ class AzureReposReader extends AbstractReader {
           resolve(body);
         });
       });
+    // With save-dependencies and with ref
+    // Trying ref as branch
     } else if (sourceParsed.ref && needCommitID === 'true' && commitID === 'null') {
       url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
           + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
@@ -271,12 +280,14 @@ class AzureReposReader extends AbstractReader {
       return new Promise(function(resolve, reject) {
         request.get(params, (error, resp, body) => {
           if (resp.statusCode == 404) {
+            // If branch is not found, trying ref as tag
             url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
                 + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
                 + "&api-version=5.1&$format=json&includeContent=true&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=tag";
             params.url = url;
             request.get(params, (error, resp, body) => {
               if (resp.statusCode == 404) {
+                // If tag is not found, trying ref as commit
                 url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
                     + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path
                     + "&api-version=5.1&$format=json&includeContent=true&versionDescriptor.version=" + sourceParsed.ref + "&versionDescriptor.versionType=commit";
@@ -296,6 +307,7 @@ class AzureReposReader extends AbstractReader {
           }
         });
       });
+    // With use-dependencies
     } else if (commitID !== 'null') {
       url = "https://dev.azure.com/" + sourceParsed.org + "/" + sourceParsed.project
           + "/_apis/git/repositories/" + sourceParsed.repo + "/items?path=" + sourceParsed.path + "&api-version=5.1"
@@ -325,7 +337,7 @@ class AzureReposReader extends AbstractReader {
       } else if (resp.statusCode < 200 || resp.statusCode >= 300) {
         process.stderr.write(`Failed to fetch url "${url}": HTTP/${resp.statusCode}\n`);
 
-        // In many cases Bitbucket server includes error message(s)
+        // In many cases Azure Repos includes error message(s)
         process.stderr.write(`Response from the server: ${JSON.stringify(resp.body)}\n`);
 
         process.exit(STATUS_FETCH_FAILED);
@@ -337,7 +349,7 @@ class AzureReposReader extends AbstractReader {
   }
 
   /**
-   * Parse Azure Repos server reference into parts
+   * Parse Azure Repos reference into parts
    * @param source
    * @return {false|{org, project, repo, path, ref}}
    */
@@ -364,6 +376,11 @@ class AzureReposReader extends AbstractReader {
     return false;
   }
 
+  /**
+   * Check, if string is JSON string
+   * @param source string to check
+   * @return {boolean} result
+   */
   static isJsonString(source) {
     try {
       JSON.parse(source);
