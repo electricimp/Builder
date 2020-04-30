@@ -319,7 +319,7 @@ class Machine {
       return includePath;
     }
 
-    // Check to see if file is a github, Bitbucket server ot Azure Repos absolute remote path, in which case we should return that path back directly
+    // Check to see if file is a repository absolute remote path, in which case we should return that path back directly
     if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv || this._getReader(includePath) === this.readers.azureRepos) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
@@ -333,7 +333,7 @@ class Machine {
       }
     }
 
-    // check if file is included from github, Bitbucket server ot Azure Repos source - if so, modify the path and return it relative to the repo root
+    // check if file is included from repository source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv || this._getReader(remotePath) === this.readers.azureRepos)) {
       return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
