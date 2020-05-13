@@ -32,9 +32,10 @@ const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 const BitbucketServerReader = require('./Readers/BitbucketServerReader');
 const AzureReposReader = require('./Readers/AzureReposReader');
+const GitLocalReader = require('./Readers/GitLocalReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const CACHED_READERS = [GithubReader, BitbucketServerReader, AzureReposReader, HttpReader];
+const CACHED_READERS = [GithubReader, BitbucketServerReader, AzureReposReader, GitLocalReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
@@ -62,6 +63,7 @@ class FileCache {
     link = link.replace(/^bitbucket-server\:/, 'bitbucket-server#'); // replace ':' for '#' in bitbucket-server protocol
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
     link = link.replace(/^git-azure-repos\:/, 'git-azure-repos#'); // replace ':' for '#' in azure-repos protocol
+    link = link.replace(/^git-local\:/, 'git-local#'); // replace ':' for '#' in git-local protocol
     link = link.replace(/\:\/\//, '#'); // replace '://' for '#' in url
     link = link.replace(/\//g, '-'); // replace '/' for '-'
     const parts = link.match(/^([^\?]*)(\?(.*))?$/); // delete get parameters from url

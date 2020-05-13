@@ -293,7 +293,8 @@ class Machine {
   _formatURL(prefix, includePath) {
     const res = prefix.match(/^(github:)(.*)/) ||
                 prefix.match(/^(bitbucket-server:)(.*)/) ||
-                prefix.match(/^(git-azure-repos:)(.*)/);
+                prefix.match(/^(git-azure-repos:)(.*)/) ||
+                prefix.match(/^(git-local:)(.*)/);
     if (res === null) {
       return undefined;
     }
@@ -316,11 +317,16 @@ class Machine {
 
     // check that path is not absolute
     if (path.isAbsolute(includePath)) {
+      const tempPath = this._formatURL(context.__REPO_PREFIX__, includePath);
+      if (tempPath && this._getReader(tempPath) === this.readers.gitLocal) {
+        return (context.__REPO_REF__ && tempPath.indexOf("@") == -1) ? `${tempPath}@${context.__REPO_REF__}` : tempPath;
+      }
       return includePath;
     }
 
     // Check to see if file is a repository absolute remote path, in which case we should return that path back directly
-    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv || this._getReader(includePath) === this.readers.azureRepos) {
+    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv ||
+       this._getReader(includePath) === this.readers.azureRepos || this._getReader(includePath) === this.readers.gitLocal) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
         // replace backslashes with slashes as backslashes in path cause error at Windows.
@@ -335,7 +341,8 @@ class Machine {
 
     // check if file is included from repository source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv || this._getReader(remotePath) === this.readers.azureRepos)) {
+    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv ||
+        this._getReader(remotePath) === this.readers.azureRepos || this._getReader(remotePath) === this.readers.gitLocal)) {
       return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
