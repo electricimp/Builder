@@ -320,7 +320,7 @@ class Machine {
     }
 
     // Check to see if file is a repository absolute remote path, in which case we should return that path back directly
-    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv || this._getReader(includePath) === this.readers.azureRepos) {
+    if(this._isRepositoryInclude(includePath)) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
         // replace backslashes with slashes as backslashes in path cause error at Windows.
@@ -335,7 +335,7 @@ class Machine {
 
     // check if file is included from repository source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv || this._getReader(remotePath) === this.readers.azureRepos)) {
+    if (remotePath && this._isRepositoryInclude(remotePath)) {
       return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
@@ -718,6 +718,21 @@ class Machine {
     throw new Error(`Source "${source}" is not supported`);
   }
 
+  /**
+   * Check if included from repository
+   *
+   * @param {*} source
+   * @return {boolean}
+   * @private
+   */
+  _isRepositoryInclude(source) {
+    const reader = this._getReader(source);
+    if(reader === this.readers.github || reader === this.readers.bitbucketSrv || reader === this.readers.azureRepos) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   /**
    * Trim last buffer line

@@ -52,5 +52,14 @@ describe('AzureReposReader', () => {
 
     remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut`);
     expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut@master`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut@master`);
+    expect(remote).toEqual(local);
   });
 });

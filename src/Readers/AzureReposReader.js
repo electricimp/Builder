@@ -131,8 +131,8 @@ class AzureReposReader extends AbstractReader {
 
   /**
    * Parse path
-   * @param {string} source
-   * @return {{__FILE__, __PATH__}}
+   * @param {string} source - source URI
+   * @return {{__FILE__, __PATH__, __REPO_REF__, __REPO_PREFIX__}}
    */
   parsePath(source) {
     const parsed = AzureReposReader.parseUrl(source);
@@ -148,17 +148,18 @@ class AzureReposReader extends AbstractReader {
    * Fetches the source and outputs it to STDOUT
    * @param {string} source - source URI
    * @param {string} username - username (if required)
-   * @param {string} password - password or token (if required)
-   * @return {{data}}
+   * @param {string} token - personal access token (if required)
+   * @param {string} commitID - commit ID (SHA) if any specific commit should be used
+   * @return {{data, commitID}}
    */
-  static fetch(source, username, password, commitID) {
+  static fetch(source, username, token, commitID) {
     var auth = null;
 
-    if (username !== '' && password !== '') {
+    if (username !== '' && token !== '') {
       auth = {
         "type": "basic",
         "username": username,
-        "password": password
+        "password": token
       };
     }
 
@@ -176,7 +177,9 @@ class AzureReposReader extends AbstractReader {
 
   /**
    * Makes an HTTP request to download the source file
+   * @param {object} auth - authentication info
    * @param {object} sourceParsed - parsed source URI
+   * @param {string} commitID - commit ID (SHA) if any specific commit should be used
    * @return {Promise}
    */
   static downloadFile(auth, sourceParsed, commitID) {
@@ -192,7 +195,7 @@ class AzureReposReader extends AbstractReader {
       json: true
     };
 
-    // If we have a specific commit id from the dependencies file use-dependencies option is on and there is an appropriate record in the dependencies
+    // If we have a specific commit id from the dependencies file, use-dependencies option is on and there is an appropriate record in the dependencies
     if (commitID !== 'null') {
       params.url += `&versionDescriptor.version=${commitID}&versionDescriptor.versionType=commit`;
       return AzureReposReader.httpGet(params);
