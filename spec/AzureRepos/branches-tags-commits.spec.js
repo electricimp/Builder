@@ -43,7 +43,7 @@ describe('AzureReposReader', () => {
     // @see https://www.npmjs.com/package/log#log-levels
     reader.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
     reader.username = process.env.SPEC_AZURE_REPOS_USERNAME;
-    reader.token = process.env.SPEC_AZURE_REPOS_TOKEN || process.env.SPEC_AZURE_REPOS_PASSWORD;
+    reader.token = process.env.SPEC_AZURE_REPOS_TOKEN;
   });
 
   it('should read sample#1 from Azure Repos with refs', () => {

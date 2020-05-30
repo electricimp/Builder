@@ -46,7 +46,7 @@ describe('Machine', () => {
     const builder = new Builder();
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
     builder.machine.readers.azureRepos.username = process.env.SPEC_AZURE_REPOS_USERNAME;
-    builder.machine.readers.azureRepos.token = process.env.SPEC_AZURE_REPOS_TOKEN || process.env.SPEC_AZURE_REPOS_PASSWORD;
+    builder.machine.readers.azureRepos.token = process.env.SPEC_AZURE_REPOS_TOKEN;
     machine = builder.machine;
   });
 

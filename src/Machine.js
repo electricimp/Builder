@@ -727,11 +727,9 @@ class Machine {
    */
   _isRepositoryInclude(source) {
     const reader = this._getReader(source);
-    if(reader === this.readers.github || reader === this.readers.bitbucketSrv || reader === this.readers.azureRepos) {
-      return true;
-    } else {
-      return false;
-    }
+    return reader === this.readers.github ||
+           reader === this.readers.bitbucketSrv ||
+           reader === this.readers.azureRepos;
   }
 
   /**

@@ -166,13 +166,13 @@ class AzureReposReader extends AbstractReader {
     const sourceParsed = this.parseUrl(source);
 
     AzureReposReader.downloadFile(auth, sourceParsed, commitID)
-      .then(function(result) {
-        const ret = {
-          data: result.content,
-          commitID: result.commitId
-        };
-        process.stdout.write(JSON.stringify(ret));
-      });
+    .then(function(result) {
+      const ret = {
+        data: result.content,
+        commitID: result.commitId
+      };
+      process.stdout.write(JSON.stringify(ret));
+    });
   }
 
   /**
