@@ -74,7 +74,7 @@ where:
 \t\u001b[34m--github-user <username>\u001b[39m - a GitHub username
 \t\u001b[34m--github-token <token>\u001b[39m - a GitHub personal access token or password
 \t\u001b[34m--azure-user <username>\u001b[39m - an Azure Repos username
-\t\u001b[34m--azure-token <token>\u001b[39m - an Azure Repos personal access token or password
+\t\u001b[34m--azure-token <token>\u001b[39m - an Azure Repos personal access token
 \t\u001b[34m--bitbucket-server-addr <address>\u001b[39m - a Bitbucket Server address
 \t\u001b[34m--bitbucket-server-user <username>\u001b[39m - a Bitbucket Server username
 \t\u001b[34m--bitbucket-server-token <token>\u001b[39m - a Bitbucket Server personal access token or password

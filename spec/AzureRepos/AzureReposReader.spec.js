@@ -43,7 +43,7 @@ describe('AzureReposReader', () => {
     // @see https://www.npmjs.com/package/log#log-levels
     reader.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
     reader.username = process.env.SPEC_AZURE_REPOS_USERNAME;
-    reader.token = process.env.SPEC_AZURE_REPOS_TOKEN || process.env.SPEC_AZURE_REPOS_PASSWORD;
+    reader.token = process.env.SPEC_AZURE_REPOS_TOKEN;
   });
 
   it('should read sample#1 from Azure Repos', () => {
@@ -51,6 +51,15 @@ describe('AzureReposReader', () => {
     const local = eol.lf(fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut', 'utf-8'));
 
     remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/spec/fixtures/sample-1/input.nut@master`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut`);
+    expect(remote).toEqual(local);
+
+    remote = reader.read(`git-azure-repos:${process.env.SPEC_AZURE_REPOS_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut@master`);
     expect(remote).toEqual(local);
   });
 });

@@ -1,6 +1,6 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-### Current version: 3.0.0 ###
+### Current version: 3.1.0 ###
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
@@ -521,7 +521,7 @@ This directive can be used to include local files, external sources or [macros](
     <pre><b>@include</b> "https://example.com/file.ext"</pre>
 
     For more detailed information on making use of remote includes, please see [Managing Remote Includes](#managing-remote-includes).
-    
+
 ##### For Repositories: Github, Bitbucket Server, Azure Repos #####
 
 - For GitHub file, where:
@@ -571,7 +571,7 @@ This directive can be used to include local files, external sources or [macros](
     **Note 1**: This section describes [**Bitbucket Server**](https://www.atlassian.com/software/bitbucket/download) (version **5.3.0** or above supported) includes. You can't use this to include files from [Bitbucket.org](https://bitbucket.org/).
 
     **Note 2**: Currently, only one server can be specified/used to fetch all Bitbucket Server includes.
-    
+
 - For Azure Repos file, where:
 
     - `org` is the organization name.
