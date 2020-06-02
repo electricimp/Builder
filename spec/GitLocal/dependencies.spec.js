@@ -49,9 +49,9 @@ describe('Machine', () => {
   });
 
   it('Create and read dependencies JSON file', () => {
-    const rev1CommitID = "618bb5ecb831762ed085486f39496502f7b22700";
+    const rev1Hash = "c22db87f08ae30a4a0d3450daabb34029b3d50e7";
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
-    const rev0CommitID = "e2a5b434b34b5737b2ff52f51a92c5bbcc9f83bf";
+    const rev0Hash = "9db26aa9017943a7812ab6751a699cd1c7247370";
     const rev0Content = "// included file a\n    // included file b\n\n\n      // should be included\n\n        // l2 else\n\n\n      // should be included\n";
     const url = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut.out@v2.2.2`;
 
@@ -66,10 +66,10 @@ describe('Machine', () => {
     // check dependencies JSON file content
     const rev1Map = new Map(JSON.parse(fs.readFileSync(dependenciesFile)));
     expect(rev1Map.size).toEqual(1);
-    expect(rev1Map.get(url)).toEqual(rev1CommitID);
+    expect(rev1Map.get(url)).toEqual(rev1Hash);
 
     // replace the actual (rev1) commit ID to rev0 commit ID
-    rev1Map.set(url, rev0CommitID);
+    rev1Map.set(url, rev0Hash);
     fs.writeFileSync(dependenciesFile, JSON.stringify([...rev1Map], null, 2), 'utf-8');
 
     machine.dependenciesUseFile = dependenciesFile;
@@ -78,7 +78,7 @@ describe('Machine', () => {
     // check dependencies JSON file content again
     const rev0Map = new Map(JSON.parse(fs.readFileSync(dependenciesFile)));
     expect(rev0Map.size).toEqual(1);
-    expect(rev0Map.get(url)).toEqual(rev0CommitID);
+    expect(rev0Map.get(url)).toEqual(rev0Hash);
 
     // unlink dependencies file to avoid conflicts with unit-tests below
     fs.unlinkSync(dependenciesFile);

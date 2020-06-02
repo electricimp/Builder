@@ -27,6 +27,7 @@
 const path = require('path');
 const childProcess = require('child_process');
 const fs = require('fs');
+const crypto = require('crypto');
 const AbstractReader = require('./AbstractReader');
 class GitLocalReader extends AbstractReader {
 
@@ -67,7 +68,7 @@ class GitLocalReader extends AbstractReader {
     var command = null;
 
     if (commitID) {
-      command = this.getCommand(sourceParsed.root, sourceParsed.relPath, commitID);
+      command = this.getCommand(sourceParsed.root, sourceParsed.relPath, commitID, true);
     }
     else {
       command = this.getCommand(sourceParsed.root, sourceParsed.relPath, sourceParsed.ref);
@@ -76,9 +77,11 @@ class GitLocalReader extends AbstractReader {
     try {
       const result = childProcess.execSync(command).toString();
       if (needCommitID) {
-        const commitIDCommand = this.getCommitIDCommand(sourceParsed.root, sourceParsed.ref);
-        const commitIDResult = childProcess.execSync(commitIDCommand).toString().trim();
+        const tempFileName = GitLocalReader.getRandomTemporaryFileName();
+        fs.writeFileSync(tempFileName, result);
+        const commitIDResult = this.getSHA1(tempFileName);
         options.dependencies.set(source, commitIDResult);
+        fs.unlinkSync(tempFileName);
       }
       return result;
     }
@@ -94,31 +97,33 @@ class GitLocalReader extends AbstractReader {
    * @param {string} root
    * @param {string} path
    * @param {string} ref
+   * @param {string} isCommit
    * @return {string} git command
    */
 
-  getCommand(root, path, ref) {
-    if(ref) {
-      return 'git -C ' + root + ' show ' + ref + ':' + path;
+  getCommand(root, path, ref, isCommit = false) {
+    if (isCommit) {
+      return 'git -C ' + root + ' cat-file -p ' + ref;
     }
     else {
-      return 'git -C ' + root + ' show HEAD:' + path;
+      if(ref) {
+        return 'git -C ' + root + ' show ' + ref + ':' + path;
+      }
+      else {
+        return 'git -C ' + root + ' show HEAD:' + path;
+      }
     }
   }
 
   /**
-   * Get commit id command
-   * @param {string} root
-   * @return {string} commit id
+   * Get SHA1 of file
+   * @param {string} path to file
+   * @return {string} sha1 hex string
    */
 
-  getCommitIDCommand(root, ref) {
-    if(ref) {
-      return 'git -C ' + root + ' show -s --format=%H ' + ref;
-    }
-    else {
-      return 'git -C ' + root + ' show -s --format=%H HEAD';
-    }
+  getSHA1(path) {
+    const command = 'git hash-object ' + path;
+    return childProcess.execSync(command).toString().trim();
   }
 
   /**
@@ -135,6 +140,17 @@ class GitLocalReader extends AbstractReader {
       __REPO_REF__: parsed.ref,
       __REPO_PREFIX__: `git-local:${parsed.root}`
     };
+  }
+
+  /**
+   * Generates random name for temporary file
+   * @return {string} - file name
+   */
+
+  static getRandomTemporaryFileName() {
+    var current_date = (new Date()).valueOf().toString();
+    var random = Math.random().toString();
+    return '.' + crypto.createHash('sha1').update(current_date + random).digest('hex');
   }
 
   /**
