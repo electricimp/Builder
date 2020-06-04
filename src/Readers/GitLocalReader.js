@@ -77,10 +77,13 @@ class GitLocalReader extends AbstractReader {
     try {
       const result = childProcess.execSync(command).toString();
       if (needCommitID) {
+        // Creating temporary file with randomized name and saving result into it
         const tempFileName = GitLocalReader.getRandomTemporaryFileName();
         fs.writeFileSync(tempFileName, result);
-        const commitIDResult = this.getSHA1(tempFileName);
+        // Getting SHA-1 hash of result and writing it in dependencies
+        const commitIDResult = this.getFileHash(tempFileName);
         options.dependencies.set(source, commitIDResult);
+        // Deleting temporary file
         fs.unlinkSync(tempFileName);
       }
       return result;
@@ -89,24 +92,23 @@ class GitLocalReader extends AbstractReader {
       throw new AbstractReader.Errors.SourceReadingError(err);
     }
 
-
   }
 
   /**
    * Get git command
-   * @param {string} root
-   * @param {string} path
-   * @param {string} ref
-   * @param {string} isCommit
+   * @param {string} root - root of the local git repo
+   * @param {string} path - relative path to the file
+   * @param {string} ref - branch name, tag, commit id or SHA-1 hash of the file
+   * @param {string} byObjectHash - if we get the file by SHA-1 hash
    * @return {string} git command
    */
 
-  getCommand(root, path, ref, isCommit = false) {
-    if (isCommit) {
+  getCommand(root, path, ref, byObjectHash = false) {
+    if (byObjectHash) {
       return 'git -C ' + root + ' cat-file -p ' + ref;
     }
     else {
-      if(ref) {
+      if (ref) {
         return 'git -C ' + root + ' show ' + ref + ':' + path;
       }
       else {
@@ -116,12 +118,12 @@ class GitLocalReader extends AbstractReader {
   }
 
   /**
-   * Get SHA1 of file
-   * @param {string} path to file
+   * Get SHA-1 hash of the file
+   * @param {string} path - path to the file
    * @return {string} sha1 hex string
    */
 
-  getSHA1(path) {
+  getFileHash(path) {
     const command = 'git hash-object ' + path;
     return childProcess.execSync(command).toString().trim();
   }
@@ -195,10 +197,11 @@ class GitLocalReader extends AbstractReader {
    */
   static getRepoRootAndRelativePath(source) {
     var pathParsed = path.parse(source).dir;
-    if(!pathParsed) {
+    if (!pathParsed) {
       return false;
     }
 
+    // Searching the existing dir
     while (true) {
       if (fs.existsSync(pathParsed)) {
         break;
@@ -208,6 +211,7 @@ class GitLocalReader extends AbstractReader {
       }
     }
 
+    // Searching the repo root and relative path
     const command = 'git -C ' + pathParsed + ' rev-parse --show-toplevel';
     try {
       const repoRoot = childProcess.execSync(command).toString().trim();
