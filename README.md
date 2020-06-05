@@ -1053,7 +1053,7 @@ SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 
-**Note**: The standard set of tests doesn't include Bitbucket Server and Azure Repos integration testing. To run Bitbucket Server or Azure Repos tests, please see the sections below.
+**Note**: The standard set of tests doesn't include Bitbucket Server, Azure Repos and Git Local integration testing. To run Bitbucket Server, Azure Repos or Git Local tests, please see the sections below.
 
 ## Bitbucket Server ##
 
@@ -1099,7 +1099,7 @@ npm run test:azure-repos
 npm install
 SPEC_LOGLEVEL=<debug|info|warning|error>
 # Format: "<path>".
-SPEC_GIT_LOCAL_REPO_PATH=<Path to the cloned Builder repo>
+SPEC_GIT_LOCAL_REPO_PATH=<Path to the cloned Builder repo root>
 npm run test:git-local
 ```
 
