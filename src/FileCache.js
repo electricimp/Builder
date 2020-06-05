@@ -28,6 +28,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const minimatch = require('minimatch');
 const XXHash = require('xxhashjs');
+const FileReader = require("./Readers/FileReader");
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 const BitbucketServerReader = require('./Readers/BitbucketServerReader');
@@ -147,7 +148,10 @@ class FileCache {
    */
   read(reader, includePath, dependencies, context) {
     // Do this first as our includePath and reader may change on us if we have a cache hit
-    const includePathParsed = reader.parsePath(includePath);
+    let includePathParsed;
+    if (!(reader instanceof GitLocalReader)) {
+        includePathParsed = reader.parsePath(includePath);
+    }
 
     let needCache = false;
     // Cache file or read from cache only if --cache option is on and no
@@ -165,6 +169,10 @@ class FileCache {
       } else {
         needCache = true;
       }
+    }
+
+    if ((reader instanceof GitLocalReader) || (reader instanceof FileReader)) {
+        includePathParsed = reader.parsePath(includePath);
     }
 
     let content = reader.read(includePath, { dependencies: dependencies, context: context });

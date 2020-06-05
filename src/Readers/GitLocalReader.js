@@ -41,7 +41,17 @@ class GitLocalReader extends AbstractReader {
    * @return {boolean}
    */
   supports(source) {
-    return GitLocalReader.parseUrl(source) !== false;
+    if (source[0] === '"' && source[source.length - 1] === '"') {
+      source = source.substring(1, source.length - 1);
+    }
+
+    const m = source.match(
+      /^(git-local:)([^@]+)(?:@([^@]*))?$/i
+    );
+    if (m) {
+      return true;
+    }
+    return false;
   }
 
   /**
