@@ -317,6 +317,10 @@ class Machine {
 
     // check that path is not absolute
     if (path.isAbsolute(includePath)) {
+      if (!context.__REPO_PREFIX__) {
+        return includePath;
+      }
+
       const tempPath = this._formatURL(context.__REPO_PREFIX__, includePath);
       if (tempPath && this._getReader(tempPath) === this.readers.gitLocal) {
         return (context.__REPO_REF__ && tempPath.indexOf("@") == -1) ? `${tempPath}@${context.__REPO_REF__}` : tempPath;
