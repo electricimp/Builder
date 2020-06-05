@@ -292,7 +292,8 @@ class Machine {
    */
   _formatURL(prefix, includePath) {
     const res = prefix.match(/^(github:)(.*)/) ||
-                prefix.match(/^(bitbucket-server:)(.*)/);
+                prefix.match(/^(bitbucket-server:)(.*)/) ||
+                prefix.match(/^(git-azure-repos:)(.*)/);
     if (res === null) {
       return undefined;
     }
@@ -318,8 +319,8 @@ class Machine {
       return includePath;
     }
 
-    // Check to see if file is a github or Bitbucket server absolute remote path, in which case we should return that path back directly
-    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv) {
+    // Check to see if file is a repository absolute remote path, in which case we should return that path back directly
+    if(this._isRepositoryInclude(includePath)) {
       if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
         var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
         // replace backslashes with slashes as backslashes in path cause error at Windows.
@@ -332,9 +333,9 @@ class Machine {
       }
     }
 
-    // check if file is included from github or Bitbucket server source - if so, modify the path and return it relative to the repo root
+    // check if file is included from repository source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && (this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv)) {
+    if (remotePath && this._isRepositoryInclude(remotePath)) {
       return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
@@ -351,7 +352,6 @@ class Machine {
    * @private
    */
   _includeSource(source, context, buffer, once, evaluated) {
-
     // path is an expression, evaluate it
     let includePath = evaluated ? source : this.expression.evaluate(
       source,
@@ -718,6 +718,19 @@ class Machine {
     throw new Error(`Source "${source}" is not supported`);
   }
 
+  /**
+   * Check if included from repository
+   *
+   * @param {*} source
+   * @return {boolean}
+   * @private
+   */
+  _isRepositoryInclude(source) {
+    const reader = this._getReader(source);
+    return reader === this.readers.github ||
+           reader === this.readers.bitbucketSrv ||
+           reader === this.readers.azureRepos;
+  }
 
   /**
    * Trim last buffer line

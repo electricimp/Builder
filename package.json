@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -9,6 +9,7 @@
   "scripts": {
     "test": "jasmine",
     "test:bitbucket-server": "node ./spec/BitbucketServerExecutor.js",
+    "test:azure-repos": "node ./spec/AzureReposExecutor.js",
     "build": "src/cli.js input"
   },
   "repository": {
