@@ -161,8 +161,12 @@ class GitLocalReader extends AbstractReader {
    * @return {false|{root, relPath, path}}
    */
   static parseUrl(source) {
+    if (source[0] === '"' && source[source.length - 1] === '"') {
+      source = source.substring(1, source.length - 1);
+    }
+
     const m = source.match(
-      /^(git-local:)([^@:]+)(?:@([^@]*))?$/i
+      /^(git-local:)([^@]+)(?:@([^@]*))?$/i
     );
 
     if (m) {
@@ -214,8 +218,8 @@ class GitLocalReader extends AbstractReader {
     // Searching the repo root and relative path
     const command = 'git -C ' + pathParsed + ' rev-parse --show-toplevel';
     try {
-      const repoRoot = childProcess.execSync(command).toString().trim();
-      const relativePath = path.relative(repoRoot, source);
+      const repoRoot = childProcess.execSync(command).toString().trim().replace(/\\/g, '/');
+      const relativePath = path.relative(repoRoot, source).replace(/\\/g, '/');
 
       const res = {
         'root': repoRoot,

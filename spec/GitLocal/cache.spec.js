@@ -57,14 +57,14 @@ describe('FileCache', () => {
   });
 
   it('should not read cached files when cache option is off', () => {
-    let link = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-11/LineBrakeSample.nut`;
+    let link = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-11/LineBrakeSample.nut`.replace(/\\/g, '/');
     machine.useCache = false;
     machine.fileCache._cacheFile(link, 'cached');
     expect(machine.execute(`@include '${link}'`)).not.toEqual('cached');
   });
 
   it('should cache files in machine', () => {
-    let link = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-11/LineBrakeSample.nut`;
+    let link = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-11/LineBrakeSample.nut`.replace(/\\/g, '/');
     machine.useCache = true;
     machine.execute(`@include '${link}'`);
     expect(machine.fileCache._findFile(link)).toBeTruthy();
@@ -72,7 +72,7 @@ describe('FileCache', () => {
 
   it('should exclude remote files from cache', () => {
     machine.useCache = true;
-    let linkName = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-11/LineBrakeSample.nut`;
+    let linkName = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-11/LineBrakeSample.nut`.replace(/\\/g, '/');
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
     machine.excludeList = __dirname + '/../fixtures/config/exclude-all.exclude';
     machine.execute(`@include '${linkName}'`);

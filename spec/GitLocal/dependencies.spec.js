@@ -53,7 +53,7 @@ describe('Machine', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
     const rev0Hash = "9db26aa9017943a7812ab6751a699cd1c7247370";
     const rev0Content = "// included file a\n    // included file b\n\n\n      // should be included\n\n        // l2 else\n\n\n      // should be included\n";
-    const url = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut.out@v2.2.2`;
+    const url = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut.out@v2.2.2`.replace(/\\/g, '/');
 
     // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesFile)) {

@@ -32,7 +32,7 @@ const backslashToSlash = require('../backslashToSlash');
 const Builder = require('../../src/');
 
 // File inc-a.nut contains `@include "inc-b.nut"`
-const gitlocalPathA = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/inc-a.nut`;
+const gitlocalPathA = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/inc-a.nut`.replace(/\\/g, '/');
 
 describe('remote-relative-includes', () => {
   let machine;

@@ -64,6 +64,7 @@ class FileCache {
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
     link = link.replace(/^git-azure-repos\:/, 'git-azure-repos#'); // replace ':' for '#' in azure-repos protocol
     link = link.replace(/^git-local\:/, 'git-local#'); // replace ':' for '#' in git-local protocol
+    link = link.replace(/\:/, '-'); // replace ':' for '-' for Windows paths in git-local-protocol
     link = link.replace(/\:\/\//, '#'); // replace '://' for '#' in url
     link = link.replace(/\//g, '-'); // replace '/' for '-'
     const parts = link.match(/^([^\?]*)(\?(.*))?$/); // delete get parameters from url

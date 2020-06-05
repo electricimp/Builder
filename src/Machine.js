@@ -357,6 +357,10 @@ class Machine {
    * @private
    */
   _includeSource(source, context, buffer, once, evaluated) {
+    // if git-local, replace all \ with /
+    if (this._getReader(source) === this.readers.gitLocal) {
+      source = source.replace(/\\/g, '/');
+    }
     // path is an expression, evaluate it
     let includePath = evaluated ? source : this.expression.evaluate(
       source,
