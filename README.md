@@ -598,6 +598,8 @@ This directive can be used to include local files, external sources or [macros](
     - `path` is the path to file.
     - `ref` is the git reference (branch name, tag or commit, defaults to current branch which local git repository is set to).
     
+    To include from local git branch, you have to perform `git checkout <branch_name>` command firstly, if this branch is not yet being tracked.
+    
     <pre><b>@include</b> "git-local:<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
     
     - Head of the default branch
@@ -617,6 +619,15 @@ This directive can be used to include local files, external sources or [macros](
         <pre><b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@c13c59e96f3f6a37f75f9e520d0fdc5591e0ba83"</pre>
         
     **Note 1:** If there are uncommitted changes, they will not be seen by this reader. Hence <b>@include</b> "git-local:<i>&lt;path&gt;</i>" (without &lt;ref&gt;) is not interchangeable with <b>@include</b> <i>"&lt;path&gt;"</i>.
+    
+    **Note 2:** To include remote git branch, you have to write it in the **@include** command. For example:
+      <pre>
+      // Include local git branch
+      <b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@develop"
+      // Include remote git branch
+      <b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@origin/develop"</pre>
+    
+The **@** character must not be present in the name of the file which is being included from repository, in order to parse branch/tag/commit correctly.
 
 The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 

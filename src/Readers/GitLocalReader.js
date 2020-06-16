@@ -79,8 +79,7 @@ class GitLocalReader extends AbstractReader {
 
     if (commitID) {
       command = this.getCommand(sourceParsed.root, sourceParsed.relPath, commitID, true);
-    }
-    else {
+    } else {
       command = this.getCommand(sourceParsed.root, sourceParsed.relPath, sourceParsed.ref);
     }
 
@@ -171,6 +170,8 @@ class GitLocalReader extends AbstractReader {
    * @return {false|{root, relPath, path}}
    */
   static parseUrl(source) {
+    // The @ character must not be present in the name of the file
+    // which is being included from repository, in order to parse branch/tag/commit correctly
     if (source[0] === '"' && source[source.length - 1] === '"') {
       source = source.substring(1, source.length - 1);
     }

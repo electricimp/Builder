@@ -36,7 +36,7 @@ const AzureReposReader = require('./Readers/AzureReposReader');
 const GitLocalReader = require('./Readers/GitLocalReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
-const CACHED_READERS = [GithubReader, BitbucketServerReader, AzureReposReader, GitLocalReader, HttpReader];
+const CACHED_READERS = [GithubReader, BitbucketServerReader, AzureReposReader, HttpReader];
 const CACHE_LIFETIME = 1; // in days
 const HASH_SEED = 0xE1EC791C;
 const MAX_FILENAME_LENGTH = 250;
@@ -53,7 +53,7 @@ class FileCache {
   }
 
   /**
-   * Transform url or github/bitbucket link to path and filename
+   * Transform url or github/bitbucket/azure/git-local link to path and filename
    * It is important, that path and filename are unique,
    * because collision can break the build
    * @param {string} link link to the file
@@ -148,12 +148,8 @@ class FileCache {
    */
   read(reader, includePath, dependencies, context) {
     // Do this first as our includePath and reader may change on us if we have a cache hit
-    // Local git repo files are being processed in different way
-    let includePathParsed;
-    const isGitLocal = (reader instanceof GitLocalReader);
-    if (!isGitLocal) {
-        includePathParsed = reader.parsePath(includePath);
-    }
+    // Local git repo files are not being cached
+    const includePathParsed = reader.parsePath(includePath);
 
     let needCache = false;
     // Cache file or read from cache only if --cache option is on and no
@@ -171,10 +167,6 @@ class FileCache {
       } else {
         needCache = true;
       }
-    }
-
-    if (isGitLocal) {
-        includePathParsed = reader.parsePath(includePath);
     }
 
     let content = reader.read(includePath, { dependencies: dependencies, context: context });

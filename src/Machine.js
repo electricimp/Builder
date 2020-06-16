@@ -285,7 +285,7 @@ class Machine {
   }
 
   /**
-   * Concatenate github/bitbucket URL prefix and local relative include
+   * Concatenate github/bitbucket/azure/git-local URL prefix and local relative include
    * @param {string[]} prefix
    * @param {string[]} includePath
    * @private
@@ -304,7 +304,7 @@ class Machine {
   }
 
   /**
-   * Replace local includes to github/bitbucket URLs if requested
+   * Replace local includes to github/bitbucket/azure/git-local URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -315,15 +315,16 @@ class Machine {
       return includePath;
     }
 
-    // check that path is not absolute
+    // check that path is not absolute path or is not a git local path
+    // if path is a git local path, return absolute git local path
     if (path.isAbsolute(includePath)) {
       if (!context.__REPO_PREFIX__) {
         return includePath;
       }
 
-      const tempPath = this._formatURL(context.__REPO_PREFIX__, includePath);
-      if (tempPath && this._getReader(tempPath) === this.readers.gitLocal) {
-        return (context.__REPO_REF__ && tempPath.indexOf("@") == -1) ? `${tempPath}@${context.__REPO_REF__}` : tempPath;
+      const fullPath = this._formatURL(context.__REPO_PREFIX__, includePath);
+      if (fullPath && this._getReader(fullPath) === this.readers.gitLocal) {
+        return this._concatenatePathWithRef(fullPath, context);
       }
       return includePath;
     }
@@ -345,7 +346,7 @@ class Machine {
     // check if file is included from repository source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._isRepositoryInclude(remotePath)) {
-      return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
+      return this._concatenatePathWithRef(remotePath, context);
     }
 
     return includePath;
@@ -744,6 +745,18 @@ class Machine {
            reader === this.readers.bitbucketSrv ||
            reader === this.readers.azureRepos ||
            reader === this.readers.gitLocal;
+  }
+
+  /**
+   * Concatenates path with repo ref if needed
+   *
+   * @param {string} includePath
+   * @param {{}} context
+   * @return {string}
+   * @private
+   */
+  _concatenatePathWithRef(includePath, context) {
+    return (context.__REPO_REF__ && includePath.indexOf("@") == -1) ? `${includePath}@${context.__REPO_REF__}` : includePath;
   }
 
   /**

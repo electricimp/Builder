@@ -238,6 +238,8 @@ class GithubReader extends AbstractReader {
    */
   static parseUrl(source) {
     // parse url
+    // The @ character must not be present in the name of the file
+    // which is being included from repository, in order to parse branch/tag/commit correctly
     const m = source.match(
       /^(github:|github\.com:|github\.com\/)([a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
     );
