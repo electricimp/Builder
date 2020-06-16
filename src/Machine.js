@@ -339,7 +339,7 @@ class Machine {
         }
         return rv
       } else {
-        return includePath  // Absolute github include
+        return includePath  // Absolute github/bitbucket/azure/git-local include
       }
     }
 
