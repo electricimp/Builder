@@ -332,7 +332,7 @@ class Machine {
     // Check to see if file is a repository absolute remote path, in which case we should return that path back directly
     if (this._isRepositoryInclude(includePath)) {
       if (includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
-        var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+        var rv = context.__REPO_REF__ ? `${path.normalize(includePath)}@${context.__REPO_REF__}` : path.normalize(includePath); // Potentially someone using __PATH__
         // replace backslashes with slashes as backslashes in path cause error at Windows.
         if (process.platform === "win32") {
           rv = rv.replace(/\\/g, '/');
