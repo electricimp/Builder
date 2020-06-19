@@ -881,9 +881,9 @@ A typical `directives.json` file looks like this:
 ### Repository Files: Dependencies ###
 
 `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) files and libraries. The references are saved in a JSON file. If a file name is not specified, the `dependencies.json` file in the local directory is used. Every reference consists of [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) file URL and:
-- Git Blob ID (Git Blob SHA) &mdash; for GitHub files and Git Local files<br>
+- Git Blob ID (Git Blob SHA) &mdash; for GitHub files<br>
 **Note** It is possible to obtain the Git Blob ID of a GitHub file using the following *git* command: `git hash-object <path_to_file>`
-- Git Commit ID (Git Commit SHA) &mdash; for Bitbucket Server and Azure Repos files
+- Git Commit ID (Git Commit SHA) &mdash; for Bitbucket Server, Azure Repos and Git Local files
 
 For more information, please see [the Git Manual](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) and [the Git API](https://developer.github.com/v3/git/blobs/).
 
