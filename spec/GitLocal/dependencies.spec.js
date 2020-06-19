@@ -49,9 +49,9 @@ describe('Machine', () => {
   });
 
   it('Create and read dependencies JSON file', () => {
-    const rev1Hash = "c22db87f08ae30a4a0d3450daabb34029b3d50e7";
+    const rev1Hash = "618bb5ecb831762ed085486f39496502f7b22700";
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
-    const rev0Hash = "9db26aa9017943a7812ab6751a699cd1c7247370";
+    const rev0Hash = "e2a5b434b34b5737b2ff52f51a92c5bbcc9f83bf";
     const rev0Content = "// included file a\n    // included file b\n\n\n      // should be included\n\n        // l2 else\n\n\n      // should be included\n";
     const url = `git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut.out@v2.2.2`.replace(/\\/g, '/');
 
