@@ -46,19 +46,30 @@ describe('GitLocalReader', () => {
   });
 
   it('should read sample#1 from local git repo', () => {
-    let remote;
-    const local = eol.lf(fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut', 'utf-8'));
+    const expectedContent = eol.lf(fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut', 'utf-8'));
+    let resultContent;
 
-    remote = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut@master`);
-    expect(remote).toEqual(local);
+    resultContent = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut`);
+    expect(resultContent).toEqual(expectedContent);
 
-    remote = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut`);
-    expect(remote).toEqual(local);
+    resultContent = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut`);
+    expect(resultContent).toEqual(expectedContent);
 
-    remote = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut`);
-    expect(remote).toEqual(local);
+    resultContent = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut@master`);
+    expect(resultContent).toEqual(expectedContent);
+  });
 
-    remote = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/./spec/../spec/fixtures/sample-1/input.nut@master`);
-    expect(remote).toEqual(local);
+  it('should read sample#1 from local git repo with refs', () => {
+    const expectedContent = eol.lf(fs.readFileSync(__dirname + '/../fixtures/sample-1/input.nut', 'utf-8'));
+    let resultContent;
+
+    resultContent = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut@master`);
+    expect(resultContent).toEqual(expectedContent);
+
+    resultContent = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut@v0.1.0`);
+    expect(resultContent).toEqual(expectedContent);
+
+    resultContent = reader.read(`git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/sample-1/input.nut@20454c4dcb9621252d248d8a833ceb1ca79c3730`);
+    expect(resultContent).toEqual(expectedContent);
   });
 });

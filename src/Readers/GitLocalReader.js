@@ -28,6 +28,8 @@ const path = require('path');
 const childProcess = require('child_process');
 const fs = require('fs');
 const AbstractReader = require('./AbstractReader');
+
+
 class GitLocalReader extends AbstractReader {
 
   constructor() {
@@ -40,17 +42,11 @@ class GitLocalReader extends AbstractReader {
    * @return {boolean}
    */
   supports(source) {
-    if (source[0] === '"' && source[source.length - 1] === '"') {
-      source = source.substring(1, source.length - 1);
-    }
-
     const m = source.match(
       /^(git-local:)([^@]+)(?:@([^@]*))?$/i
     );
-    if (m) {
-      return true;
-    }
-    return false;
+
+    return m !== null;
   }
 
   /**
@@ -74,44 +70,34 @@ class GitLocalReader extends AbstractReader {
       }
     }
 
-    var command = null;
-
-    if (commitID) {
-      command = this.getCommand(sourceParsed.root, sourceParsed.relPath, commitID);
-    } else {
-      command = this.getCommand(sourceParsed.root, sourceParsed.relPath, sourceParsed.ref);
-    }
+    const ref = commitID ? commitID : sourceParsed.ref;
+    const command = this.getContentCmd(sourceParsed.root, sourceParsed.relPath, ref);
 
     try {
-      const result = childProcess.execSync(command).toString();
+      const content = childProcess.execSync(command).toString();
+
       if (needCommitID) {
         // Getting commit ID and writing it in dependencies
-        const commitIDResult = this.getCommitID(sourceParsed.root, sourceParsed.ref);
-        options.dependencies.set(source, commitIDResult);
+        commitID = this.getCommitID(sourceParsed.root, sourceParsed.ref);
+        options.dependencies.set(source, commitID);
       }
-      return result;
-    }
-    catch(err) {
+
+      return content;
+    } catch(err) {
       throw new AbstractReader.Errors.SourceReadingError(err);
     }
 
   }
 
   /**
-   * Get git command
+   * Returns a git command for getting content of the specified file
    * @param {string} root - root of the local git repo
    * @param {string} path - relative path to the file
    * @param {string} ref - branch name, tag or commit id
    * @return {string} git command
    */
-
-  getCommand(root, path, ref) {
-    if (ref) {
-      return 'git -C ' + root + ' show ' + ref + ':' + path;
-    }
-    else {
-      return 'git -C ' + root + ' show HEAD:' + path;
-    }
+  getContentCmd(root, path, ref) {
+    return 'git -C ' + root + ' show ' + (ref ? ref : 'HEAD') + ':' + path;
   }
 
   /**
@@ -120,14 +106,13 @@ class GitLocalReader extends AbstractReader {
    * @param {string} ref - branch name, tag or commit id
    * @return {string} sha1 hex string
    */
-
   getCommitID(root, ref) {
     const command = 'git -C ' + root + ' rev-parse ' + (ref ? ref : 'HEAD');
     return childProcess.execSync(command).toString().trim();
   }
 
   /**
-   * Parse path
+   * Parses source URI into __FILE__/__PATH__/__REPO_REF__/__REPO_PREFIX__
    * @param {string} source
    * @return {{__FILE__, __PATH__, __REPO_REF__, __REPO_PREFIX__}}
    */
@@ -150,9 +135,6 @@ class GitLocalReader extends AbstractReader {
   static parseUrl(source) {
     // The @ character must not be present in the name of the file
     // which is being included from repository, in order to parse branch/tag/commit correctly
-    if (source[0] === '"' && source[source.length - 1] === '"') {
-      source = source.substring(1, source.length - 1);
-    }
 
     const m = source.match(
       /^(git-local:)([^@]+)(?:@([^@]*))?$/i
@@ -166,20 +148,18 @@ class GitLocalReader extends AbstractReader {
       if (undefined !== m[3]) {
         res.ref = m[3];
       }
-      res.root = undefined;
-      res.relPath = undefined;
 
-      const result = GitLocalReader.getRepoRootAndRelativePath(res.path);
+      const rootAndRelativePath = GitLocalReader.getRepoRootAndRelativePath(res.path);
 
-      if (result === false) {
+      if (rootAndRelativePath) {
+        res.root = rootAndRelativePath.root;
+        res.relPath = rootAndRelativePath.relPath;
+        return res;
+      } else {
         return false;
       }
-
-      res.root = result.root;
-      res.relPath = result.relPath;
-
-      return res;
     }
+
     return false;
   }
 
@@ -189,36 +169,35 @@ class GitLocalReader extends AbstractReader {
    * @return {false|{root, relPath}}
    */
   static getRepoRootAndRelativePath(source) {
-    var pathParsed = path.parse(source).dir;
+    var pathParsed = path.parse(source);
     if (!pathParsed) {
       return false;
     }
 
+    let existingDir = pathParsed.dir;
+
     // Searching the existing dir
     while (true) {
-      if (fs.existsSync(pathParsed)) {
+      if (fs.existsSync(existingDir)) {
         break;
       }
       else {
-        pathParsed = path.resolve(pathParsed, '..');
+        existingDir = path.resolve(existingDir, '..');
       }
     }
 
     // Searching the repo root and relative path
-    const command = 'git -C ' + pathParsed + ' rev-parse --show-toplevel';
+    const command = 'git -C ' + existingDir + ' rev-parse --show-toplevel';
     try {
       const repoRoot = childProcess.execSync(command).toString().trim().replace(/\\/g, '/');
       const relativePath = path.relative(repoRoot, source).replace(/\\/g, '/');
 
-      const res = {
+      return {
         'root': repoRoot,
         'relPath': relativePath
       };
-
-      return res;
-    }
-    catch(err) {
-      throw new AbstractReader.Errors.SourceReadingError(pathParsed + " is not a git repository (or any of the parent directories)");
+    } catch(err) {
+      throw new AbstractReader.Errors.SourceReadingError("Couldn't find the repo root. Probably " + existingDir + " is not a git repository (or any of the parent directories)");
     }
   }
 }

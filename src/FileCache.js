@@ -28,12 +28,10 @@ const fs = require('fs-extra');
 const path = require('path');
 const minimatch = require('minimatch');
 const XXHash = require('xxhashjs');
-const FileReader = require("./Readers/FileReader");
 const HttpReader = require('./Readers/HttpReader');
 const GithubReader = require('./Readers/GithubReader');
 const BitbucketServerReader = require('./Readers/BitbucketServerReader');
 const AzureReposReader = require('./Readers/AzureReposReader');
-const GitLocalReader = require('./Readers/GitLocalReader');
 
 const DEFAULT_EXCLUDE_FILE_NAME = 'builder-cache.exclude';
 const CACHED_READERS = [GithubReader, BitbucketServerReader, AzureReposReader, HttpReader];
@@ -53,7 +51,7 @@ class FileCache {
   }
 
   /**
-   * Transform url or github/bitbucket/azure/git-local link to path and filename
+   * Transform url or github/bitbucket/azure link to path and filename
    * It is important, that path and filename are unique,
    * because collision can break the build
    * @param {string} link link to the file
@@ -64,8 +62,6 @@ class FileCache {
     link = link.replace(/^bitbucket-server\:/, 'bitbucket-server#'); // replace ':' for '#' in bitbucket-server protocol
     link = link.replace(/^github\:/, 'github#'); // replace ':' for '#' in github protocol
     link = link.replace(/^git-azure-repos\:/, 'git-azure-repos#'); // replace ':' for '#' in azure-repos protocol
-    link = link.replace(/^git-local\:/, 'git-local#'); // replace ':' for '#' in git-local protocol
-    link = link.replace(/\:/, '-'); // replace ':' for '-' for Windows paths in git-local-protocol
     link = link.replace(/\:\/\//, '#'); // replace '://' for '#' in url
     link = link.replace(/\//g, '-'); // replace '/' for '-'
     const parts = link.match(/^([^\?]*)(\?(.*))?$/); // delete get parameters from url
@@ -148,7 +144,6 @@ class FileCache {
    */
   read(reader, includePath, dependencies, context) {
     // Do this first as our includePath and reader may change on us if we have a cache hit
-    // Local git repo files are not being cached
     const includePathParsed = reader.parsePath(includePath);
 
     let needCache = false;
