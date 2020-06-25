@@ -285,15 +285,21 @@ class Machine {
   }
 
   /**
-   * Concatenate github/bitbucket URL prefix and local relative include
+   * Concatenate github/bitbucket/azure/git-local URL prefix and local relative include
    * @param {string[]} prefix
    * @param {string[]} includePath
    * @private
    */
   _formatURL(prefix, includePath) {
+    if (!prefix) {
+      return undefined;
+    }
+
     const res = prefix.match(/^(github:)(.*)/) ||
                 prefix.match(/^(bitbucket-server:)(.*)/) ||
-                prefix.match(/^(git-azure-repos:)(.*)/);
+                prefix.match(/^(git-azure-repos:)(.*)/) ||
+                prefix.match(/^(git-local:)(.*)/);
+
     if (res === null) {
       return undefined;
     }
@@ -303,7 +309,7 @@ class Machine {
   }
 
   /**
-   * Replace local includes to github/bitbucket URLs if requested
+   * Replace local includes to github/bitbucket/azure/git-local URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -314,29 +320,41 @@ class Machine {
       return includePath;
     }
 
-    // check that path is not absolute
+    // If the include path is absolute, we can consider it relatively to the
+    // repo root (if the include being handled is from a file included from a local git repo)
     if (path.isAbsolute(includePath)) {
+      const relativePath = this._formatURL(context.__REPO_PREFIX__, includePath);
+      if (relativePath && this._getReader(relativePath) === this.readers.gitLocal) {
+        return this._addRefToPath(relativePath, context);
+      }
+
       return includePath;
     }
 
-    // Check to see if file is a repository absolute remote path, in which case we should return that path back directly
-    if(this._isRepositoryInclude(includePath)) {
-      if(includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
-        var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+    // If the include path is a repository absolute path and refers to the repo it was included from and doesn't have a ref
+    // specified, we add the ref specified for the previous include (the path to the file where the current include was taken from)
+    // Otherwise, we just return the include path back if it is a repository absolute path
+    if (this._isRepositoryInclude(includePath)) {
+      if (includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
+        // Potentially someone using __PATH__
+        var rv = context.__REPO_REF__ ? `${path.normalize(includePath)}@${context.__REPO_REF__}` : path.normalize(includePath);
+
         // replace backslashes with slashes as backslashes in path cause error at Windows.
-        if(process.platform === "win32") {
+        if (process.platform === "win32") {
           rv = rv.replace(/\\/g, '/');
         }
-        return rv
-      } else {
-        return includePath  // Absolute github include
+
+        return rv;
       }
+
+      // Absolute github/bitbucket/azure/git-local include
+      return includePath;
     }
 
     // check if file is included from repository source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._isRepositoryInclude(remotePath)) {
-      return (context.__REPO_REF__ && remotePath.indexOf("@") == -1) ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
+      return this._addRefToPath(remotePath, context);
     }
 
     return includePath;
@@ -352,6 +370,9 @@ class Machine {
    * @private
    */
   _includeSource(source, context, buffer, once, evaluated) {
+    // replace all \ with / because otherwise readers will not read the source
+    source = source.replace(/\\/g, '/');
+
     // path is an expression, evaluate it
     let includePath = evaluated ? source : this.expression.evaluate(
       source,
@@ -729,7 +750,20 @@ class Machine {
     const reader = this._getReader(source);
     return reader === this.readers.github ||
            reader === this.readers.bitbucketSrv ||
-           reader === this.readers.azureRepos;
+           reader === this.readers.azureRepos ||
+           reader === this.readers.gitLocal;
+  }
+
+  /**
+   * Concatenates path with repo ref if needed
+   *
+   * @param {string} includePath
+   * @param {{}} context
+   * @return {string}
+   * @private
+   */
+  _addRefToPath(includePath, context) {
+    return (context.__REPO_REF__ && includePath.indexOf("@") == -1) ? `${includePath}@${context.__REPO_REF__}` : includePath;
   }
 
   /**
