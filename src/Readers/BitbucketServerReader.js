@@ -307,6 +307,8 @@ class BitbucketServerReader extends AbstractReader {
    * @return {false|{user, repo, path, ref}}
    */
   static parseUrl(source) {
+    // The @ character must not be present in the name of the file
+    // which is being included from repository, in order to parse branch/tag/commit correctly
     const m = source.match(
       /^(bitbucket-server:)(~?[a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
     );

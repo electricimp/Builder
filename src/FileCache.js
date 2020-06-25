@@ -51,7 +51,7 @@ class FileCache {
   }
 
   /**
-   * Transform url or github/bitbucket link to path and filename
+   * Transform url or github/bitbucket/azure link to path and filename
    * It is important, that path and filename are unique,
    * because collision can break the build
    * @param {string} link link to the file

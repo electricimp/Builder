@@ -10,6 +10,7 @@
     "test": "jasmine",
     "test:bitbucket-server": "node ./spec/BitbucketServerExecutor.js",
     "test:azure-repos": "node ./spec/AzureReposExecutor.js",
+    "test:git-local": "node ./spec/GitLocalExecutor.js",
     "build": "src/cli.js input"
   },
   "repository": {

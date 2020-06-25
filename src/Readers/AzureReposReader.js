@@ -289,6 +289,8 @@ class AzureReposReader extends AbstractReader {
    * @return {false|{org, project, repo, path, ref}}
    */
   static parseUrl(source) {
+    // The @ character must not be present in the name of the file
+    // which is being included from repository, in order to parse branch/tag/commit correctly
     const m = source.match(
       /^(git-azure-repos:)(~?[a-z0-9\-\._]+)\/(~?[a-z0-9\-\._]+)\/([a-z0-9\-\._]+)\/(.*?)(?:@([^@]*))?$/i
     );

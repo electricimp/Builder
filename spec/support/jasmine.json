@@ -3,7 +3,8 @@
   "spec_files": [
     "**/*[sS]pec.js",
     "!BitbucketServer/**/*[sS]pec.js",
-    "!AzureRepos/**/*[sS]pec.js"
+    "!AzureRepos/**/*[sS]pec.js",
+    "!GitLocal/**/*[sS]pec.js"
   ],
   "helpers": [
     "helpers/**/*.js"
