@@ -9,6 +9,10 @@ const init = require('./init')('main');
 const Machine = require('../../src/Machine');
 
 const backslashToSlash = require('../backslashToSlash');
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './../..');
+const filePath = path.join(contextPath, 'main');
 
 describe('Machine', () => {
   let machine;
@@ -31,7 +35,7 @@ describe('Machine', () => {
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBe(true);
-      expect(e.message).toBe('Wrong number of arguments for include() (main:2)');
+      expect(e.message).toBe('Wrong number of arguments for include() (' + filePath + ':2)');
     }
   });
 

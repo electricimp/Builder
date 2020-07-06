@@ -11,6 +11,10 @@ const Machine = require('../../src/Machine');
 
 const FILE = __dirname + '/../fixtures/sample-5/main.nut';
 const init = require('./init')(FILE);
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './../..');
+const filePath = path.join(contextPath, 'expression.inc.nut');
 
 describe('Machine', () => {
   let machine, src;
@@ -35,7 +39,7 @@ describe('Machine', () => {
       machine.execute(src, {TEST: 'expression'});
     } catch (e) {
       expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBeTruthy();
-      expect(e.message).toBe('Function "someUndefinedFunc" is not defined (expression.inc.nut:3)');
+      expect(e.message).toBe('Function "someUndefinedFunc" is not defined (' + filePath + ':3)');
     }
   });
 });

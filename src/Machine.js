@@ -71,7 +71,7 @@ class Machine {
 
   constructor() {
     this.file = 'main'; // default source filename
-    this.path = ''; // default source path
+    this.path = path.resolve('.'); // default source path
     this.readers = {};
     this.globals = {};
     this.fileCache = new FileCache(this);
@@ -435,11 +435,18 @@ class Machine {
 
     // update context
 
+    const contextPath = context.__PATH__;
     // __FILE__/__PATH__
     context = merge(
       context,
       res.includePathParsed
     );
+    if (!path.isAbsolute(context.__PATH__) && this._getReader(context.__PATH__) === this.readers.file) {
+      context.__PATH__ = path.join(contextPath, context.__PATH__);
+    }
+    if (contextPath.indexOf('http') === 0) {
+      context.__PATH__ = contextPath;
+    }
 
     // store included source
     this._includedSources.add(includePath);

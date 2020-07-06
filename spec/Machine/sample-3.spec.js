@@ -9,6 +9,9 @@ require('jasmine-expect');
 const FILE = __dirname + '/../fixtures/sample-3/input.nut';
 const init = require('./init')(FILE);
 const eol = require('eol');
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './../..');
 
 describe('Machine', () => {
   let machine, result, resultWithLC;
@@ -24,7 +27,9 @@ describe('Machine', () => {
     expect(eol.lf(machine.execute('@include "input.nut"'))).toBe(result);
 
     // with line control
+    const pathToFile1 = path.join(contextPath, 'input.nut');
+    const pathToFile2 = path.join(contextPath, 'inc-a.nut');
     machine.generateLineControlStatements = true;
-    expect(eol.lf(machine.execute('@include "input.nut"'))).toBe(resultWithLC);
+    expect(eol.lf(machine.execute('@include "input.nut"')).split(pathToFile1).join('input.nut').split(pathToFile2).join('inc-a.nut')).toBe(resultWithLC);
   });
 });

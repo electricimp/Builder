@@ -7,6 +7,10 @@
 require('jasmine-expect');
 const fs = require('fs');
 const Machine = require('../../src/Machine');
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './../..');
+const filePath = path.join(contextPath, 'b.nut');
 
 const FILE = __dirname + '/../fixtures/sample-6/a.nut';
 const init = require('./init')(FILE);
@@ -25,7 +29,7 @@ describe('Machine', () => {
       machine.execute(src);
     } catch (e) {
       expect(e instanceof Machine.Errors.MaxExecutionDepthReachedError).toBeTruthy();
-      expect(e.message).toBe('Maximum execution depth reached, possible cyclic reference? (b.nut:1)');
+      expect(e.message).toBe('Maximum execution depth reached, possible cyclic reference? (' + filePath + ':1)');
     }
   });
 });

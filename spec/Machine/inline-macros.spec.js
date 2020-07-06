@@ -7,6 +7,10 @@
 require('jasmine-expect');
 
 const init = require('./init')('main');
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './../..');
+const filePath = path.join(contextPath, 'main');
 
 describe('Machine', () => {
   let machine;
@@ -26,7 +30,7 @@ A.2 // @{__FILE__}:@{__LINE__}
 @end
 -~=[@{A(1,2,3)}]=~-
 @include A()
-    `.trim());
+    `.trim()).split(filePath).join('main');
 
     expect(res).toEqual(`#line 5 "main"
 -~=[A.1 // main:2

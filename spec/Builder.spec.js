@@ -6,6 +6,10 @@
 
 const Builder = require('../src');
 const Machine = require('../src/Machine');
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './..');
+const filePath = path.join(contextPath, 'main');
 
 describe('Builder', () => {
 
@@ -21,7 +25,7 @@ describe('Builder', () => {
     expect(builder.machine instanceof Machine).toBeTruthy();
     builder.machine.generateLineControlStatements = true;
     expect(builder.machine.execute('@{__FILE__}:@{__LINE__}'))
-      .toBe('#line 1 "main"\nmain:1');
+      .toBe('#line 1 "' + filePath + '"\nmain:1');
   });
 
   it('should execute "escape" filter', () => {
