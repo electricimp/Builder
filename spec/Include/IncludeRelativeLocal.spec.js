@@ -6,14 +6,18 @@
 
 const Builder = require('../../src');
 const backslashToSlash = require('../backslashToSlash');
+const Log = require('log');
+const path = require('path');
 
 describe('Builder is called for file in included directory', () => {
 
   let builder;
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/");
 
   beforeEach(() => {
     builder = new Builder();
-    builder.machine.readers.file.searchDirs.unshift(__dirname + "/../fixtures/include/sample-1/");
+    builder.machine.path = contextPath;
+    builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
   it('should search Y file in directory where X file located', () => {
@@ -32,7 +36,8 @@ describe('Builder is called for file in included directory', () => {
   });
 
   it('file not found', () => {
-    const fileNotFoundMessage = `Local file "dirD/y4.nut" not found (dirX/x_case4.nut:1)`;
+    const filePath = path.join(contextPath, 'dirX/x_case4.nut');
+    const fileNotFoundMessage = `Local file "dirD/y4.nut" not found (${filePath}:1)`;
     try {
       builder.machine.execute(`@include "dirZ/file_case4.nut"`);
       fail();
@@ -45,10 +50,12 @@ describe('Builder is called for file in included directory', () => {
 describe('Builder is called for file in current directory', () => {
 
   let builder;
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/dirZ");
 
   beforeEach(() => {
     builder = new Builder();
-    builder.machine.readers.file.searchDirs.unshift(__dirname + "/../fixtures/include/sample-1/DirZ/");
+    builder.machine.path = contextPath;
+    builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
   it('should search Y file in directory where X file located', () => {
@@ -62,7 +69,8 @@ describe('Builder is called for file in current directory', () => {
   });
 
   it('should search Y file in directory where builder called', () => {
-    const fileNotFoundMessage = `Local file "dirD/y3.nut" not found (dirX/x_case3.nut:1)`;
+    const filePath = path.join(contextPath, '/../dirX/x_case3.nut');
+    const fileNotFoundMessage = `Local file "dirD/y3.nut" not found (${filePath}:1)`;
     try {
       builder.machine.execute(`@include "file_case3.nut"`);
       fail();
@@ -75,10 +83,12 @@ describe('Builder is called for file in current directory', () => {
 describe('Builder is called for file in deep included directory', () => {
 
   let builder;
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/");
 
   beforeEach(() => {
     builder = new Builder();
-    builder.machine.readers.file.searchDirs.unshift(__dirname + "/../fixtures/include/");
+    builder.machine.path = contextPath;
+    builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
   it('should search Y file in directory where X file located', () => {
@@ -92,7 +102,8 @@ describe('Builder is called for file in deep included directory', () => {
   });
 
   it('file not found', () => {
-    const fileNotFoundMessage = `Local file "dirD/y3.nut" not found (dirX/x_case3.nut:1)`;
+    const filePath = path.join(contextPath, 'sample-1/dirX/x_case3.nut');
+    const fileNotFoundMessage = `Local file "dirD/y3.nut" not found (${filePath}:1)`;
     try {
       builder.machine.execute(`@include "sample-1/dirZ/file_case3.nut"`);
       fail();

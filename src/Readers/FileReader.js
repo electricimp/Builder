@@ -51,11 +51,11 @@ class FileReader extends AbstractReader {
    * @return {string}
    */
   read(filePath, options) {
-
-    var searchDirs = this.searchDirs.concat (
-      options.context.__PATH__,
-      '' /* to try as absolute path */
-    )
+    var searchDirs = this.searchDirs;
+    if(options.context.__PATH__) {
+      searchDirs.unshift(options.context.__PATH__);
+    }
+    searchDirs = searchDirs.concat('');
 
     // iterate through the search dirs
     for (const dir of searchDirs) {
