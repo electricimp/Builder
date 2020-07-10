@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const eol = require('eol');
 
-const contextPath = path.resolve(__dirname, './../..');
+const contextPath = path.resolve(__dirname, './../..').replace(/\\/g, '/');
 
 const FILE = __dirname + '/../fixtures/sample-7/input.nut';
 const init = require('./init')(FILE);
@@ -31,7 +31,7 @@ describe('Machine', () => {
   });
 
   it('should run sample #7 with line control', () => {
-    const pathToFile = path.join(contextPath, 'input.nut');
+    const pathToFile = path.join(contextPath, 'input.nut').replace(/\\/g, '/');
     machine.generateLineControlStatements = true;
     const result = eol.lf(machine.execute(src)).split(pathToFile).join('input.nut');
     expect(result).toEqual(init.getResultWithLineControl());

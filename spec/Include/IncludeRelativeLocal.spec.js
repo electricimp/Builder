@@ -12,7 +12,7 @@ const path = require('path');
 describe('Builder is called for file in included directory', () => {
 
   let builder;
-  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/");
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/").replace(/\\/g, '/');
 
   beforeEach(() => {
     builder = new Builder();
@@ -36,7 +36,7 @@ describe('Builder is called for file in included directory', () => {
   });
 
   it('file not found', () => {
-    const filePath = path.join(contextPath, 'dirX/x_case4.nut');
+    const filePath = path.join(contextPath, 'dirX/x_case4.nut').replace(/\\/g, '/');
     const fileNotFoundMessage = `Local file "dirD/y4.nut" not found (${filePath}:1)`;
     try {
       builder.machine.execute(`@include "dirZ/file_case4.nut"`);
@@ -50,7 +50,7 @@ describe('Builder is called for file in included directory', () => {
 describe('Builder is called for file in current directory', () => {
 
   let builder;
-  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/dirZ");
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/dirZ").replace(/\\/g, '/');
 
   beforeEach(() => {
     builder = new Builder();
@@ -69,7 +69,7 @@ describe('Builder is called for file in current directory', () => {
   });
 
   it('should search Y file in directory where builder called', () => {
-    const filePath = path.join(contextPath, '/../dirX/x_case3.nut');
+    const filePath = path.join(contextPath, '/../dirX/x_case3.nut').replace(/\\/g, '/');
     const fileNotFoundMessage = `Local file "dirD/y3.nut" not found (${filePath}:1)`;
     try {
       builder.machine.execute(`@include "file_case3.nut"`);
@@ -83,7 +83,7 @@ describe('Builder is called for file in current directory', () => {
 describe('Builder is called for file in deep included directory', () => {
 
   let builder;
-  const contextPath = path.resolve(__dirname + "/../fixtures/include/");
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/").replace(/\\/g, '/');
 
   beforeEach(() => {
     builder = new Builder();
@@ -102,7 +102,7 @@ describe('Builder is called for file in deep included directory', () => {
   });
 
   it('file not found', () => {
-    const filePath = path.join(contextPath, 'sample-1/dirX/x_case3.nut');
+    const filePath = path.join(contextPath, 'sample-1/dirX/x_case3.nut').replace(/\\/g, '/');
     const fileNotFoundMessage = `Local file "dirD/y3.nut" not found (${filePath}:1)`;
     try {
       builder.machine.execute(`@include "sample-1/dirZ/file_case3.nut"`);

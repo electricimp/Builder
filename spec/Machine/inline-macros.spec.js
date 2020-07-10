@@ -9,8 +9,8 @@ require('jasmine-expect');
 const init = require('./init')('main');
 const path = require('path');
 
-const contextPath = path.resolve(__dirname, './../..');
-const filePath = path.join(contextPath, 'main');
+const contextPath = path.resolve(__dirname, './../..').replace(/\\/g, '/');
+const filePath = path.join(contextPath, 'main').replace(/\\/g, '/');
 
 describe('Machine', () => {
   let machine;

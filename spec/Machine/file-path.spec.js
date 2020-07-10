@@ -11,7 +11,7 @@ const init = require('./init')('main');
 
 const backslashToSlash = require('../backslashToSlash');
 
-const contextPath = path.resolve(__dirname, './../..');
+const contextPath = path.resolve(__dirname, './../..').replace(/\\/g, '/');
 
 describe('Machine', () => {
   let machine;
@@ -45,6 +45,6 @@ describe('Machine', () => {
     const res = eol.lf(machine.execute(`@{__PATH__}#@{__FILE__}@@{__LINE__}
       @include "${backslashToSlash(__dirname)}/../fixtures/lib/path.builder"`));
     // __PATH__ should be absolute (when possible), normalized one
-    expect(res).toEqual(`${contextPath}#@1\n${path.normalize(__dirname + '/../fixtures/lib')}#path.builder@1\n`);
+    expect(res).toEqual(`${contextPath}#@1\n${path.normalize(__dirname + '/../fixtures/lib').replace(/\\/g, '/')}#path.builder@1\n`);
   });
 });

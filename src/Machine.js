@@ -71,7 +71,7 @@ class Machine {
 
   constructor() {
     this.file = 'main'; // default source filename
-    this.path = path.resolve('.'); // default source path
+    this.path = path.resolve('.').replace(/\\/g, '/'); // default source path
     this.readers = {};
     this.globals = {};
     this.fileCache = new FileCache(this);
@@ -447,6 +447,7 @@ class Machine {
     if (contextPath.indexOf('http') === 0) {
       context.__PATH__ = contextPath;
     }
+    context.__PATH__ = context.__PATH__.replace(/\\/g, '/');
 
     // store included source
     this._includedSources.add(includePath);
