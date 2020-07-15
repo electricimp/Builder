@@ -17,7 +17,7 @@ describe('Builder is called for file in included directory', () => {
   beforeEach(() => {
     builder = new Builder();
     builder.machine.path = contextPath;
-    builder.machine.readers.file.searchDirs.unshift(path.join(contextPath + '/dirZ'));
+    builder.machine.readers.file.inputFileDir = path.join(contextPath + '/dirZ');
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
