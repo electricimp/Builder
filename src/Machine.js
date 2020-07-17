@@ -320,14 +320,17 @@ class Machine {
       return includePath;
     }
 
-    // If the include path is absolute, we can consider it relatively to the
-    // repo root (if the include being handled is from a file included from a local git repo)
-    if (path.isAbsolute(includePath)) {
+    // If the include path is absolute (in unix way, i.e. starts from '/') and is
+    // included from repository file, we can consider it relatively to the repo root
+    if (this._isUnixAbsolutePath(includePath) && context.__REPO_PREFIX__) {
       const relativePath = this._formatURL(context.__REPO_PREFIX__, includePath);
+      // If the include being handled is from a file included from a local git repo,
+      // we add ref to the path if the ref exists
       if (relativePath && this._getReader(relativePath) === this.readers.gitLocal) {
         return this._addRefToPath(relativePath, context);
       }
-
+      return relativePath;
+    } else if (path.isAbsolute(includePath)) {
       return includePath;
     }
 
@@ -336,7 +339,6 @@ class Machine {
     // Otherwise, we just return the include path back if it is a repository absolute path
     if (this._isRepositoryInclude(includePath)) {
       if (includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
-        // Potentially someone using __PATH__
         var rv = context.__REPO_REF__ ? `${path.normalize(includePath)}@${context.__REPO_REF__}` : path.normalize(includePath);
 
         // replace backslashes with slashes as backslashes in path cause error at Windows.
@@ -381,6 +383,13 @@ class Machine {
 
     // checkout local includes in the github sources from github
     includePath = this._remoteRelativeIncludes(includePath, context);
+    // if included path starts from '/' and is being included from Windows system,
+    // we join the root of the current volume (such as C:/, D:/ and so on) to the
+    // included path
+    if (this._isUnixAbsolutePath(includePath) && process.platform === "win32") {
+      const root = path.parse(this._path).root;
+      includePath = path.join(root, includePath).replace(/\\/g, '/');
+    }
 
     // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
     if (once && this._includedSources.has(includePath)) {
@@ -745,6 +754,17 @@ class Machine {
     }
 
     throw new Error(`Source "${source}" is not supported`);
+  }
+
+  /**
+   * Check if path is unix absolute path
+   *
+   * @param {*} source
+   * @return {boolean}
+   * @private
+   */
+  _isUnixAbsolutePath(source) {
+    return source.length ? (source[0] === '/') : false;
   }
 
   /**

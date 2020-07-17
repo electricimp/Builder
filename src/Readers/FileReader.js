@@ -38,6 +38,7 @@ class FileReader extends AbstractReader {
     this.searchDirs = [
       path.resolve('.')
     ];
+    this.inputFileDir = '';
   }
 
   supports(source) {
@@ -52,9 +53,10 @@ class FileReader extends AbstractReader {
    */
   read(filePath, options) {
     var searchDirs = this.searchDirs;
-    if(options.context.__PATH__) {
+    if (options.context.__PATH__) {
       searchDirs.unshift(options.context.__PATH__);
     }
+    searchDirs.splice(1, 0, this.inputFileDir);
     searchDirs = searchDirs.concat('');
 
     // iterate through the search dirs
