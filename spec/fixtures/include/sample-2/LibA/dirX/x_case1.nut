@@ -1,0 +1,1 @@
+@include "github:electricimp/Builder/spec/fixtures/include/sample-2/libB/dirB/y1.nut"

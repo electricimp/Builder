@@ -1,0 +1,1 @@
+@include "https://raw.githubusercontent.com/electricimp/Builder/master/spec/fixtures/include/sample-2/libA/dirX/x_case4.nut"
