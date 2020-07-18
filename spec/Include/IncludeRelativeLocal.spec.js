@@ -8,6 +8,7 @@ const Builder = require('../../src');
 const backslashToSlash = require('../backslashToSlash');
 const Log = require('log');
 const path = require('path');
+const fs = require('fs');
 
 describe('Builder is called for file in included directory', () => {
 
@@ -116,5 +117,39 @@ describe('Builder is called for file in deep included directory', () => {
   it('should search Y file in directory where builder called', () => {
     let output = builder.machine.execute(`@include "sample-1/dirZ/file_case4.nut"`);
     expect(output).toContain('// y.nut (case 4)\n');
+  });
+});
+
+describe('X include Y by absolute remote or local link', () => {
+
+  let builder;
+  const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/dirZ").replace(/\\/g, '/');
+
+  beforeEach(() => {
+    builder = new Builder();
+    builder.machine.path = contextPath;
+    builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
+    builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+    builder.machine.clearCache = true;
+    builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
+  });
+
+  it('should search Y file in remote repository', () => {
+    let output = builder.machine.execute(`@include "file_case5.nut"`);
+    expect(output).toContain('// y.nut (case 5)\n');
+  });
+
+  it('should search Y file by web link', () => {
+    let output = builder.machine.execute(`@include "file_case6.nut"`);
+    expect(output).toContain('// y.nut (case 6)\n');
+  });
+
+  it('should search Y file on root filesystem where builder called', () => {
+    fs.rmdirSync("/dirC", { recursive: true });
+    fs.mkdirSync("/dirC");
+    fs.writeFileSync("/dirC/y7.nut", "// y.nut (case 7)\n");
+    let output = builder.machine.execute(`@include "file_case7.nut"`);
+    fs.rmdirSync("/dirC", { recursive: true });
+    expect(output).toContain('// y.nut (case 7)\n');
   });
 });

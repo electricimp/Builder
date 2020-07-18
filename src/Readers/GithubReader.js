@@ -26,7 +26,7 @@
 
 const HttpsProxyAgent = require('https-proxy-agent');
 const path = require('path');
-const Octokit = require('@octokit/rest');
+const { Octokit } = require('@octokit/rest');
 const childProcess = require('child_process');
 const packageJson = require('../../package.json');
 const AbstractReader = require('./AbstractReader');

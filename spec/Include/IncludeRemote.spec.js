@@ -5,6 +5,8 @@
 'use strict';
 
 const Builder = require('../../src');
+const Log = require('log');
+const path = require('path');
 
 describe('Remote relative option is enabled', () => {
 
@@ -15,6 +17,9 @@ describe('Remote relative option is enabled', () => {
     builder = new Builder();
     builder.machine.remoteRelativeIncludes = true;
     builder.machine.path = contextPath;
+    builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
+    builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+    builder.machine.clearCache = true;
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
@@ -49,6 +54,9 @@ describe('Remote relative option is not enabled', () => {
     builder = new Builder();
     builder.machine.remoteRelativeIncludes = false;
     builder.machine.path = contextPath;
+    builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
+    builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+    builder.machine.clearCache = true;
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
