@@ -1,1 +1,1 @@
-// y.nut (case 1)
+// y.nut (case y remote)

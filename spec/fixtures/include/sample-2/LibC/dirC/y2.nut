@@ -1,1 +1,1 @@
-// y.nut (case 2)
+// y.nut (case y path from /)

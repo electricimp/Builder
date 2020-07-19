@@ -1,0 +1,1 @@
+@include "C:\dirC\y.nut"
