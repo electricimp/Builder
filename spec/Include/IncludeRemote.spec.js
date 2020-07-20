@@ -112,7 +112,9 @@ fdescribe('Remote relative option is not enabled - ', () => {
     const httpsPath = "https://raw.githubusercontent.com/EatonGMBD/Builder/feature/ADO-310-includes-enhancement/spec/fixtures/include/sample-2";
 
     it('should search Y file by local abs path', () => {
-      fs.rmdirSync("/dirC", { recursive: true });
+      if (fs.existsSync("/dirC")) {
+        fs.rmdirSync("/dirC", { recursive: true });
+      }
       fs.mkdirSync("/dirC");
       fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
       let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
@@ -139,7 +141,9 @@ fdescribe('Remote relative option is not enabled - ', () => {
     });
 
     it('should search Y file by local abs path', () => {
-      fs.rmdirSync("/dirC", { recursive: true });
+      if (fs.existsSync("/dirC")) {
+        fs.rmdirSync("/dirC", { recursive: true });
+      }
       fs.mkdirSync("/dirC");
       fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
       let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
@@ -161,7 +165,9 @@ fdescribe('Remote relative option is not enabled - ', () => {
     });
 
     it('should search Y file by local abs path', () => {
-      fs.rmdirSync("/dirC", { recursive: true });
+      if (fs.existsSync("/dirC")) {
+        fs.rmdirSync("/dirC", { recursive: true });
+      }
       fs.mkdirSync("/dirC");
       fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
       let output = builder.machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
