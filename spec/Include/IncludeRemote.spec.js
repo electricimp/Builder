@@ -113,11 +113,13 @@ fdescribe('Remote relative option is not enabled - ', () => {
 
     it('should search Y file by local abs path', () => {
       if (fs.existsSync("/dirC")) {
+        fs.unlinkSync("/dirC/y.nut");
         fs.rmdirSync("/dirC", { recursive: true });
       }
       fs.mkdirSync("/dirC");
       fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
       let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
+      fs.unlinkSync("/dirC/y.nut");
       fs.rmdirSync("/dirC", { recursive: true });
       expect(output).toContain('// y.nut (case y abs)\n');
     });
@@ -142,11 +144,13 @@ fdescribe('Remote relative option is not enabled - ', () => {
 
     it('should search Y file by local abs path', () => {
       if (fs.existsSync("/dirC")) {
+        fs.unlinkSync("/dirC/y.nut");
         fs.rmdirSync("/dirC", { recursive: true });
       }
       fs.mkdirSync("/dirC");
       fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
       let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
+      fs.unlinkSync("/dirC/y.nut");
       fs.rmdirSync("/dirC", { recursive: true });
       expect(output).toContain('// y.nut (case y abs)\n');
     });
@@ -166,11 +170,14 @@ fdescribe('Remote relative option is not enabled - ', () => {
 
     it('should search Y file by local abs path', () => {
       if (fs.existsSync("/dirC")) {
+        fs.unlinkSync("/dirC/y.nut");
         fs.rmdirSync("/dirC", { recursive: true });
       }
       fs.mkdirSync("/dirC");
       fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
       let output = builder.machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
+      fs.unlinkSync("/dirC/y.nut");
+      fs.rmdirSync("/dirC", { recursive: true });
       expect(output).toContain('// y.nut (case y abs)\n');
     });
   });
