@@ -10,7 +10,7 @@ const Log = require('log');
 const path = require('path');
 const fs = require('fs');
 
-fdescribe('Remote relative option is enabled - ', () => {
+describe('Remote relative option is enabled - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-2/").replace(/\\/g, '/');
@@ -69,7 +69,7 @@ fdescribe('Remote relative option is enabled - ', () => {
 
     it('should search Y file in remote repository root + Y path', () => {
       let output = builder.machine.execute(`@include "` + githubPath + `/LibA/dirX/x_case_y_abs_local_slash.nut@feature/ADO-310-includes-enhancement"`);
-      expect(output).toContain('// y.nut (case y path from \)\n');
+      expect(output).toContain('// y.nut (case y path from /)\n');
     });
 
     it('should search Y file in remote repository + Y path', () => {
@@ -92,7 +92,7 @@ fdescribe('Remote relative option is enabled - ', () => {
   });
 });
 
-fdescribe('Remote relative option is not enabled - ', () => {
+describe('Remote relative option is not enabled - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-2/").replace(/\\/g, '/');

@@ -324,13 +324,9 @@ class Machine {
     // included from repository file, we can consider it relatively to the repo root
     if (this._isUnixAbsolutePath(includePath) && context.__REPO_PREFIX__) {
       const relativePath = this._formatURL(context.__REPO_PREFIX__, includePath);
-      // If the include being handled is from a file included from a local git repo,
-      // we add ref to the path if the ref exists
-      if (relativePath && this._getReader(relativePath) === this.readers.gitLocal) {
-        return this._addRefToPath(relativePath, context);
-      }
-      return relativePath;
-    } else if (path.isAbsolute(includePath)) {
+      // Adding ref to the path if the ref exists
+      return this._addRefToPath(relativePath, context);
+    } else if (path.isAbsolute(includePath) || this._getReader(includePath) === this.readers.http) {
       return includePath;
     }
 
@@ -453,7 +449,7 @@ class Machine {
     if (!path.isAbsolute(context.__PATH__) && this._getReader(context.__PATH__) === this.readers.file) {
       context.__PATH__ = path.join(contextPath, context.__PATH__);
     }
-    if (contextPath.indexOf('http') === 0) {
+    if (this._getReader(contextPath) === this.readers.http) {
       context.__PATH__ = contextPath;
     }
     context.__PATH__ = context.__PATH__.replace(/\\/g, '/');

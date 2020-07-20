@@ -10,7 +10,7 @@ const Log = require('log');
 const path = require('path');
 const fs = require('fs');
 
-fdescribe('Builder is called for file in included directory - ', () => {
+describe('Builder is called for file in included directory - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/").replace(/\\/g, '/');
@@ -49,7 +49,7 @@ fdescribe('Builder is called for file in included directory - ', () => {
   });
 });
 
-fdescribe('Builder is called for file in current directory - ', () => {
+describe('Builder is called for file in current directory - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/include/sample-1/dirZ").replace(/\\/g, '/');
@@ -82,7 +82,7 @@ fdescribe('Builder is called for file in current directory - ', () => {
   });
 });
 
-fdescribe('Builder is called for file in deep included directory - ', () => {
+describe('Builder is called for file in deep included directory - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/include/").replace(/\\/g, '/');

@@ -10,7 +10,7 @@ const Log = require('log');
 const path = require('path');
 const fs = require('fs');
 
-fdescribe('__PATH__ variable - ', () => {
+describe('__PATH__ variable - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/lib/").replace(/\\/g, '/');
