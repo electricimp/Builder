@@ -10,7 +10,7 @@ const Log = require('log');
 const path = require('path');
 const fs = require('fs');
 
-describe('__PATH__ variable', () => {
+fdescribe('__PATH__ variable - ', () => {
 
   let builder;
   const contextPath = path.resolve(__dirname + "/../fixtures/lib/").replace(/\\/g, '/');
@@ -18,6 +18,8 @@ describe('__PATH__ variable', () => {
   beforeEach(() => {
     builder = new Builder();
     builder.machine.path = contextPath;
+    builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
+    builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
@@ -28,16 +30,16 @@ describe('__PATH__ variable', () => {
 
   it('__PATH__ should be a git-local path', () => {
     let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/lib/path.builder@feature/ADO-310-includes-enhancement"`);
-    expect(output).toContain("git-local:" + process.env.SPEC_GIT_LOCAL_REPO_PATH + "/spec/fixtures/lib#path.builder@1");
+    expect(output).toContain("git-local:" + backslashToSlash(process.env.SPEC_GIT_LOCAL_REPO_PATH) + "/spec/fixtures/lib#path.builder@1");
   });
-  
+
   it('__PATH__ should be a remote repository path', () => {
-    let output = builder.machine.execute(`@include "github:YaroslavYaroslavtsev/Builder/spec/fixtures/lib/path.builder@feature/ADO-310-includes-enhancement"`);
-    expect(output).toContain('github:YaroslavYaroslavtsev/Builder/spec/fixtures/lib#path.builder@1\n');
+    let output = builder.machine.execute(`@include "github:EatonGMBD/Builder/spec/fixtures/lib/path.builder@feature/ADO-310-includes-enhancement"`);
+    expect(output).toContain('github:EatonGMBD/Builder/spec/fixtures/lib#path.builder@1\n');
   });
 
   it('__PATH__ should be a web link', () => {
-    let output = builder.machine.execute(`@include "https://raw.githubusercontent.com/YaroslavYaroslavtsev/Builder/feature/ADO-310-includes-enhancement/spec/fixtures/lib/path.builder"`);
-    expect(output).toContain('https://raw.githubusercontent.com/YaroslavYaroslavtsev/Builder/feature/ADO-310-includes-enhancement/spec/fixtures/lib#path.builder@1\n');
+    let output = builder.machine.execute(`@include "https://raw.githubusercontent.com/EatonGMBD/Builder/feature/ADO-310-includes-enhancement/spec/fixtures/lib/path.builder"`);
+    expect(output).toContain('https://raw.githubusercontent.com/EatonGMBD/Builder/feature/ADO-310-includes-enhancement/spec/fixtures/lib#path.builder@1\n');
   });
 });
