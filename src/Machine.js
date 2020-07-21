@@ -326,6 +326,11 @@ class Machine {
       const relativePath = this._formatURL(context.__REPO_PREFIX__, includePath);
       // Adding ref to the path if the ref exists
       return this._addRefToPath(relativePath, context);
+    // If the include path is absolute in unix way and is included from
+    // weblink, we can consider it relatively to the URL root
+    } else if (this._isUnixAbsolutePath(includePath) && context.__URL_ROOT__) {
+      const relativePath = path.join(context.__URL_ROOT__, includePath).replace(/\\/g, '/');
+      return relativePath.replace(':/', '://');
     } else if (path.isAbsolute(includePath) || this._getReader(includePath) === this.readers.http) {
       return includePath;
     }
@@ -353,6 +358,12 @@ class Machine {
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._isRepositoryInclude(remotePath)) {
       return this._addRefToPath(remotePath, context);
+    }
+
+    // check if file is included from weblink - if so, modify the path and return it relative to the URL root
+    if (context.__URL_ROOT__ && context.__URL_PATH__) {
+      const remotePath = path.join(context.__URL_ROOT__, path.join(path.dirname(context.__URL_PATH__), includePath)).replace(/\\/g, '/');
+      return remotePath.replace(':/', '://');
     }
 
     return includePath;

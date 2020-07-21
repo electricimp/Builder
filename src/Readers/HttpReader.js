@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -113,6 +113,22 @@ class HttpReader extends AbstractReader {
   }
 
   /**
+   * Parse path
+   * @param {string} source
+   * @return {{__FILE__, __PATH__, __URL_ROOT__, __URL_PATH__}}
+   */
+  parsePath(source) {
+    const res = super.parsePath(source);
+    const parsed = HttpReader.parseUrl(source);
+    return {
+      __FILE__: res.__FILE__,
+      __PATH__: res.__PATH__,
+      __URL_ROOT__: parsed.url_root,
+      __URL_PATH__: parsed.url_path
+    };
+  }
+
+  /**
    * Fethces the url and outputs it to STDOUT
    * @param {string} url
    */
@@ -128,6 +144,29 @@ class HttpReader extends AbstractReader {
         process.stdout.write(body);
       }
     });
+  }
+
+  /**
+   * Parse url into parts
+   * @param source
+   * @return {false|{user, repo, path, ref}}
+   */
+  static parseUrl(source) {
+    // parse url
+    const m = source.match(
+      /^(http:\/\/[a-z0-9\-\._:]+|https:\/\/[a-z0-9\-\._:]+)\/(.+)?$/i
+    );
+
+    if (m) {
+      const res = {
+        'url_root': m[1],
+        'url_path': m[2]
+      };
+
+      return res;
+    }
+
+    return false;
   }
 
   get timeout() {
@@ -146,4 +185,3 @@ if (process.argv.indexOf(WORKER_MARKER) !== -1) {
   // acto as module
   module.exports = HttpReader;
 }
-
