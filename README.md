@@ -867,10 +867,10 @@ For includes from weblinks.
 
 ##### Format: #####
 ```
-@include "http://<server>:<port>/<path>"
-@include "https://<server>:<port>/<path>"
-@include once "http://<server>:<port>/<path>"
-@include once "https://<server>:<port>/<path>"
+@include "http://<server>[:<port>]/<path>"
+@include "https://<server>[:<port>]/<path>"
+@include once "http://<server>[:<port>]/<path>"
+@include once "https://<server>[:<port>]/<path>"
 ```
 where:
 - `server` is the host name or IP address.
@@ -963,7 +963,7 @@ Authentication is optional. It is required to access private repositories only.
 
 For the authentication you need to provide:
 - a Bitbucket Server username (`--bitbucket-server-user` option)
-- a Bitbucket Server [personal access token]((https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) or a password, which is less secure and not recommended (`--bitbucket-server-token` option).
+- a Bitbucket Server [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) or a password, which is less secure and not recommended (`--bitbucket-server-token` option).
 
 #### Azure Repository ####
 
@@ -1012,7 +1012,7 @@ For includes from Git repositories hosted locally. **Note**, even as files are l
 ```
 where:
 - `path` is the path to file.
-- `ref` is the git reference (branch name, tag or commit, defaults to to current branch which the local git repository is set to).
+- `ref` is the git reference (branch name, tag or commit, defaults to current branch which the local git repository is set to).
 
 ##### Examples: #####
 ```
