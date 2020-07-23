@@ -18,6 +18,7 @@ describe('Builder is called for file in included directory - ', () => {
   beforeEach(() => {
     builder = new Builder();
     builder.machine.path = contextPath;
+    builder.machine.readers.file.runDir = contextPath;
     builder.machine.readers.file.inputFileDir = path.join(contextPath + '/dirZ');
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
@@ -57,6 +58,8 @@ describe('Builder is called for file in current directory - ', () => {
   beforeEach(() => {
     builder = new Builder();
     builder.machine.path = contextPath;
+    builder.machine.readers.file.runDir = contextPath;
+    builder.machine.readers.file.inputFileDir = path.join(contextPath);
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
@@ -90,6 +93,8 @@ describe('Builder is called for file in deep included directory - ', () => {
   beforeEach(() => {
     builder = new Builder();
     builder.machine.path = contextPath;
+    builder.machine.readers.file.runDir = contextPath;
+    builder.machine.readers.file.inputFileDir = path.join(contextPath + '/sample-1/dirZ');
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
   });
 
