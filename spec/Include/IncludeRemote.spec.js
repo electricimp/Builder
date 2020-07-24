@@ -46,12 +46,18 @@ describe('Remote relative option is enabled - ', () => {
 
     it('should search Y file by local abs path', () => {
       if (process.platform === "win32") {
-        fs.rmdirSync("C:/dirC", { recursive: true });
-        fs.mkdirSync("C:/dirC");
-        fs.writeFileSync("C:/dirC/y.nut", "// y.nut (case y abs)\n");
-        let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local.nut"`);
-        fs.rmdirSync("C:/dirC", { recursive: true });
-        expect(output).toContain('// y.nut (case y abs)\n');
+        try {
+          fs.accessSync("/", fs.constants.W_OK);
+          fs.rmdirSync("C:/dirC", { recursive: true });
+          fs.mkdirSync("C:/dirC");
+          fs.writeFileSync("C:/dirC/y.nut", "// y.nut (case y abs)\n");
+          let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local.nut"`);
+          fs.rmdirSync("C:/dirC", { recursive: true });
+          expect(output).toContain('// y.nut (case y abs)\n');
+        }
+        catch (err) {
+          console.log("No root permission. Test will be skipped");
+        }
       } else {
         console.log("Windows platform specified test will be skipped");
       }
@@ -112,16 +118,22 @@ describe('Remote relative option is not enabled - ', () => {
     const httpsPath = "https://raw.githubusercontent.com/EatonGMBD/Builder/feature/ADO-310-includes-enhancement/spec/fixtures/include/sample-2";
 
     it('should search Y file by local abs path', () => {
-      if (fs.existsSync("/dirC")) {
+      try {
+        fs.accessSync("/", fs.constants.W_OK);
+        if (fs.existsSync("/dirC")) {
+          fs.unlinkSync("/dirC/y.nut");
+          fs.rmdirSync("/dirC", { recursive: true });
+        }
+        fs.mkdirSync("/dirC");
+        fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
+        let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
         fs.unlinkSync("/dirC/y.nut");
         fs.rmdirSync("/dirC", { recursive: true });
+        expect(output).toContain('// y.nut (case y abs)\n');
       }
-      fs.mkdirSync("/dirC");
-      fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
-      let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
-      fs.unlinkSync("/dirC/y.nut");
-      fs.rmdirSync("/dirC", { recursive: true });
-      expect(output).toContain('// y.nut (case y abs)\n');
+      catch (err) {
+        console.log("No root permission. Test will be skipped");
+      }
     });
   });
 
@@ -143,16 +155,22 @@ describe('Remote relative option is not enabled - ', () => {
     });
 
     it('should search Y file by local abs path', () => {
-      if (fs.existsSync("/dirC")) {
+      try {
+        fs.accessSync("/", fs.constants.W_OK);
+        if (fs.existsSync("/dirC")) {
+          fs.unlinkSync("/dirC/y.nut");
+          fs.rmdirSync("/dirC", { recursive: true });
+        }
+        fs.mkdirSync("/dirC");
+        fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
+        let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
         fs.unlinkSync("/dirC/y.nut");
         fs.rmdirSync("/dirC", { recursive: true });
+        expect(output).toContain('// y.nut (case y abs)\n');
       }
-      fs.mkdirSync("/dirC");
-      fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
-      let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
-      fs.unlinkSync("/dirC/y.nut");
-      fs.rmdirSync("/dirC", { recursive: true });
-      expect(output).toContain('// y.nut (case y abs)\n');
+      catch (err) {
+        console.log("No root permission. Test will be skipped");
+      }
     });
   });
 
@@ -169,16 +187,22 @@ describe('Remote relative option is not enabled - ', () => {
     });
 
     it('should search Y file by local abs path', () => {
-      if (fs.existsSync("/dirC")) {
+      try {
+        fs.accessSync("/", fs.constants.W_OK);
+        if (fs.existsSync("/dirC")) {
+          fs.unlinkSync("/dirC/y.nut");
+          fs.rmdirSync("/dirC", { recursive: true });
+        }
+        fs.mkdirSync("/dirC");
+        fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
+        let output = builder.machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
         fs.unlinkSync("/dirC/y.nut");
         fs.rmdirSync("/dirC", { recursive: true });
+        expect(output).toContain('// y.nut (case y abs)\n');
       }
-      fs.mkdirSync("/dirC");
-      fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
-      let output = builder.machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
-      fs.unlinkSync("/dirC/y.nut");
-      fs.rmdirSync("/dirC", { recursive: true });
-      expect(output).toContain('// y.nut (case y abs)\n');
+      catch (err) {
+        console.log("No root permission. Test will be skipped");
+      }
     });
   });
 });
