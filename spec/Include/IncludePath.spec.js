@@ -10,6 +10,8 @@ const Log = require('log');
 const path = require('path');
 const fs = require('fs');
 
+const LOCAL_REPO_NOT_DEFINED_MESSAGE = "SPEC_GIT_LOCAL_REPO_PATH is not defined. Test will be skipped";
+
 describe('__PATH__ variable - ', () => {
 
   let builder;
@@ -29,8 +31,12 @@ describe('__PATH__ variable - ', () => {
   });
 
   it('__PATH__ should be a git-local path', () => {
-    let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/lib/path.builder@feature/ADO-310-includes-enhancement"`);
-    expect(output).toContain("git-local:" + backslashToSlash(process.env.SPEC_GIT_LOCAL_REPO_PATH) + "/spec/fixtures/lib#path.builder@1");
+    if (process.env.SPEC_GIT_LOCAL_REPO_PATH != undefined) {
+      let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/lib/path.builder@feature/ADO-310-includes-enhancement"`);
+      expect(output).toContain("git-local:" + backslashToSlash(process.env.SPEC_GIT_LOCAL_REPO_PATH) + "/spec/fixtures/lib#path.builder@1");
+    } else {
+      console.log(LOCAL_REPO_NOT_DEFINED_MESSAGE);
+    }
   });
 
   it('__PATH__ should be a remote repository path', () => {
