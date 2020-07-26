@@ -271,6 +271,19 @@ Builder provides the following pre-defined variables:
 - `__PATH__` &mdash; The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes. For example:
 
     `Hi from file @{__PATH__}!`
+    
+-  `__REPO_PREFIX__` &mdash; The root of the repository resource which is being processed. Is an internal variable of Builder. For example:
+
+    `github:electricimp/Builder`
+    
+-  `__REPO_REF__` &mdash; The git reference (branch name or tag) of the repository resource which is being processed. Is an internal variable of Builder.
+
+-  `__URL_ROOT__` &mdash; The root of the remote weblink resource which is being processed. Is an internal variable of Builder. For example:
+<pre>
+    https://example.com
+    http://example.com:8080</pre>
+    
+-  `__URL_PATH__` &mdash; The path to the file on the remote weblink resource which is being processed, relative to the root of resource. Is an internal variable of Builder.
 
 <a id="loopvars"></a>
 
