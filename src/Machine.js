@@ -71,7 +71,7 @@ class Machine {
 
   constructor() {
     this.file = 'main'; // default source filename
-    this.path = path.resolve('.').replace(/\\/g, '/'); // default source path
+    this.path = upath.resolve('.'); // default source path
     this.readers = {};
     this.globals = {};
     this.fileCache = new FileCache(this);
@@ -305,11 +305,11 @@ class Machine {
     }
 
     const suffix = upath.normalize(upath.join(res[2], includePath));
-    return `${res[1]}${suffix}`.replace(/\\/g, '/');
+    return `${res[1]}${suffix}`;
   }
 
   /**
-   * Replace local includes to github/bitbucket/azure/git-local URLs if requested
+   * Replace local includes to github/bitbucket/azure/git-local/weblink URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -331,8 +331,8 @@ class Machine {
       } else if (context.__URL_ROOT__) {
         // If the include path is absolute in unix way and is included from
         // weblink, we can consider it relatively to the URL root
-        const relativePath = path.join(context.__URL_ROOT__, includePath).replace(/\\/g, '/');
-        return relativePath.replace(':/', '://');
+        const relativePath = url.resolve(context.__URL_ROOT__, includePath);
+        return relativePath;
       }
     }
 
@@ -364,9 +364,10 @@ class Machine {
     }
 
     // Check if the parent file is included from a web link - if so, consider includePath relative to the URL root
-    if (context.__URL_ROOT__ && context.__URL_PATH__) {
-      const remotePath = path.join(context.__URL_ROOT__, path.join(path.dirname(context.__URL_PATH__), includePath)).replace(/\\/g, '/');
-      return remotePath.replace(':/', '://');
+    if (context.__URL_ROOT__) {
+      const pathToFile = upath.join(upath.dirname(context.__URL_PATH__), includePath);
+      const remotePath = url.resolve(context.__URL_ROOT__, pathToFile);
+      return remotePath;
     }
 
     return includePath;
@@ -391,14 +392,14 @@ class Machine {
       context,
     ).trim();
 
-    // checkout local includes in the github sources from github
+    // checkout local includes in the remote sources (github/bitbucket/azure/git-local/weblink)
     includePath = this._remoteRelativeIncludes(includePath, context);
     // if included path starts from '/' and is being included from Windows system,
     // we join the root of the current volume (such as C:/, D:/ and so on) to the
     // included path
     if (this._isUnixAbsolutePath(includePath) && process.platform === "win32") {
       const root = path.parse(this._path).root;
-      includePath = path.join(root, includePath).replace(/\\/g, '/');
+      includePath = upath.join(root, includePath);
     }
 
     // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
@@ -460,13 +461,10 @@ class Machine {
       context,
       res.includePathParsed
     );
-    if (!path.isAbsolute(context.__PATH__) && this._getReader(context.__PATH__) === this.readers.file) {
-      context.__PATH__ = path.join(contextPath, context.__PATH__);
+    if (!path.isAbsolute(context.__PATH__) && this._getReader(context.__PATH__) === this.readers.file &&
+        (this._getReader(contextPath) === this.readers.file || this.remoteRelativeIncludes)) {
+      context.__PATH__ = upath.join(contextPath, context.__PATH__);
     }
-    if (this._getReader(contextPath) === this.readers.http) {
-      context.__PATH__ = contextPath;
-    }
-    context.__PATH__ = context.__PATH__.replace(/\\/g, '/');
 
     // store included source
     this._includedSources.add(includePath);
@@ -769,7 +767,7 @@ class Machine {
   /**
    * Check if path is unix absolute path
    *
-   * @param {*} source
+   * @param {string} source
    * @return {boolean}
    * @private
    */

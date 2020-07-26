@@ -122,9 +122,9 @@ class HttpReader extends AbstractReader {
     const parsed = HttpReader.parseUrl(source);
     return {
       __FILE__: res.__FILE__,
-      __PATH__: res.__PATH__,
-      __URL_ROOT__: parsed.url_root,
-      __URL_PATH__: parsed.url_path
+      __PATH__: res.__PATH__.replace(':/', '://'),
+      __URL_ROOT__: parsed.url_root.replace(/\\/g, '/'),
+      __URL_PATH__: parsed.url_path.replace(/\\/g, '/')
     };
   }
 
@@ -149,7 +149,7 @@ class HttpReader extends AbstractReader {
   /**
    * Parse url into parts
    * @param source
-   * @return {false|{user, repo, path, ref}}
+   * @return {false|{url_root, url_path}}
    */
   static parseUrl(source) {
     // parse url

@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2017 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -25,7 +25,7 @@
 'use strict';
 
 const url = require('url');
-const path = require('path');
+const upath = require('upath');
 
 // <editor-fold desc="Errors" defaultstate="collapsed">
 const Errors = {};
@@ -61,16 +61,16 @@ class AbstractReader {
    */
   parsePath(source) {
 
-    const __FILE__ = path.basename(source);
+    const __FILE__ = upath.basename(source);
     let __PATH__;
 
     // url parse can find protocol in Windows-style path, so we check it
-    if (url.parse(source).protocol && !path.parse(source).root) {
+    if (url.parse(source).protocol && !upath.parse(source).root) {
       // URL
-      __PATH__ = path.dirname(source);
+      __PATH__ = upath.dirname(source);
     } else {
       // path
-      __PATH__ = path.normalize(path.dirname(source));
+      __PATH__ = upath.normalize(upath.dirname(source));
       if (__PATH__ === '.') {
         __PATH__ = '';
       }
