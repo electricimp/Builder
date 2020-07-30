@@ -11,7 +11,7 @@ const init = require('./init')(FILE);
 const eol = require('eol');
 const path = require('path');
 
-const contextPath = path.resolve(__dirname, './../..').replace(/\\/g, '/');
+const contextPath = path.dirname(FILE).replace(/\\/g, '/');
 
 describe('Machine', () => {
   let machine, result, resultWithLC;

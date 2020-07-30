@@ -208,7 +208,9 @@ class Machine {
         switch (instruction.type) {
 
           case INSTRUCTIONS.INCLUDE:
+            const tempContextPath = context.__PATH__;
             this._executeInclude(instruction, context, buffer);
+            context.__PATH__ = tempContextPath;
             break;
 
           case INSTRUCTIONS.OUTPUT:
@@ -462,8 +464,12 @@ class Machine {
       res.includePathParsed
     );
     if (!path.isAbsolute(context.__PATH__) && this._getReader(context.__PATH__) === this.readers.file &&
-        (this._getReader(contextPath) === this.readers.file || this.remoteRelativeIncludes)) {
+        this._getReader(contextPath) !== this.readers.file && this.remoteRelativeInclude) {
       context.__PATH__ = upath.join(contextPath, context.__PATH__);
+    }
+    else if (path.isAbsolute(contextPath) && this._getReader(contextPath) === this.readers.file &&
+        this._getReader(context.__PATH__) === this.readers.file) {
+      context.__PATH__ = contextPath;
     }
 
     // store included source

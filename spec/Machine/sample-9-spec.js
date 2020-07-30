@@ -7,11 +7,11 @@
 require('jasmine-expect');
 const path = require('path');
 
-const contextPath = path.resolve(__dirname, './../..').replace(/\\/g, '/');
-
 const FILE = __dirname + '/../fixtures/sample-9/input.nut';
 const init = require('./init')(FILE);
 const eol = require('eol');
+
+const contextPath = path.dirname(FILE).replace(/\\/g, '/');
 
 describe('Machine', () => {
   let machine, result, resultWithLC;

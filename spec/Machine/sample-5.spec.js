@@ -13,7 +13,7 @@ const FILE = __dirname + '/../fixtures/sample-5/main.nut';
 const init = require('./init')(FILE);
 const path = require('path');
 
-const contextPath = path.resolve(__dirname, './../..');
+const contextPath = path.dirname(FILE).replace(/\\/g, '/');
 const filePath = path.join(contextPath, 'expression.inc.nut');
 
 describe('Machine', () => {

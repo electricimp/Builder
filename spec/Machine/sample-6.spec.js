@@ -9,11 +9,10 @@ const fs = require('fs');
 const Machine = require('../../src/Machine');
 const path = require('path');
 
-const contextPath = path.resolve(__dirname, './../..');
-const filePath = path.join(contextPath, 'b.nut');
-
 const FILE = __dirname + '/../fixtures/sample-6/a.nut';
 const init = require('./init')(FILE);
+const contextPath = path.dirname(FILE).replace(/\\/g, '/');
+const filePath = path.join(contextPath, 'b.nut');
 
 describe('Machine', () => {
   let machine, src;
