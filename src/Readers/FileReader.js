@@ -66,7 +66,9 @@ class FileReader extends AbstractReader {
       const sourcePath = path.join(dir, filePath);
 
       if (fs.existsSync(sourcePath)) {
-        options.context.__PATH__ = upath.dirname(sourcePath);
+        if (options.resultPathParsed) {
+          options.resultPathParsed.__PATH__ = upath.dirname(sourcePath);
+        }
         this.logger.debug(`Reading local file "${sourcePath}"`);
           return fs.readFileSync(sourcePath, 'utf-8');
       }
