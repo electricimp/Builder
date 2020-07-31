@@ -331,8 +331,7 @@ class Machine {
       } else if (context.__URL_ROOT__) {
         // If the include path is absolute in unix way and is included from
         // weblink, we can consider it relatively to the URL root
-        const relativePath = url.resolve(context.__URL_ROOT__, includePath);
-        return relativePath;
+        return url.resolve(context.__URL_ROOT__, includePath);
       }
     }
 
@@ -366,8 +365,7 @@ class Machine {
     // Check if the parent file is included from a web link - if so, consider includePath relative to the URL root
     if (context.__URL_ROOT__) {
       const pathToFile = upath.join(upath.dirname(context.__URL_PATH__), includePath);
-      const remotePath = url.resolve(context.__URL_ROOT__, pathToFile);
-      return remotePath;
+      return url.resolve(context.__URL_ROOT__, pathToFile);
     }
 
     return includePath;

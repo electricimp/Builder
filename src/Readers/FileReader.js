@@ -37,7 +37,8 @@ class FileReader extends AbstractReader {
   constructor() {
     super();
     this.runDir = path.resolve('.');
-    this.inputFileDir = '';
+    // This field is filled in cli.js
+    this.inputFileDir = null;
   }
 
   supports(source) {
@@ -51,18 +52,25 @@ class FileReader extends AbstractReader {
    * @return {string}
    */
   read(filePath, options) {
-    var searchDirs = [
-      this.inputFileDir,
-      this.runDir
-    ];
+    let searchDirs = null;
 
-    if (options.context.__PATH__) {
-      searchDirs.unshift(options.context.__PATH__);
+    if (path.isAbsolute(filePath)) {
+      searchDirs = [''];
+    } else {
+      // Use Set to keep only unique items. It keeps the original order
+      searchDirs = new Set([
+        options.context.__PATH__,
+        this.inputFileDir,
+        this.runDir
+      ]);
     }
-    searchDirs = searchDirs.concat('');
 
     // iterate through the search dirs
     for (const dir of searchDirs) {
+      if (!dir && dir !== '') {
+        continue;
+      }
+
       const sourcePath = path.join(dir, filePath);
 
       if (fs.existsSync(sourcePath)) {
