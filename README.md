@@ -1247,7 +1247,11 @@ SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 
-**Note**: The standard set of tests doesn't include Bitbucket Server, Azure Repos and Git Local integration testing. To run Bitbucket Server, Azure Repos or Git Local tests, please see the sections below.
+**Note 1**: The standard set of tests doesn't include Bitbucket Server, Azure Repos and Git Local (but see the **Note 2**) integration testing. To run Bitbucket Server, Azure Repos or Git Local tests, please see the sections below.
+
+**Note 2**: The standard set of tests uses Git Local in several tests for testing the overall behavior of Builder. They require the `SPEC_GIT_LOCAL_REPO_PATH` variable to be set (see the [Git Local](#git-local) section below). These are optional tests so they will be skipped if that variable is not set.
+
+**Note 3**: There are several tests that require access to the root of the filesystem (or to the root of the disk `C:` on Windows). They will create/remove there a directory named `builder_test_g2e5r6uh`, so please make sure you don't have some important data in such directory.
 
 ## Bitbucket Server ##
 
