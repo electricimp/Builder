@@ -34,6 +34,8 @@ const LOCAL_REPO_NOT_DEFINED_MESSAGE = "SPEC_GIT_LOCAL_REPO_PATH is not defined.
 const NO_ROOT_PERMISSION_MESSAGE = "No root permission. Test will be skipped";
 const WINDOWS_SPECIFIED_TEST_MESSAGE = "Windows platform specified test will be skipped";
 
+const TEST_DIR_NAME = "builder_test_g2e5r6uh";
+
 describe('Remote relative option is enabled - ', () => {
 
   let builder;
@@ -72,11 +74,11 @@ describe('Remote relative option is enabled - ', () => {
       if (process.platform === "win32") {
         try {
           fs.accessSync("/", fs.constants.W_OK);
-          fs.rmdirSync("C:/dirC", { recursive: true });
-          fs.mkdirSync("C:/dirC");
-          fs.writeFileSync("C:/dirC/y.nut", "// y.nut (case y abs)\n");
+          fs.rmdirSync(`C:/${TEST_DIR_NAME}`, { recursive: true });
+          fs.mkdirSync(`C:/${TEST_DIR_NAME}`);
+          fs.writeFileSync(`C:/${TEST_DIR_NAME}/y.nut`, "// y.nut (case y abs)\n");
           let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local.nut"`);
-          fs.rmdirSync("C:/dirC", { recursive: true });
+          fs.rmdirSync(`C:/${TEST_DIR_NAME}`, { recursive: true });
           expect(output).toContain('// y.nut (case y abs)\n');
         }
         catch (err) {
@@ -152,15 +154,15 @@ describe('Remote relative option is not enabled - ', () => {
     it('should search Y file by local abs path', () => {
       try {
         fs.accessSync("/", fs.constants.W_OK);
-        if (fs.existsSync("/dirC")) {
-          fs.unlinkSync("/dirC/y.nut");
-          fs.rmdirSync("/dirC", { recursive: true });
+        if (fs.existsSync(`/${TEST_DIR_NAME}`)) {
+          fs.unlinkSync(`/${TEST_DIR_NAME}/y.nut`);
+          fs.rmdirSync(`/${TEST_DIR_NAME}`, { recursive: true });
         }
-        fs.mkdirSync("/dirC");
-        fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
+        fs.mkdirSync(`/${TEST_DIR_NAME}`);
+        fs.writeFileSync(`/${TEST_DIR_NAME}/y.nut`, "// y.nut (case y abs)\n");
         let output = builder.machine.execute(`@include "` + httpsPath + `/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
-        fs.unlinkSync("/dirC/y.nut");
-        fs.rmdirSync("/dirC", { recursive: true });
+        fs.unlinkSync(`/${TEST_DIR_NAME}/y.nut`);
+        fs.rmdirSync(`/${TEST_DIR_NAME}`, { recursive: true });
         expect(output).toContain('// y.nut (case y abs)\n');
       }
       catch (err) {
@@ -194,15 +196,15 @@ describe('Remote relative option is not enabled - ', () => {
       if (process.env.SPEC_GIT_LOCAL_REPO_PATH != undefined) {
         try {
           fs.accessSync("/", fs.constants.W_OK);
-          if (fs.existsSync("/dirC")) {
-            fs.unlinkSync("/dirC/y.nut");
-            fs.rmdirSync("/dirC", { recursive: true });
+          if (fs.existsSync(`/${TEST_DIR_NAME}`)) {
+            fs.unlinkSync(`/${TEST_DIR_NAME}/y.nut`);
+            fs.rmdirSync(`/${TEST_DIR_NAME}`, { recursive: true });
           }
-          fs.mkdirSync("/dirC");
-          fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
+          fs.mkdirSync(`/${TEST_DIR_NAME}`);
+          fs.writeFileSync(`/${TEST_DIR_NAME}/y.nut`, "// y.nut (case y abs)\n");
           let output = builder.machine.execute(`@include "git-local:${process.env.SPEC_GIT_LOCAL_REPO_PATH}/spec/fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
-          fs.unlinkSync("/dirC/y.nut");
-          fs.rmdirSync("/dirC", { recursive: true });
+          fs.unlinkSync(`/${TEST_DIR_NAME}/y.nut`);
+          fs.rmdirSync(`/${TEST_DIR_NAME}`, { recursive: true });
           expect(output).toContain('// y.nut (case y abs)\n');
         }
         catch (err) {
@@ -229,15 +231,15 @@ describe('Remote relative option is not enabled - ', () => {
     it('should search Y file by local abs path', () => {
       try {
         fs.accessSync("/", fs.constants.W_OK);
-        if (fs.existsSync("/dirC")) {
-          fs.unlinkSync("/dirC/y.nut");
-          fs.rmdirSync("/dirC", { recursive: true });
+        if (fs.existsSync(`/${TEST_DIR_NAME}`)) {
+          fs.unlinkSync(`/${TEST_DIR_NAME}/y.nut`);
+          fs.rmdirSync(`/${TEST_DIR_NAME}`, { recursive: true });
         }
-        fs.mkdirSync("/dirC");
-        fs.writeFileSync("/dirC/y.nut", "// y.nut (case y abs)\n");
+        fs.mkdirSync(`/${TEST_DIR_NAME}`);
+        fs.writeFileSync(`/${TEST_DIR_NAME}/y.nut`, "// y.nut (case y abs)\n");
         let output = builder.machine.execute(`@include "${backslashToSlash(__dirname)}/../fixtures/include/sample-2/LibA/dirX/x_case_y_abs_local_slash2.nut"`);
-        fs.unlinkSync("/dirC/y.nut");
-        fs.rmdirSync("/dirC", { recursive: true });
+        fs.unlinkSync(`/${TEST_DIR_NAME}/y.nut`);
+        fs.rmdirSync(`/${TEST_DIR_NAME}`, { recursive: true });
         expect(output).toContain('// y.nut (case y abs)\n');
       }
       catch (err) {
