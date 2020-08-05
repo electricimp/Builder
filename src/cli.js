@@ -2,7 +2,7 @@
 
 // MIT License
 //
-// Copyright 2016-2019 Electric Imp
+// Copyright 2016-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -238,7 +238,7 @@ try {
   }
 
   // set the directory of the input file as first search dir
-  builder.machine.readers.file.searchDirs.unshift(path.dirname(path.resolve(args.input)));
+  builder.machine.readers.file.inputFileDir = path.dirname(path.resolve(args.input));
 
   // set GH credentials
   builder.machine.readers.github.username = args.gh.user;

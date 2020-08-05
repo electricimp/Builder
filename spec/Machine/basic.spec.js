@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -10,6 +10,10 @@ const Fixture = require('fixture-stdout');
 const stderrFixture = new Fixture({ stream: process.stderr });
 const init = require('./init')('main');
 const Machine = require('../../src/Machine');
+const path = require('path');
+
+const contextPath = path.resolve(__dirname, './../..');
+const filePath = path.join(contextPath, 'main');
 
 describe('Machine', () => {
   let machine;
@@ -115,7 +119,7 @@ describe('Machine', () => {
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.MacroIsAlreadyDeclared).toBe(true);
-      expect(e.message).toBe('Macro "A" is already declared in main:1 (main:3)');
+      expect(e.message).toBe('Macro "A" is already declared in main:1 (' + filePath + ':3)');
     }
   });
 
@@ -125,7 +129,7 @@ describe('Machine', () => {
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBe(true);
-      expect(e.message).toBe('Unexpected "~" at character 0 (main:1)');
+      expect(e.message).toBe('Unexpected "~" at character 0 (' + filePath + ':1)');
     }
   });
 
@@ -135,7 +139,7 @@ describe('Machine', () => {
       fail();
     } catch (e) {
       expect(e instanceof Machine.Errors.ExpressionEvaluationError).toBe(true);
-      expect(e.message).toBe('Unexpected "~" at character 0 (main:1)');
+      expect(e.message).toBe('Unexpected "~" at character 0 (' + filePath + ':1)');
     }
   });
 });

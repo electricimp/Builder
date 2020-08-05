@@ -31,7 +31,6 @@
             - [Define A Macro](#define-a-macro)
             - [Use A Macro](#use-a-macro)
         - [@include](#include)
-            - [Authentication](#authentication)
         - [@include once](#include-once)
         - [@while](#while)
         - [@repeat](#repeat)
@@ -39,16 +38,19 @@
         - [@error](#error)
         - [@warning](#warning)
     - [Filters](#filters)
+- [Include Files](#include-files)
+    - [Searching The Included File](#searching-the-included-file)
+    - [Remote Include Files](#remote-include-files)
+        - [Supported Remote Resources](#supported-remote-resources)
+        - [Caching Remote Files](#caching-remote-files)
+        - [Saving And Reusing Versions Of Remote Files](#saving-and-reusing-versions-of-remote-files)
+        - [Proxy Access To Remote Files](#proxy-access-to-remote-files)
 - [Advanced Builder Usage](#advanced-builder-usage)
     - [Reproducible Artifacts](#reproducible-artifacts)
         - [Builder Variables: Directives](#builder-variables-directives)
         - [Repository Files: Dependencies](#repository-files-dependencies)
     - [Including JavaScript Libraries](#including-javascript-libraries)
         - [Binding The Context Object Correctly](#binding-the-context-object-correctly)
-    - [Managing Remote Includes](#managing-remote-includes)
-        - [Caching Remote Includes](#caching-remote-includes)
-        - [Proxy Access To Remote Includes](#proxy-access-to-remote-includes)
-        - [Local Includes From Remote Files](#local-includes-from-remote-files)
 - [Testing](#testing)
 - [License](#license)
 
@@ -62,11 +64,11 @@ There are a number of ways in which you can [install Builder](#builder-installat
 
 You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
-You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub, [Bitbucket Server](https://www.atlassian.com/software/bitbucket/download) or [Azure Repos](https://azure.microsoft.com/en-us/services/devops/repos/) (at Azure DevOps Services), or hosted locally at git repositories (local git repositories files are included in a slightly different way than just random local files).
+You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to [access additional files](#include-files) that are stored on your computer or held remotely on an external resource (eg. HTTP/HTTPs server or a repository).
 
 While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
-To speed up the process, [files that are stored remotely](#managing-remote-includes) which are not expected to change between builds can be cached for quick re-use. Builder's [reproducible artifacts](#reproducible-artifacts) feature makes it possible to store references to all files and variables, so that builds can be re-created for future debugging.
+To speed up the process, [files that are stored remotely](#remote-include-files) which are not expected to change between builds can be cached for quick re-use. Builder's [reproducible artifacts](#reproducible-artifacts) feature makes it possible to store references to all files and variables, so that builds can be re-created for future debugging.
 
 For details on the commands that Builder offers, please see the [Directives](#directives) section. This is part of the [Builder Syntax](#builder-syntax) section, which also describes how Builder commands are structured.
 
@@ -107,18 +109,18 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | --github-user | | No | Yes | A GitHub username. |
 | --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
 | --azure-user | | No | Yes | An Azure Repos username. |
-| --azure-token | | No | Yes | An Azure Repos personal access token|
-| --bitbucket-server-addr | | No | Yes | A Bitbucket Server address. E.g., `https://bitbucket-srv.itd.example.com`. **Note**: this option is mandatory to handle [Bitbucket Server include@ statements](#include-bitbucket) |
+| --azure-token | | No | Yes | An Azure Repos personal access token. Should be specified if the `--azure-user` option is specified |
+| --bitbucket-server-addr | | No | Yes | A Bitbucket Server address. E.g., `https://bitbucket-srv.itd.example.com`. **Note**: this option is mandatory to include files from [Bitbucket Server](#bitbucket-server-repository) |
 | --bitbucket-server-user | | No | Yes | A Bitbucket Server username. |
 | --bitbucket-server-token | | No | Yes | A Bitbucket Server [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) or password (not recommended). Should be specified if the `--bitbucket-server-user` option is specified. |
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
-| --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
+| --use-remote-relative-includes | | No | No | Interpret every non-absolute path in the [`@include`](#include) and [`@include once`](#include-once) directives as relative to the location of the source file where it is mentioned. See the [Include Files](#include-files) section |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
-| --cache | -c | No | No | Turn on caching for all files included from remote resources. See [‘Caching Remote Includes’](#caching-remote-includes). This option is ignored if the `--save-dependencies` option is specified (the cache is turned off for all files in this case). If the `--use-dependencies` option is specified the cache is turned off for the files referenced in the dependency file and is turned on for all other remote files |
-| --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --save-dependencies | | No | No | Save references to the required [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
-| --use-dependencies | | No | No | Use the specified file to set which [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
+| --cache | -c | No | No | Turn on caching for all files included from remote resources. See the [Caching Remote Files](#caching-remote-files) section. This option is ignored if the `--save-dependencies` option is specified (the cache is turned off for all files in this case). If the `--use-dependencies` option is specified the cache is turned off for the files referenced in the dependency file and is turned on for all other remote files |
+| --clear-cache | | No | No | Clear the cache before Builder starts running. See the [Caching Remote Files](#caching-remote-files) section |
+| --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. the [Caching Remote Files](#caching-remote-files) section |
+| --save-dependencies | | No | No | Save references to the required [repository](#remote-include-files) files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
+| --use-dependencies | | No | No | Use the specified file to set which [repository](#remote-include-files) files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
 | --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 | --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 
@@ -159,7 +161,7 @@ builder.machine.readers.bitbucketSrv.token = "<PASSWORD_OR_ACCESS_TOKEN>";
 // See the "--cache-exclude-list" CLI option.
 builder.machine.excludeList = "<PATH_TO_FILE>";
 
-// Replace local include paths to repository URLs if requested.
+// Interpret a non-absolute path in includes as relative to the current file.
 // See the "--use-remote-relative-includes" CLI option.
 builder.machine.remoteRelativeIncludes = <true|false>;
 
@@ -269,6 +271,19 @@ Builder provides the following pre-defined variables:
 - `__PATH__` &mdash; The absolute path (not including file name) to the file where this variable appears. Can contain a URL for remote includes. For example:
 
     `Hi from file @{__PATH__}!`
+    
+-  `__REPO_PREFIX__` &mdash; The root of the repository resource which is being processed. Is an internal variable of Builder. For example:
+
+    `github:electricimp/Builder`
+    
+-  `__REPO_REF__` &mdash; The git reference (branch name or tag) of the repository resource which is being processed. Is an internal variable of Builder.
+
+-  `__URL_ROOT__` &mdash; The root of the remote weblink resource which is being processed. Is an internal variable of Builder. For example:
+<pre>
+    https://example.com
+    http://example.com:8080</pre>
+    
+-  `__URL_PATH__` &mdash; The path to the file on the remote weblink resource which is being processed, relative to the root of resource. Is an internal variable of Builder.
 
 <a id="loopvars"></a>
 
@@ -502,7 +517,7 @@ server.log(poem);
 
 ### @include ###
 
-This directive can be used to include local files, external sources or [macros](#macro).
+This directive can be used to include local files, files from remote resources or [macros](#macro).
 
 <pre>
 <b>@include</b> <i>&lt;source:expression&gt;</i>
@@ -514,156 +529,15 @@ This directive can be used to include local files, external sources or [macros](
 
 - For a local file:
 
-    <pre><b>@include</b> "somefile.ext"</pre>
+    <pre><b>@include</b> "somepath/somefile.ext"</pre>
 
-- For a web link:
+- For a file from remote resource:
 
-    <pre><b>@include</b> "https://example.com/file.ext"</pre>
+    <pre><b>@include</b> "someresource/somepath/somefile.ext"</pre>
 
-    For more detailed information on making use of remote includes, please see [Managing Remote Includes](#managing-remote-includes).
+The **@** character must not be present in the path and name of the file which is being included.
 
-##### For Repositories: Github, Bitbucket Server, Azure Repos, Git Local #####
-
-- For GitHub file, where:
-
-    - `user` is the user/organization name.
-    - `repo` is the repository name.
-    - `ref` is the git reference (branch name or tag, defaults to _master_).
-
-    <pre><b>@include</b> "github:<i>&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
-
-    - Head of the default branch
-
-        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut"</pre>
-
-    - Head of the _develop_ branch
-
-        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"</pre>
-
-    - Tag _v3.0.1_
-
-        <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
-<a id='include-bitbucket'></a>
-- For [Bitbucket Server](#include-bitbucket-note1) file, where:
-
-    - `project` is the project name (needed to include source files from project repos).
-    - `user` is the user name (needed to include source files from personal repos). **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`.
-    - `repo` is the repository name.
-    - `ref` is the git reference (branch name or tag, defaults to _master_).
-
-    <pre>// Include a source file from a project repo
-  <b>@include</b> "bitbucket-server:<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
-  // Include a source file from a personal repo
-  <b>@include</b> "bitbucket-server:<i>~&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
-
-    - Head of the default branch
-
-        <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut"</pre>
-
-    - Head of the _develop_ branch
-
-        <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut@develop"</pre>
-
-    - Tag _v3.0.1_ (personal repo)
-
-        <pre><b>@include</b> "bitbucket-server:~john/Promise/promise.class.nut@v3.0.1"</pre>
-    <a id='include-bitbucket-note1'></a>
-    **Note 1**: This section describes [**Bitbucket Server**](https://www.atlassian.com/software/bitbucket/download) (version **5.3.0** or above supported) includes. You can't use this to include files from [Bitbucket.org](https://bitbucket.org/).
-
-    **Note 2**: Currently, only one server can be specified/used to fetch all Bitbucket Server includes.
-
-- For Azure Repos file, where:
-
-    - `org` is the organization name.
-    - `project` is the project name.
-    - `repo` is the repository name.
-    - `ref` is the git reference (branch name or tag, defaults to _master_).
-
-    <pre><b>@include</b> "git-azure-repos:<i>&lt;org&gt;</i>/<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
-
-    - Head of the default branch
-
-        <pre><b>@include</b> "git-azure-repos:org/project/repo/path/some.class.nut"</pre>
-
-    - Head of the _develop_ branch
-
-        <pre><b>@include</b> "git-azure-repos:org/project/repo/path/some.class.nut@develop"</pre>
-
-    - Tag _v3.0.1_ (personal repo)
-
-        <pre><b>@include</b> "git-azure-repos:org/project/repo/path/some.class.nut@v3.0.1"</pre>
-
-- For Git Local file, where:
-
-    - `path` is the path to file.
-    - `ref` is the git reference (branch name, tag or commit, defaults to current branch which local git repository is set to).
-
-    <pre><b>@include</b> "git-local:<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
-
-    - Head of the default branch
-
-        <pre><b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut"</pre>
-
-    - Head of the _develop_ branch
-
-        <pre><b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@develop"</pre>
-
-    - Tag _v3.0.1_
-
-        <pre><b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@3.0.1"</pre>
-
-    - Commit _c13c59e96f3f6a37f75f9e520d0fdc5591e0ba83_
-
-        <pre><b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@c13c59e96f3f6a37f75f9e520d0fdc5591e0ba83"</pre>
-
-    **Note 1:** If there are uncommitted changes, they will not be seen by this reader. Hence <b>@include</b> "git-local:<i>&lt;path&gt;</i>" (without &lt;ref&gt;) is not interchangeable with <b>@include</b> <i>"&lt;path&gt;"</i>.
-
-    **Note 2:** There are local and remote branches in Git. If you want to create a local remote-tracking branch from a remote branch, you can use `git checkout <remote_branch_name>` command, for example. For more info, see [Git docs](https://git-scm.com/).
-
-    **Note 3:** To include a remote git branch, you have to specify the name of the remote repo in the **@include** command. For example:
-      <pre>
-      // Include local git branch
-      <b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@develop"
-      // Include remote git branch from the "origin" remote repo
-      <b>@include</b> "git-local:/path/to/repo/and/file/some.class.nut@origin/develop"</pre>
-
-The **@** character must not be present in the name of the file which is being included from repository, in order to parse branch/tag/commit correctly.
-
-The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
-
-```
-// Include supporting source files
-@include __PATH__ + "Hardware.device.nut"
-@include __PATH__ + "/../shared/Logger.shared.nut"
-@include __PATH__ + "/../shared/Constants.shared.nut"
-```
-
-#### Authentication ####
-
-##### GitHub #####
-
-When using GitHub `@include` statements, authentication is optional. However, you should bear in mind that:
-
-- If you use authentication, the GitHub API provides much higher rate limits.
-- Authentication is required to access private repositories.
-
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended).
-
-##### Bitbucket Server #####
-
-When using Bitbucket Server `@include` statements, authentication is optional but is required to access private repositories.
-
-Apart from a Bitbucket Server username, you need to provide either a [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) **or** a password (which is less secure and not recommended).
-
-##### Azure Repos #####
-
-When using Azure Repos `@include` statements, authentication is optional but is required to access private repositories.
-
-Apart from an Azure Repos username, you need to provide a personal access token.
-
-##### Credentials passing / storing #####
-
-If you are using Builder as a [library](#library-installation), [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your credentials will need to be passed into the `pleasebuild` command.
+Please see the [Include Files](#include-files) section for information about include formats, file searching rules, supported remote resources, examples and other details.
 
 ### @include once ###
 
@@ -851,17 +725,389 @@ a = "@{include('index.html')|escape}"
 b = "@{include('file.bin')|base64}"
 ```
 
+# Include Files #
+
+This section contains detailed information about usage of the [`@include`](#include) and [`@include once`](#include-once) directives to include local or remote files.
+
+**Local file** is a file on the same system where *Builder* is running.
+
+**Remote file** is a file on a remote resource (eg. a repository or a HTTP/HTTPs server). See the [Remote Include Files](#remote-include-files) section for the list of supported remote resources.
+
+The file mentioned in the [`@include`](#include) or [`@include once`](#include-once) directives may contain a **relative** or an **absolute path**.
+
+##### Examples: #####
+
+```
+@include "https://example.com/somefile.ext" // absolute path to remote file
+@include once "github:electricimp/Promise/promise.class.nut" // absolute path to remote file
+@include "c:\somefolder\somefile.ext" // absolute path to local file
+@include once "./somefile.ext" // relative path
+@include "somefile.ext" // relative path
+```
+
+The next section clarifies how *Builder* searches the included file.
+
+## Searching The Included File ##
+
+**Processed file** is a file currently being processed by *Builder*, it can be local or remote, it contains the [`@include`](#include) or [`@include once`](#include-once) directive(s).
+
+**Path to the processed file** is an absolute path to the processed file.
+
+**Path in the include** is the path mentioned in the [`@include`](#include) or [`@include once`](#include-once) directive, it can be an absolute path to local file, an absolute path to remote file or a relative path.
+
+**Full path to the include file** is an absolute path to the file which will be included by *Builder*.
+
+The below rules define how *Builder* searches the included file:
+
+### Absolute Path To Remote File ###
+
+If the path in the include is an absolute path to the remote file, it is considered as the final path to the include file. If the file is not found there, *Builder* reports an error.
+
+##### Examples: #####
+```
+@include "https://example.com/somefile.ext" // absolute path to remote file
+@include once "github:electricimp/Promise/promise.class.nut" // absolute path to remote file
+```
+
+### Absolute Path To Local File ###
+
+If the path in the include is an absolute path to the local file, it is considered as the final path to the include file. If the file is not found there, *Builder* reports an error.
+
+##### Examples: #####
+```
+@include "c:\somefolder\somefile.ext" // absolute path to local file
+@include "/home/user/someuser/somefolder/somefile.ext" // absolute path to local file. But see the note below.
+```
+
+**Note**: Under some conditions a path in the include which starts from the "**/**" symbol is processed by the special rule described below.
+
+### "/" As Root Of Remote Resource ###
+
+If
+
+- the first symbol of the path in the include is "**/**" 
+- and the processed file is a remote file (ie. the file on a remote resource) 
+- and the `--use-remote-relative-includes` option is specified
+
+then the final path to the include file is a concatenation of the root of remote resource and the path in the include. If the file is not found there, *Builder* reports an error. See the [Remote Include Files](#remote-include-files) section for the root definition of the supported remote resources.
+
+##### Examples: #####
+```
+The processed file: "https://example.com/folderA/folderB/somefile.nut"
+
+It contains:
+@include "/folderC/anotherfile.nut"
+
+The final path to the include: "https://example.com/folderC/anotherfile.nut"
+```
+
+```
+The processed file: "github:someuser/somerepo/folderA/folderB/somefile.nut@develop"
+
+It contains:
+@include "/folderC/anotherfile.nut"
+
+The final path to the include: "github:someuser/somerepo/folderC/anotherfile.nut@develop"
+```
+
+### Relative Path To Remote File ###
+
+If
+
+- the path in the include is a relative path 
+- and the processed file is a remote file (ie. the file on a remote resource) 
+- and the `--use-remote-relative-includes` option is specified
+
+then the final path to the include file is a concatenation of the path to the processed file and the path in the include. If the file is not found there, *Builder* reports an error.
+
+##### Examples: #####
+```
+The processed file: "https://example.com/folderA/folderB/somefile.nut"
+
+It contains:
+@include "anotherfile.nut"
+
+The final path to the include: "https://example.com/folderA/folderB/anotherfile.nut"
+```
+
+```
+The processed file: "github:someuser/somerepo/folderA/folderB/somefile.nut@v1.2.3"
+
+It contains:
+@include "folderC/anotherfile.nut"
+
+The final path to the include: "github:someuser/somerepo/folderA/folderB/folderC/anotherfile.nut@v1.2.3"
+```
+
+### Relative Path To Local File ###
+
+If
+
+- the path in the include is a relative path 
+- and the processed file is a local file (or it is a remote file but the `--use-remote-relative-includes` option is not specified) 
+
+then *Builder* makes the following steps to find the include file:
+
+1. Only if the processed file is a local file, the final path to the include file is a concatenation of the path to the processed file and the path in the include. If the file is not found there, moves to the next step.
+1. The final path to the include file is a concatenation of the path to the file specified as the `<input_file>` parameter of the `pleasebuild` command and the path in the include. If the file is not found there, moves to the next step.
+1. The final path to the include file is a concatenation of the path to the directory from where the `pleasebuild` command has been called and the path in the include. If the file is not found there, *Builder* reports an error.
+
+##### Examples: #####
+```
+The processed file: "/home/user/someuser/folderA/somefile.ext"
+
+It contains:
+@include "folderX/anotherfile.nut"
+
+The "pleasebuild" command is called from: "/home/user/someuser/folderB"
+With the <input_file> parameter: "folderC/initialfile.nut"
+
+The anotherfile.nut file will be searched sequentially in the following locations:
+1. "/home/user/someuser/folderA/folderX/"
+2. "/home/user/someuser/folderB/folderC/folderX/"
+3. "/home/user/someuser/folderB/folderX/"
+```
+
+## Remote Include Files ##
+
+### Supported Remote Resources ###
+
+*Builder* supports file includes from the following types of remote resources:
+
+#### HTTP/HTTPs Server ####
+
+For includes from weblinks.
+
+##### Format: #####
+```
+@include "http://<server>[:<port>]/<path>"
+@include "https://<server>[:<port>]/<path>"
+@include once "http://<server>[:<port>]/<path>"
+@include once "https://<server>[:<port>]/<path>"
+```
+where:
+- `server` is the host name or IP address.
+- `port` is the port number.
+- `path` is the path to file.
+
+##### Examples: #####
+```
+@include "https://example.com/somefile.ext"
+@include once "http://example.com/folderA/folderB/somefile.nut"
+```
+
+##### Root of the remote resource: #####
+```
+http://<server>:<port>
+https://<server>:<port>
+```
+
+#### GitHub Repository ####
+
+For includes from [github.com](https://github.com).
+
+##### Format: #####
+```
+@include "github:<user>/<repo>/<path>[@<ref>]"
+@include once "github:<user>/<repo>/<path>[@<ref>]"
+```
+where:
+- `user` is the user/organization name.
+- `repo` is the repository name.
+- `path` is the path to file.
+- `ref` is the git reference (branch name or tag, defaults to _master_).
+
+##### Examples: #####
+```
+@include "github:electricimp/Promise/promise.class.nut" // head of the default branch
+@include "github:electricimp/Promise/promise.class.nut@develop" // head of the develop branch
+@include once "github:electricimp/Promise/promise.class.nut@v3.0.1" // tag v3.0.1
+```
+
+##### Root of the remote resource: #####
+```
+github:<user>/<repo>
+```
+
+##### Authentication: #####
+
+Authentication is optional. It is required to access private repositories only. But please note that when you use authentication, the GitHub API provides much higher rate limits.
+
+For the authentication you need to provide:
+- a GitHub username (`--github-user` option)
+- a GitHub [personal access token](https://github.com/settings/tokens) or a password, which is less secure and not recommended (`--github-token` option).
+
+#### Bitbucket Server Repository ####
+
+For includes from [Bitbucket Server](https://www.atlassian.com/software/bitbucket/download). **Note**, this is not the same as Bitbucket Cloud, includes from [Bitbucket.org](https://bitbucket.org/) are not supported.
+
+*Builder* can work with only one Bitbucket server at a time. Its address must be specified (`--bitbucket-server-addr` option). Server version **5.3.0** or above is supported.
+
+##### Format: #####
+```
+@include "bitbucket-server:<project>/<repo>/<path>[@<ref>]"
+@include "bitbucket-server:~<user>/<repo>/<path>[@<ref>]"
+@include once "bitbucket-server:<project>/<repo>/<path>[@<ref>]"
+@include once "bitbucket-server:~<user>/<repo>/<path>[@<ref>]"
+```
+where:
+- `project` is the project name. Should be used to include files from project repositories.
+- `user` is the user name. Should be used to include files from personal repositories. **Note**, the user name must be prepended with `~`. Eg, for the user name John it should be `~john`.
+- `repo` is the repository name.
+- `path` is the path to file.
+- `ref` is the git reference (branch name or tag, defaults to _master_).
+
+##### Examples: #####
+```
+@include "bitbucket-server:Tools/Promise/promise.class.nut" // head of the default branch
+@include once "bitbucket-server:Tools/Promise/promise.class.nut@develop" // head of the develop branch
+@include "bitbucket-server:~john/Promise/promise.class.nut@v3.0.1" // tag v3.0.1
+```
+
+##### Root of the remote resource: #####
+```
+bitbucket-server:<project>/<repo>
+bitbucket-server:~<user>/<repo>
+```
+
+##### Authentication: #####
+
+Authentication is optional. It is required to access private repositories only.
+
+For the authentication you need to provide:
+- a Bitbucket Server username (`--bitbucket-server-user` option)
+- a Bitbucket Server [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) or a password, which is less secure and not recommended (`--bitbucket-server-token` option).
+
+#### Azure Repository ####
+
+For includes from [Azure Repos](https://azure.microsoft.com/en-us/services/devops/repos/).
+
+##### Format: #####
+```
+@include "git-azure-repos:<org>/<project>/<repo>/<path>[@<ref>]"
+@include once "git-azure-repos:<org>/<project>/<repo>/<path>[@<ref>]"
+```
+where:
+- `org` is the organization name.
+- `project` is the project name.
+- `repo` is the repository name.
+- `path` is the path to file.
+- `ref` is the git reference (branch name or tag, defaults to _master_).
+
+##### Examples: #####
+```
+@include once "git-azure-repos:org/project/repo/path/some.class.nut" // head of the default branch
+@include "git-azure-repos:org/project/repo/path/some.class.nut@develop" // head of the develop branch
+@include "git-azure-repos:org/project/repo/path/some.class.nut@v3.0.1" // tag v3.0.1
+```
+
+##### Root of the remote resource: #####
+```
+git-azure-repos:<org>/<project>/<repo>
+```
+
+##### Authentication: #####
+
+Authentication is optional. It is required to access private repositories only.
+
+For the authentication you need to provide:
+- an Azure Repos username (`--azure-user` option)
+- an Azure Repos personal access token (`--azure-token` option).
+
+#### Local Git Repository ####
+
+For includes from Git repositories hosted locally. **Note**, even as files are local, *Builder* considers them as files from a remote resource when [searching the file to include](#searching-the-included-file).
+
+##### Format: #####
+```
+@include "git-local:<path>[@<ref>]"
+@include once "git-local:<path>[@<ref>]"
+```
+where:
+- `path` is the path to file.
+- `ref` is the git reference (branch name, tag or commit, defaults to current branch which the local git repository is set to).
+
+##### Examples: #####
+```
+@include once "git-local:/path/to/repo/and/file/some.class.nut" // head of the default branch
+@include once "git-local:/path/to/repo/and/file/some.class.nut@develop" // head of the develop branch
+@include "git-local:/path/to/repo/and/file/some.class.nut@3.0.1" // tag v3.0.1
+@include "git-local:/path/to/repo/and/file/some.class.nut@c13c59e96f3f6a37f75f9e520d0fdc5591e0ba83" // concrete commit
+```
+
+##### Root of the remote resource: #####
+Is determined by *Builder*.
+
+##### Notes: #####
+- [Caching](#caching-remote-files) is not applicable to local Git files.
+- If there are uncommitted changes, they will not be seen by *Builder*. Hence `@include "git-local:<path>"` (without `<ref>`) is not interchangeable with `@include "<path>"`.
+- There are local and remote branches in Git. If you want to create a local remote-tracking branch from a remote branch, you can use, for example, the `git checkout <remote_branch_name>` command. For more info, see the [Git docs](https://git-scm.com/).
+- To include a remote git branch, you should specify the name of the remote repository in the `ref` part of the directive. For example:
+```
+@include "git-local:/path/to/repo/and/file/some.class.nut@develop" // include local git branch
+@include "git-local:/path/to/repo/and/file/some.class.nut@origin/develop" // include remote git branch from the "origin" remote repository
+```
+
+### Caching Remote Files ###
+
+To reduce compilation time, *Builder* can optionally cache files included from a remote resource. If the file cache is enabled, remote files are cached locally in the `.builder-cache` directory. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
+
+To turn the cache on, pass the `--cache` or `-c` option to *Builder*. If this option is not specified, *Builder* will not use the file cache even if the cached data exists and is valid &mdash; *Builder* will continue to query remote resources on every execution.
+
+To reset the cache, use both the `--cache` and the `--clear-cache` options.
+
+If a resource should never be cached, it needs to be added to the `exclude-list.builder` file (see the example below). You can use wildcard characters to mask file names.
+
+#### Wildcard Pattern Matching ####
+
+Pattern matching syntax is a similar to that of *.gitignore*. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
+
+A '```?```' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
+
+A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
+
+Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
+
+* A leading `**` followed by a slash means match in all directories. For example, `**/foo` matches file or directory `foo` anywhere, the same as pattern `foo`. `**/foo/bar` matches file or directory `bar` anywhere that is directly under directory `foo`.
+
+* A trailing `/**` matches everything inside. For example, `abc/**` matches all files inside directory `abc`.
+
+* A slash followed by two consecutive asterisks then a slash matches zero or more directories. For example, `a/**/b` matches `a/b`, `a/x/b`, `a/x/y/b` and so on.
+
+* Other consecutive asterisks are considered invalid.
+
+##### Examples: #####
+
+```sh
+# Avoid caching a specific file
+github:electricimp/MessageManager/MessageManager.lib.nut
+
+# Exclude all electricimp repos
+github:electicimp/**
+
+# Exclude all tagged files or files from the specific branches from the cache
+github:*/**/*@*
+```
+
+### Saving And Reusing Versions Of Remote Files ###
+
+It is possible to save the versions of all remote files which are used during the current run of *Builder*, and reuse exactly that versions later. This is applicable for files from repositories only.
+
+See the [Repository Files: Dependencies](#repository-files-dependencies) section for the details.
+
+### Proxy Access To Remote Files ###
+
+To specify a proxy that should be used when you are including files from remote resources, set the environment variables `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` for HTTP and HTTPS protocols respectively.
+
+For example, to operate through a proxy running at IP address `192.168.10.2` on port `3128` for HTTP requests, you should set the environment variable: `HTTP_PROXY='http://192.168.10.2:3128'`. All of *Builder’s* HTTP requests will now go through the proxy.
+
 # Advanced Builder Usage #
 
-This section contains information that will help you work with Builder more effectively, but may not be needed for more basic Builder tasks. These advanced options include:
-
-- [Reproducible Artifacts](#reproducible-artifacts)
-- [Including JavaScript Libraries](#including-javascript-libraries)
-- [Managing Remote Includes](#managing-remote-includes)
+This section contains information that will help you work with Builder more effectively, but may not be needed for more basic Builder tasks.
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) files and libraries are stored in a [‘dependencies.json’](#repository-files-dependencies) file.
+It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of [repository](#remote-include-files) files and libraries are stored in a [‘dependencies.json’](#repository-files-dependencies) file.
 
 ### Builder Variables: Directives ###
 
@@ -880,7 +1126,7 @@ A typical `directives.json` file looks like this:
 
 ### Repository Files: Dependencies ###
 
-`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) files and libraries. The references are saved in a JSON file. If a file name is not specified, the `dependencies.json` file in the local directory is used. Every reference consists of [repository](#for-repositories-github-bitbucket-server-azure-repos-git-local) file URL and:
+`--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` options are used to save and to reuse, respectively, references to concrete versions of [repository](#remote-include-files) files and libraries. The references are saved in a JSON file. If a file name is not specified, the `dependencies.json` file in the local directory is used. Every reference consists of [repository](#remote-include-files) file URL and:
 - Git Blob ID (Git Blob SHA) &mdash; for GitHub files<br>
 **Note** It is possible to obtain the Git Blob ID of a GitHub file using the following *git* command: `git hash-object <path_to_file>`
 - Git Commit ID (Git Commit SHA) &mdash; for Bitbucket Server, Azure Repos and Git Local files
@@ -889,13 +1135,13 @@ For more information, please see [the Git Manual](https://git-scm.com/book/en/v2
 
 These options are processed the following way:
 
-- If only `--save-dependencies [<path_to_file>]` is specified, the references to all source files retrieved from [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) are saved in the provided JSON file (or `dependencies.json`).
-- If only `--use-dependencies [<path_to_file>]` is specified, the source files from [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) are retrieved using the references read from the provided JSON file (or `dependencies.json`).
+- If only `--save-dependencies [<path_to_file>]` is specified, the references to all source files retrieved from [repositories](#remote-include-files) are saved in the provided JSON file (or `dependencies.json`).
+- If only `--use-dependencies [<path_to_file>]` is specified, the source files from [repositories](#remote-include-files) are retrieved using the references read from the provided JSON file (or `dependencies.json`).
 - If both `--save-dependencies [<path_to_file>]` and `--use-dependencies [<path_to_file>]` are specified, then:
-    1. The source files from [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) are retrieved using the references read from the JSON file passed to the `--use-dependencies` option (or `dependencies.json`).
-    2. If the source code contains @includes for files from [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) which have not yet been retrieved, they are retrieved now.
+    1. The source files from [repositories](#remote-include-files) are retrieved using the references read from the JSON file passed to the `--use-dependencies` option (or `dependencies.json`).
+    2. If the source code contains @includes for files from [repositories](#remote-include-files) which have not yet been retrieved, they are retrieved now.
     3. Builder performs the preprocessing operation.
-    4. References to all source files retrieved from [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) are saved in the JSON file passed to the `--save-dependencies` option (or `dependencies.json`).
+    4. References to all source files retrieved from [repositories](#remote-include-filesl) are saved in the JSON file passed to the `--save-dependencies` option (or `dependencies.json`).
 
 **Note** If `--save-dependencies` is specified, the `--cache` option is ignored. If `--use-dependencies` is specified, the `--cache` option does not affect the files referenced in the dependency file.
 
@@ -989,69 +1235,6 @@ module.exports = {
 };
 ```
 
-## Managing Remote Includes ##
-
-There are a number of advanced techniques you may apply when including remote files in your source code using Builder.
-
-### Caching Remote Includes ###
-
-To reduce compilation time, Builder can optionally cache files included from a remote resource (ie. [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) or remote HTTP/HTTPs servers). If this file cache is enabled, remote files are cached locally in the *.builder-cache* directory. Cached resources expire and are automatically invalidated 24 hours after their addition to the cache.
-
-To turn the cache on, pass the `--cache` or `-c` option to Builder. If this option is not specified, Builder will not use the file cache even if the cached data exists and is valid &mdash; it will continue to query remote resources on every execution.
-
-To reset the cache, use both the `--cache` and the `--clear-cache` options.
-
-If a resource should never be cached, it needs to be added to the *exclude-list.builder* file (see example below). You can use wildcard characters to mask file names.
-
-#### Wildcard Pattern Matching ####
-
-Pattern matching syntax is a similar to that of *.gitignore*. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
-
-A '```?```' symbol matches any single character. For example, `bo?t.js` matches `boot.js` and `boat.js`, but doesn't match `bot.js`.
-
-A '```*```' matches any string, that is limited by slashes, including the empty string. For example, ```/foo/*ar``` matches `/foo/bar`, `/foo/ar` and `/foo/foo-bar`, but doesn't match `/foo/get/bar` or `/foo/bar/get`.
-
-Two consecutive asterisks `**` in patterns matched against full pathname may have special meaning:
-
-* A leading `**` followed by a slash means match in all directories. For example, `**/foo` matches file or directory `foo` anywhere, the same as pattern `foo`. `**/foo/bar` matches file or directory `bar` anywhere that is directly under directory `foo`.
-
-* A trailing `/**` matches everything inside. For example, `abc/**` matches all files inside directory `abc`.
-
-* A slash followed by two consecutive asterisks then a slash matches zero or more directories. For example, `a/**/b` matches `a/b`, `a/x/b`, `a/x/y/b` and so on.
-
-* Other consecutive asterisks are considered invalid.
-
-#### Example ####
-
-```sh
-# Avoid caching a specific file
-github:electricimp/MessageManager/MessageManager.lib.nut
-
-# Exclude all electricimp repos
-github:electicimp/**
-
-# Exclude all tagged files or files from the specific branches from the cache
-github:*/**/*@*
-```
-
-### Proxy Access To Remote Includes ###
-
-To specify a proxy that should be used when you are including files from remote resources (ie. [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) or remote HTTP/HTTPs servers), set the environment variables `HTTP_PROXY`/`http_proxy` and/or `HTTPS_PROXY`/`https_proxy` for HTTP and HTTPS protocols respectively.
-
-For example, to operate through a proxy running at IP address 192.168.10.2 on port 3128 for HTTP requests, you should set the environment variable: `HTTP_PROXY='http://192.168.10.2:3128'`. All of Builder’s HTTP requests will now go through the proxy.
-
-**Note** Files retrieved from GitHub (`github:` protocol) are always accessed using HTTPS. So when specifying a proxy in this case, make sure you use set the `HTTPS_PROXY` environment variable.
-
-### Local Includes From Remote Files ###
-
-By default, all [local includes](#include), even if they are mentioned in remote source files, are interpreted as relative to the system where Builder is running.
-
-If `--use-remote-relative-includes` option is specified, every [local include](#include) is interpreted as relative to the location of the source file where it is mentioned, excluding absolute local includes, like `/home/user/etc` or `C:\Users\user\etc`. For example, a local include mentioned in remote source file from GitHub will be downloaded from the same GitHub URL as the source file.
-
-`--use-remote-relative-includes` option does not affect includes with [absolute remote paths](#include).
-
-**Note** In the current Builder version `--use-remote-relative-includes` option affects includes mentioned in remote source files from [repositories](#for-repositories-github-bitbucket-server-azure-repos-git-local) only.
-
 # Testing #
 
 When running tests locally, please test on both Windows and macOS. All environment variables are optional. However, if you are working with `@includes` from GitHub and do not provide GitHub credentials, rate limits imposed by GitHub may cause test failures. The default for `SPEC_LOGLEVEL` is `error`.
@@ -1064,7 +1247,11 @@ SPEC_GITHUB_TOKEN=<GitHub password/access token>
 npm test
 ```
 
-**Note**: The standard set of tests doesn't include Bitbucket Server, Azure Repos and Git Local integration testing. To run Bitbucket Server, Azure Repos or Git Local tests, please see the sections below.
+**Note 1**: The standard set of tests doesn't include Bitbucket Server, Azure Repos and Git Local (but see the **Note 2**) integration testing. To run Bitbucket Server, Azure Repos or Git Local tests, please see the sections below.
+
+**Note 2**: The standard set of tests uses Git Local in several tests for testing the overall behavior of Builder. They require the `SPEC_GIT_LOCAL_REPO_PATH` variable to be set (see the [Git Local](#git-local) section below). These are optional tests so they will be skipped if that variable is not set.
+
+**Note 3**: There are several tests that require access to the root of the filesystem (or to the root of the disk `C:` on Windows). They will create/remove there a directory named `builder_test_g2e5r6uh`, so please make sure you don't have some important data in such directory.
 
 ## Bitbucket Server ##
 

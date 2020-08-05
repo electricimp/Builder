@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2019 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -10,6 +10,8 @@ const eol = require('eol');
 const init = require('./init')('main');
 
 const backslashToSlash = require('../backslashToSlash');
+
+const contextPath = path.resolve(__dirname, './../..').replace(/\\/g, '/');
 
 describe('Machine', () => {
   let machine;
@@ -35,7 +37,7 @@ describe('Machine', () => {
   it('should generate correct __FILE__/__PATH__ #2', () => {
     machine.file = '';
     const res = machine.execute(`@{__PATH__}#@{__FILE__}@@{__LINE__}`);
-    expect(res).toEqual(`#@1`);
+    expect(res).toEqual(`${contextPath}#@1`);
   });
 
   it('should generate correct __FILE__/__PATH__ #3', () => {
@@ -43,6 +45,6 @@ describe('Machine', () => {
     const res = eol.lf(machine.execute(`@{__PATH__}#@{__FILE__}@@{__LINE__}
       @include "${backslashToSlash(__dirname)}/../fixtures/lib/path.builder"`));
     // __PATH__ should be absolute (when possible), normalized one
-    expect(res).toEqual(`#@1\n${path.normalize(__dirname + '/../fixtures/lib')}#path.builder@1\n`);
+    expect(res).toEqual(`${contextPath}#@1\n${path.normalize(__dirname + '/../fixtures/lib').replace(/\\/g, '/')}#path.builder@1\n`);
   });
 });

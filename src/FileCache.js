@@ -145,6 +145,7 @@ class FileCache {
   read(reader, includePath, dependencies, context) {
     // Do this first as our includePath and reader may change on us if we have a cache hit
     const includePathParsed = reader.parsePath(includePath);
+    const originalReader = reader;
 
     let needCache = false;
     // Cache file or read from cache only if --cache option is on and no
@@ -164,7 +165,15 @@ class FileCache {
       }
     }
 
-    let content = reader.read(includePath, { dependencies: dependencies, context: context });
+    const options = { dependencies: dependencies, context: context };
+
+    if (originalReader === this.machine.readers.file) {
+      // This allows the FileReader to return the actual path of the file (where it has been found)
+      // But we don't need this behavior in case of reading from cache (so we saved the original reader at the top)
+      options.resultPathParsed = includePathParsed;
+    }
+
+    let content = reader.read(includePath, options);
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {
