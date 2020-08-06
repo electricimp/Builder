@@ -159,7 +159,7 @@ describe('FileCache', () => {
       linksSet.add(path);
     });
   });
-  
+
   it('should not change includePathParsed object', () => {
     let includePath = 'github:electricimp/Builder/spec/fixtures/sample-11/LineBrakeSample.nut';
     let context = {};

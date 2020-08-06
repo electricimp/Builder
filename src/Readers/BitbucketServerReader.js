@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2019 Electric Imp
+// Copyright 2019-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -25,7 +25,6 @@
 'use strict';
 
 const request = require('request');
-const path = require('path');
 const upath = require('upath');
 const childProcess = require('child_process');
 const AbstractReader = require('./AbstractReader');
@@ -144,8 +143,8 @@ class BitbucketServerReader extends AbstractReader {
   parsePath(source) {
     const parsed = BitbucketServerReader.parseUrl(source);
     return {
-      __FILE__: path.basename(parsed.path),
-      __PATH__: `bitbucket-server:${parsed.project}/${parsed.repo}/${path.dirname(parsed.path)}`,
+      __FILE__: upath.basename(parsed.path),
+      __PATH__: `bitbucket-server:${parsed.project}/${parsed.repo}/${upath.dirname(parsed.path)}`,
       __REPO_REF__: parsed.ref,
       __REPO_PREFIX__: `bitbucket-server:${parsed.project}/${parsed.repo}`
     };

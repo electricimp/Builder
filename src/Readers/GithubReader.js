@@ -25,8 +25,8 @@
 'use strict';
 
 const HttpsProxyAgent = require('https-proxy-agent');
-const path = require('path');
-const Octokit = require('@octokit/rest');
+const upath = require('upath');
+const { Octokit } = require('@octokit/rest');
 const childProcess = require('child_process');
 const packageJson = require('../../package.json');
 const AbstractReader = require('./AbstractReader');
@@ -140,8 +140,8 @@ class GithubReader extends AbstractReader {
   parsePath(source) {
     const parsed = GithubReader.parseUrl(source);
     return {
-      __FILE__: path.basename(parsed.path),
-      __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
+      __FILE__: upath.basename(parsed.path),
+      __PATH__: `github:${parsed.owner}/${parsed.repo}/${upath.dirname(parsed.path)}`,
       __REPO_REF__: parsed.ref,
       __REPO_PREFIX__: `github:${parsed.owner}/${parsed.repo}`
     };

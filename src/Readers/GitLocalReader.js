@@ -24,7 +24,7 @@
 
 'use strict';
 
-const path = require('path');
+const upath = require('upath');
 const childProcess = require('child_process');
 const fs = require('fs');
 const AbstractReader = require('./AbstractReader');
@@ -118,9 +118,9 @@ class GitLocalReader extends AbstractReader {
    */
   parsePath(source) {
     const parsed = GitLocalReader.parseUrl(source);
-    const dir = path.parse(parsed.path).dir;
+    const dir = upath.parse(parsed.path).dir;
     return {
-      __FILE__: path.basename(parsed.path),
+      __FILE__: upath.basename(parsed.path),
       __PATH__: `git-local:${dir}`,
       __REPO_REF__: parsed.ref,
       __REPO_PREFIX__: `git-local:${parsed.root}`
@@ -152,8 +152,8 @@ class GitLocalReader extends AbstractReader {
       const rootAndRelativePath = GitLocalReader.getRepoRootAndRelativePath(res.path);
 
       if (rootAndRelativePath) {
-        res.root = rootAndRelativePath.root;
-        res.relPath = rootAndRelativePath.relPath;
+        res.root = upath.normalize(rootAndRelativePath.root);
+        res.relPath = upath.normalize(rootAndRelativePath.relPath);
         return res;
       } else {
         return false;
@@ -169,7 +169,7 @@ class GitLocalReader extends AbstractReader {
    * @return {false|{root, relPath}}
    */
   static getRepoRootAndRelativePath(source) {
-    var pathParsed = path.parse(source);
+    var pathParsed = upath.parse(source);
     if (!pathParsed) {
       return false;
     }
@@ -182,7 +182,7 @@ class GitLocalReader extends AbstractReader {
         break;
       }
       else {
-        existingDir = path.resolve(existingDir, '..');
+        existingDir = upath.resolve(existingDir, '..');
       }
     }
 
@@ -190,7 +190,7 @@ class GitLocalReader extends AbstractReader {
     const command = 'git -C ' + existingDir + ' rev-parse --show-toplevel';
     try {
       const repoRoot = childProcess.execSync(command).toString().trim().replace(/\\/g, '/');
-      const relativePath = path.relative(repoRoot, source).replace(/\\/g, '/');
+      const relativePath = upath.relative(repoRoot, source);
 
       return {
         'root': repoRoot,

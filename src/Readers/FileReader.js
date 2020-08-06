@@ -26,6 +26,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const upath = require('upath');
 const AbstractReader = require('./AbstractReader');
 
 /**
@@ -35,9 +36,9 @@ class FileReader extends AbstractReader {
 
   constructor() {
     super();
-    this.searchDirs = [
-      path.resolve('.')
-    ];
+    this.runDir = path.resolve('.');
+    // This field is filled in cli.js
+    this.inputFileDir = null;
   }
 
   supports(source) {
@@ -51,17 +52,31 @@ class FileReader extends AbstractReader {
    * @return {string}
    */
   read(filePath, options) {
+    let searchDirs = null;
 
-    var searchDirs = this.searchDirs.concat (
-      options.context.__PATH__,
-      '' /* to try as absolute path */
-    )
+    if (path.isAbsolute(filePath)) {
+      searchDirs = [''];
+    } else {
+      // Use Set to keep only unique items. It keeps the original order
+      searchDirs = new Set([
+        options.context.__PATH__,
+        this.inputFileDir,
+        this.runDir
+      ]);
+    }
 
     // iterate through the search dirs
     for (const dir of searchDirs) {
+      if (!dir && dir !== '') {
+        continue;
+      }
+
       const sourcePath = path.join(dir, filePath);
 
       if (fs.existsSync(sourcePath)) {
+        if (options.resultPathParsed) {
+          options.resultPathParsed.__PATH__ = upath.dirname(sourcePath);
+        }
         this.logger.debug(`Reading local file "${sourcePath}"`);
           return fs.readFileSync(sourcePath, 'utf-8');
       }

@@ -25,7 +25,6 @@
 'use strict';
 
 const request = require('request');
-const path = require('path');
 const upath = require('upath');
 const childProcess = require('child_process');
 const AbstractReader = require('./AbstractReader');
@@ -137,8 +136,8 @@ class AzureReposReader extends AbstractReader {
   parsePath(source) {
     const parsed = AzureReposReader.parseUrl(source);
     return {
-      __FILE__: path.basename(parsed.path),
-      __PATH__: `git-azure-repos:${parsed.org}/${parsed.project}/${parsed.repo}/${path.dirname(parsed.path)}`,
+      __FILE__: upath.basename(parsed.path),
+      __PATH__: `git-azure-repos:${parsed.org}/${parsed.project}/${parsed.repo}/${upath.dirname(parsed.path)}`,
       __REPO_REF__: parsed.ref,
       __REPO_PREFIX__: `git-azure-repos:${parsed.org}/${parsed.project}/${parsed.repo}`
     };

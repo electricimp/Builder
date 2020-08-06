@@ -71,7 +71,7 @@ class Machine {
 
   constructor() {
     this.file = 'main'; // default source filename
-    this.path = ''; // default source path
+    this.path = upath.resolve('.'); // default source path
     this.readers = {};
     this.globals = {};
     this.fileCache = new FileCache(this);
@@ -305,11 +305,11 @@ class Machine {
     }
 
     const suffix = upath.normalize(upath.join(res[2], includePath));
-    return `${res[1]}${suffix}`.replace(/\\/g, '/');
+    return `${res[1]}${suffix}`;
   }
 
   /**
-   * Replace local includes to github/bitbucket/azure/git-local URLs if requested
+   * Replace local includes to github/bitbucket/azure/git-local/weblink URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -320,14 +320,25 @@ class Machine {
       return includePath;
     }
 
-    // If the include path is absolute, we can consider it relatively to the
-    // repo root (if the include being handled is from a file included from a local git repo)
-    if (path.isAbsolute(includePath)) {
-      const relativePath = this._formatURL(context.__REPO_PREFIX__, includePath);
-      if (relativePath && this._getReader(relativePath) === this.readers.gitLocal) {
+    // Consider cases when includePath starts with "/"
+    if (this._isUnixAbsolutePath(includePath)) {
+      if (context.__REPO_PREFIX__) {
+        // If the include path is absolute (in unix way, i.e. starts from '/') and is
+        // included from repository file, we can consider it relatively to the repo root
+        const relativePath = this._formatURL(context.__REPO_PREFIX__, includePath);
+        // Adding ref to the path if the ref exists
         return this._addRefToPath(relativePath, context);
+      } else if (context.__URL_ROOT__) {
+        // If the include path is absolute in unix way and is included from
+        // weblink, we can consider it relatively to the URL root
+        return url.resolve(context.__URL_ROOT__, includePath);
       }
+    }
 
+    const targetReader = this._getReader(includePath);
+
+    if (path.isAbsolute(includePath) || targetReader === this.readers.http) {
+      // If this is an absolute local path or a web link, don't do anything with it
       return includePath;
     }
 
@@ -335,26 +346,26 @@ class Machine {
     // specified, we add the ref specified for the previous include (the path to the file where the current include was taken from)
     // Otherwise, we just return the include path back if it is a repository absolute path
     if (this._isRepositoryInclude(includePath)) {
-      if (includePath.indexOf(context.__REPO_PREFIX__) > -1 && includePath.indexOf("@") == -1) {
-        // Potentially someone using __PATH__
-        var rv = context.__REPO_REF__ ? `${path.normalize(includePath)}@${context.__REPO_REF__}` : path.normalize(includePath);
+      const parsedPath = targetReader.parsePath(includePath);
 
-        // replace backslashes with slashes as backslashes in path cause error at Windows.
-        if (process.platform === "win32") {
-          rv = rv.replace(/\\/g, '/');
-        }
-
-        return rv;
+      if (parsedPath.__REPO_PREFIX__ == context.__REPO_PREFIX__ && !parsedPath.__REPO_REF__) {
+        return this._addRefToPath(includePath, context);
       }
 
       // Absolute github/bitbucket/azure/git-local include
       return includePath;
     }
 
-    // check if file is included from repository source - if so, modify the path and return it relative to the repo root
+    // Check if the parent file is included from repository source - if so, consider includePath relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._isRepositoryInclude(remotePath)) {
       return this._addRefToPath(remotePath, context);
+    }
+
+    // Check if the parent file is included from a web link - if so, consider includePath relative to the URL root
+    if (context.__URL_ROOT__) {
+      const pathToFile = upath.join(upath.dirname(context.__URL_PATH__), includePath);
+      return url.resolve(context.__URL_ROOT__, pathToFile);
     }
 
     return includePath;
@@ -379,8 +390,15 @@ class Machine {
       context,
     ).trim();
 
-    // checkout local includes in the github sources from github
+    // checkout local includes in the remote sources (github/bitbucket/azure/git-local/weblink)
     includePath = this._remoteRelativeIncludes(includePath, context);
+    // if included path starts from '/' and is being included from Windows system,
+    // we join the root of the current volume (such as C:/, D:/ and so on) to the
+    // included path
+    if (this._isUnixAbsolutePath(includePath) && process.platform === "win32") {
+      const root = path.parse(this._path).root;
+      includePath = upath.join(root, includePath);
+    }
 
     // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
     if (once && this._includedSources.has(includePath)) {
@@ -434,8 +452,6 @@ class Machine {
     const ast = this.parser.parse(res.content);
 
     // update context
-
-    // __FILE__/__PATH__
     context = merge(
       context,
       res.includePathParsed
@@ -737,6 +753,17 @@ class Machine {
     }
 
     throw new Error(`Source "${source}" is not supported`);
+  }
+
+  /**
+   * Check if path is unix absolute path
+   *
+   * @param {string} source
+   * @return {boolean}
+   * @private
+   */
+  _isUnixAbsolutePath(source) {
+    return source.length ? (source[0] === '/') : false;
   }
 
   /**

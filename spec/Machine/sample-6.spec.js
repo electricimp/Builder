@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Electric Imp
+// Copyright (c) 2016-2020 Electric Imp
 // This file is licensed under the MIT License
 // http://opensource.org/licenses/MIT
 
@@ -7,9 +7,12 @@
 require('jasmine-expect');
 const fs = require('fs');
 const Machine = require('../../src/Machine');
+const path = require('path');
 
 const FILE = __dirname + '/../fixtures/sample-6/a.nut';
 const init = require('./init')(FILE);
+const contextPath = path.dirname(FILE).replace(/\\/g, '/');
+const filePath = path.join(contextPath, 'b.nut');
 
 describe('Machine', () => {
   let machine, src;
@@ -25,7 +28,7 @@ describe('Machine', () => {
       machine.execute(src);
     } catch (e) {
       expect(e instanceof Machine.Errors.MaxExecutionDepthReachedError).toBeTruthy();
-      expect(e.message).toBe('Maximum execution depth reached, possible cyclic reference? (b.nut:1)');
+      expect(e.message).toBe('Maximum execution depth reached, possible cyclic reference? (' + filePath + ':1)');
     }
   });
 });
