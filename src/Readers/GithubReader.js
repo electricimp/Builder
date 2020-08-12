@@ -66,7 +66,7 @@ class GithubReader extends AbstractReader {
 
     // process dependencies
     if (options && options.dependencies && options.dependencies.has(source)) {
-      this.gitBlobID = options.dependencies.get(source);
+      var gitBlobID = options.dependencies.get(source);
     }
 
     // spawn child process
@@ -77,7 +77,7 @@ class GithubReader extends AbstractReader {
         source,
         this.username,
         this.token,
-        this.gitBlobID,
+        gitBlobID,
       ],
       { timeout: this.timeout }
     );

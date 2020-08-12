@@ -29,7 +29,7 @@ describe('Machine', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
     const rev0GitBlobID = "9db26aa9017943a7812ab6751a699cd1c7247370";
     const rev0Content = "// included file a\n    // included file b\n\n\n      // should be included\n\n        // l2 else\n\n\n      // should be included\n";
-    const url = 'github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out';
+    const url = 'github:electricimp/Builder/spec/fixtures/sample-1/input.nut.out';
 
     // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesSaveFile)) {
@@ -64,7 +64,7 @@ describe('Machine', () => {
     const rev0GitBlobID = "9db26aa9017943a7812ab6751a699cd1c7247370";
     const rev0CommitID = "e2a5b434b34b5737b2ff52f51a92c5bbcc9f83bf";
     const rev0Content = "// included file a\n    // included file b\n\n\n      // should be included\n\n        // l2 else\n\n\n      // should be included\n";
-    const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out@${rev0CommitID}`;
+    const url = `github:electricimp/Builder/spec/fixtures/sample-1/input.nut.out@${rev0CommitID}`;
 
     // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesSaveFile)) {
@@ -85,7 +85,7 @@ describe('Machine', () => {
 
   it('Check ---save-dependecies/--use-dependencies options combination', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
-    const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out`;
+    const url = `github:electricimp/Builder/spec/fixtures/sample-1/input.nut.out`;
 
     // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesUseFile)) {
@@ -119,7 +119,7 @@ describe('Machine', () => {
 
   it('Check case when dependencies JSON file is corrupted', () => {
     const rev1Content = "// included file a\n// included file b\n\n\n  // should be included\n\n    // l2 else\n\n\n  // should be included\n";
-    const url = `github:nobitlost/Builder/spec/fixtures/sample-1/input.nut.out`;
+    const url = `github:electricimp/Builder/spec/fixtures/sample-1/input.nut.out`;
 
     // ensure that test dependencies JSON file does not exist
     if (fs.existsSync(dependenciesSaveFile)) {
@@ -136,7 +136,7 @@ describe('Machine', () => {
     // corrupt the file
     fs.appendFileSync(dependenciesSaveFile, ']');
 
-    const fileCorruptedMessage = `The dependencies JSON file '${dependenciesSaveFile}' cannot be used: Unexpected token ] in JSON at position 127`;
+    const fileCorruptedMessage = `The dependencies JSON file '${dependenciesSaveFile}' cannot be used: Unexpected token ] in JSON at position 129`;
 
     // check exception error message
     try {

@@ -52,7 +52,7 @@ describe('FileCache', () => {
     machine.useCache = true;
     machine.execute(`@include '${linkName}'`);
     expect(machine.fileCache._findFile(linkName) ? true : false).toEqual(true);
-    linkName = 'https://raw.githubusercontent.com/nobitlost/Builder/develop/spec/Builder.spec.js';
+    linkName = 'https://raw.githubusercontent.com/electricimp/Builder/develop/spec/Builder.spec.js';
     machine.execute(`@include '${linkName}'`);
     expect(machine.fileCache._findFile(linkName) ? true : false).toEqual(true);
   });
@@ -64,7 +64,7 @@ describe('FileCache', () => {
     machine.excludeList = __dirname + '/../fixtures/config/exclude-all.exclude';
     machine.execute(`@include '${linkName}'`);
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
-    linkName = 'https://raw.githubusercontent.com/nobitlost/Builder/develop/spec/Builder.spec.js';
+    linkName = 'https://raw.githubusercontent.com/electricimp/Builder/develop/spec/Builder.spec.js';
     machine.execute(`@include '${linkName}'`);
     expect(machine.fileCache._findFile(linkName)).toEqual(false);
   });
@@ -78,10 +78,10 @@ describe('FileCache', () => {
       'github:electricimp/Builder/spec/fixtures/sample-11/OneLineSample.nut@v1.0.1',
       'github:electricimp/MessageManager/MessageManager.lib.nut',
       'github:electricimp/MessageManager/MessageManager.lib.js',
-      'https://raw.githubusercontent.com/nobitlost/Builder/v2.0.0/src/AstParser.js',
-      'https://raw.githubusercontent.com/nobitlost/Builder/v2.0.0/src/AstParser.js?nut=2',
-      'http://raw.githubusercontent.com/nobitlost/Builder/src/AstParser.js',
-      'http://raw.githubusercontent.com/nobitlost/Builder/src/AstParser.nut'
+      'https://raw.githubusercontent.com/electricimp/Builder/v2.0.0/src/AstParser.js',
+      'https://raw.githubusercontent.com/electricimp/Builder/v2.0.0/src/AstParser.js?nut=2',
+      'http://raw.githubusercontent.com/electricimp/Builder/src/AstParser.js',
+      'http://raw.githubusercontent.com/electricimp/Builder/src/AstParser.nut'
     ];
     const testFilesList = [
       'exclude-all.exclude',
