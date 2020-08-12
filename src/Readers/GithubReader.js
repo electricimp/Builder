@@ -66,7 +66,7 @@ class GithubReader extends AbstractReader {
 
     // process dependencies
     if (options && options.dependencies && options.dependencies.has(source)) {
-      this.gitBlobID = options.dependencies.get(source);
+      var gitBlobID = options.dependencies.get(source);
     }
 
     // spawn child process
@@ -77,7 +77,7 @@ class GithubReader extends AbstractReader {
         source,
         this.username,
         this.token,
-        this.gitBlobID,
+        gitBlobID,
       ],
       { timeout: this.timeout }
     );
@@ -198,10 +198,13 @@ class GithubReader extends AbstractReader {
 
     const octokit = new Octokit(octokitConfig);
 
+    const parsedUrl = this.parseUrl(source);
+    parsedUrl.path = upath.normalize(parsedUrl.path);
+
     if (gitBlobID !== 'undefined') {
       const args = {
-        owner: this.parseUrl(source).owner,
-        repo: this.parseUrl(source).repo,
+        owner: parsedUrl.owner,
+        repo: parsedUrl.repo,
         file_sha: gitBlobID,
       };
 
@@ -220,7 +223,7 @@ class GithubReader extends AbstractReader {
     }
 
     // @see https://developer.github.com/v3/repos/contents/#get-contents
-    octokit.repos.getContents(this.parseUrl(source))
+    octokit.repos.getContents(parsedUrl)
       .then((res) => {
         const ret = {
           data: Buffer.from(res.data.content, 'base64').toString(),

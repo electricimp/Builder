@@ -181,6 +181,10 @@ builder.machine.directivesUseFile = <false|"PATH_TO_FILE">;
 
 const inputFile = "PATH_TO_YOUR_INPUT_FILE";
 
+// Set the directory of the input file as one of search dirs.
+// path.resolve() is used to get the absolute path (requires the path nodejs module)
+builder.machine.readers.file.inputFileDir = path.resolve(inputFile);
+
 const result = builder.machine.execute(`@include "${inputFile}"`);
 console.log(result);
 ```
@@ -849,7 +853,7 @@ If
 then *Builder* makes the following steps to find the include file:
 
 1. Only if the processed file is a local file, the final path to the include file is a concatenation of the path to the processed file and the path in the include. If the file is not found there, moves to the next step.
-1. The final path to the include file is a concatenation of the path to the file specified as the `<input_file>` parameter of the `pleasebuild` command and the path in the include. If the file is not found there, moves to the next step.
+1. The final path to the include file is a concatenation of the path to the file specified as the `<input_file>` parameter of the `pleasebuild` command and the path in the include. If the file is not found there, moves to the next step. **Note**: If you use *Builder* as a library and want this search step to work, make sure you specify the input file path (`builder.machine.readers.file.inputFileDir` variable) in your source code within the Builder initialization routine. See the [Library Installation section](#library-installation) to learn more.
 1. The final path to the include file is a concatenation of the path to the directory from where the `pleasebuild` command has been called and the path in the include. If the file is not found there, *Builder* reports an error.
 
 ##### Examples: #####
@@ -1058,6 +1062,8 @@ To reset the cache, use both the `--cache` and the `--clear-cache` options.
 
 If a resource should never be cached, it needs to be added to the `exclude-list.builder` file (see the example below). You can use wildcard characters to mask file names.
 
+**Note**: Non-identical paths, even if they point to absolutely the same location, are treated as different paths. Eg., if you include `/a/b/1.nut`, it becomes cached, and then you include `/a/b/../b/1.nut`, it will not be found in the cache.
+
 #### Wildcard Pattern Matching ####
 
 Pattern matching syntax is a similar to that of *.gitignore*. A string is a wildcard pattern if it contains '```?```' or '```*```' characters. Empty strings or strings that starts with '```#```' are ignored.
@@ -1171,6 +1177,8 @@ A typical `dependencies.json` file looks like this:
   ]
 ]
 ```
+
+**Note**: Non-identical paths, even if they point to absolutely the same location, are treated as different paths. Eg., if you have saved dependencies for `/a/b/1.nut` and then you include `/a/b/../b/1.nut` - the dependencies will not be applied to this file.
 
 ## Including JavaScript Libraries ##
 

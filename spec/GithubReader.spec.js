@@ -35,6 +35,12 @@ describe('GithubReader', () => {
 
     remote = reader.read('github.com/electricimp/Builder/spec/fixtures/sample-1/input.nut');
     expect(remote).toEqual(local);
+
+    remote = reader.read('github:electricimp/Builder/./spec/../spec/fixtures/sample-1/input.nut@master');
+    expect(remote).toEqual(local);
+
+    remote = reader.read('github.com:electricimp/Builder/./spec/../spec/fixtures/sample-1/input.nut');
+    expect(remote).toEqual(local);
   });
 
 });
