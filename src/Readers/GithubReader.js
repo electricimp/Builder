@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2020 Electric Imp
+// Copyright 2016-2023 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -27,20 +27,12 @@
 const HttpsProxyAgent = require('https-proxy-agent');
 const upath = require('upath');
 const { Octokit } = require('@octokit/rest');
-const childProcess = require('child_process');
 const packageJson = require('../../package.json');
 const AbstractReader = require('./AbstractReader');
+const WorkerThreads = require('worker_threads');
 
 // child process timeout
 const TIMEOUT = 30000;
-
-// return codes
-const STATUS_FETCH_FAILED = 2;
-const STATUS_API_RATE_LIMIT = 3;
-
-// marker presense on the command line
-// tells that we're in the woker thread
-const WORKER_MARKER = '__github_reader_worker___';
 
 class GithubReader extends AbstractReader {
 
@@ -60,7 +52,6 @@ class GithubReader extends AbstractReader {
    * @return {string}
    */
   read(source, options) {
-
     // [debug]
     this.logger.debug(`Reading GitHub source "${source}"...`);
 
@@ -69,67 +60,49 @@ class GithubReader extends AbstractReader {
       var gitBlobID = options.dependencies.get(source);
     }
 
-    // spawn child process
-    const child = childProcess.spawnSync(
-      /* node */ process.argv[0],
-      [/* self */ __filename,
-        WORKER_MARKER,
-        source,
-        this.username,
-        this.token,
-        gitBlobID,
-      ],
-      { timeout: this.timeout }
-    );
+    let result;
 
-    if (STATUS_FETCH_FAILED === child.status || STATUS_API_RATE_LIMIT === child.status) {
+    const worker = new WorkerThreads.Worker(__filename);
+    worker.ref();
 
-      // predefined exit code errors
-      throw new AbstractReader.Errors.SourceReadingError(
-        child.stderr.toString()
-      );
+    try {
+      // We need 4 bytes to store a 32-bit integer
+      const shared = new SharedArrayBuffer(4);
+      const int32 = new Int32Array(shared);
+      const args = [source, this.username, this.token, gitBlobID];
 
-    } else if (0 !== child.status) {
+      const { port1: localPort, port2: workerPort } = new WorkerThreads.MessageChannel();
+      worker.postMessage({ port: workerPort, shared, args }, [workerPort]);
 
-      // misc exit code errors
-      throw new AbstractReader.Errors.SourceReadingError(
-        `Unknown error: ${child.stderr.toString()} (exit code ${child.status})`
-      );
+      Atomics.wait(int32, 0, 0, TIMEOUT);
 
-    } else {
-
-      // errors that do not set erroneous exit code
-      if (child.error) {
-
-        if (child.error.errno === 'ETIMEDOUT') {
-
-          // timeout
-          throw new AbstractReader.Errors.SourceReadingError(
-            `Failed to fetch url "${source}": timed out after ${this.timeout / 1000}s`
-          );
-
-        } else {
-
-          // others
-          throw new AbstractReader.Errors.SourceReadingError(
-            `Failed to fetch url "${source}": ${child.error.errno}`
-          );
-
-        }
-
-      } else {
-        // s'all good
-        const ret = JSON.parse(child.output[1].toString());
-
-        // update dependencies map
-        if (options && options.dependencies) {
-          options.dependencies.set(source, ret.gitBlobID);
-        }
-
-        return ret.data;
+      // Contains either 'result' or 'error'.
+      // undefined in case of timeout
+      const msg = WorkerThreads.receiveMessageOnPort(localPort);
+      if (msg === undefined) {
+        throw new AbstractReader.Errors.SourceReadingError(
+          `Failed to fetch url "${source}": timed out after ${this.timeout / 1000}s`
+        );
       }
 
+      const msgPayload = msg.message;
+      if ('error' in msgPayload) {
+        throw new AbstractReader.Errors.SourceReadingError(
+          `Failed to fetch url "${source}": ${msgPayload.error}`
+        );
+      }
+
+      result = msgPayload.result;
+    } finally {
+      worker.unref();
     }
+
+    // update dependencies map
+    if (options && options.dependencies) {
+      options.dependencies.set(source, result.gitBlobID);
+    }
+
+    return result.data;
   }
 
   /**
@@ -147,30 +120,15 @@ class GithubReader extends AbstractReader {
     };
   }
 
-  static processError(err, source) {
-    try {
-      err = JSON.parse(err.message);
-
-      // detect rate limit hit
-      if (err.message.indexOf('API rate limit exceeded') !== -1) {
-        process.stderr.write('GitHub API rate limit exceeded');
-        process.exit(STATUS_API_RATE_LIMIT);
-      }
-
-      process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-    } catch (e) {
-      process.stderr.write(`Failed to get source "${source}" from GitHub: ${err.message}`);
-    }
-
-    // misc feth error
-    process.exit(STATUS_FETCH_FAILED);
-  }
-
   /**
-   * Fethces the source ref and outputs it to STDOUT
-   * @param {string} source
+   * Fethces the source ref
+   * @param {string} source - Path/reference to the source to be fetched
+   * @param {string} username - Username
+   * @param {string} password - Password/token
+   * @param {string} [gitBlobID] - Git blob ID
+   * @return {Promise}
    */
-  static fetch(source, username, password, gitBlobID) {
+  static async fetch(source, username, password, gitBlobID) {
     var agent = null;
     if (process.env.HTTPS_PROXY) {
       agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
@@ -184,6 +142,10 @@ class GithubReader extends AbstractReader {
       request: {
         agent: agent,
         timeout: 5000
+      },
+      log: {
+        // NOTE: This is only for deprecation messages suppression
+        warn: () => {}
       }
     };
 
@@ -198,10 +160,15 @@ class GithubReader extends AbstractReader {
 
     const octokit = new Octokit(octokitConfig);
 
-    const parsedUrl = this.parseUrl(source);
+    const parsedUrl = GithubReader.parseUrl(source);
     parsedUrl.path = upath.normalize(parsedUrl.path);
 
-    if (gitBlobID !== 'undefined') {
+    const extractData = res => ({
+      data: Buffer.from(res.data.content, 'base64').toString(),
+      gitBlobID: res.data.sha,
+    });
+
+    if (gitBlobID !== undefined) {
       const args = {
         owner: parsedUrl.owner,
         repo: parsedUrl.repo,
@@ -209,29 +176,11 @@ class GithubReader extends AbstractReader {
       };
 
       // @see https://octokit.github.io/rest.js/#api-Git-getBlob
-      octokit.gitdata.getBlob(args)
-        .then((res) => {
-          const ret = {
-            data: Buffer.from(res.data.content, 'base64').toString(),
-            gitBlobID: res.data.sha,
-          };
-          process.stdout.write(JSON.stringify(ret));
-        })
-        .catch(err => GithubReader.processError(err, source));
-
-      return;
+      return octokit.gitdata.getBlob(args).then(extractData);
     }
 
     // @see https://developer.github.com/v3/repos/contents/#get-contents
-    octokit.repos.getContents(parsedUrl)
-      .then((res) => {
-        const ret = {
-          data: Buffer.from(res.data.content, 'base64').toString(),
-          gitBlobID: res.data.sha,
-        };
-        process.stdout.write(JSON.stringify(ret));
-      })
-      .catch(err => GithubReader.processError(err, source));
+    return octokit.repos.getContents(parsedUrl).then(extractData);
   }
 
   /**
@@ -297,10 +246,23 @@ class GithubReader extends AbstractReader {
   }
 }
 
-if (process.argv.indexOf(WORKER_MARKER) !== -1) {
-  // launch worker
-  GithubReader.fetch(process.argv[3], process.argv[4], process.argv[5], process.argv[6]);
-} else {
+if (WorkerThreads.isMainThread) {
   // acto as module
   module.exports = GithubReader;
+} else {
+  const onMsg = async function(message) {
+      const { port, shared, args } = message;
+
+      try {
+        const result = await GithubReader.fetch(...args);
+        port.postMessage({ result });
+      } catch (error) {
+        port.postMessage({ error });
+      } finally {
+        const int32 = new Int32Array(shared);
+        Atomics.notify(int32, 0);
+      }
+  };
+
+  WorkerThreads.parentPort.on('message', onMsg);
 }
