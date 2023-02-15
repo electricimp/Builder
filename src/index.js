@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2016-2020 Electric Imp
+// Copyright 2016-2023 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -78,7 +78,15 @@ class Builder {
       newFiles.sort();
       libFiles = libFiles.concat(newFiles);
     }
-    const libs = libFiles.map(p => require(path.resolve(process.cwd(), p)));
+    const libs = libFiles.map(p => {
+      const resolvedPath = path.resolve(process.cwd(), p);
+
+      if (resolvedPath in require.cache) {
+        delete require.cache[resolvedPath];
+      }
+
+      return require(resolvedPath);
+    });
 
     // global context
     this._globals = {};
