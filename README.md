@@ -1,6 +1,6 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-### Current version: 4.0.1 ###
+### Current version: 4.1.0 ###
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
@@ -74,7 +74,7 @@ For details on the commands that Builder offers, please see the [Directives](#di
 
 # Builder Installation #
 
-Builder requires Node.js 8.0.0 and above. It can be installed and used by two ways:
+Builder requires Node.js 18.14.2 and above. It can be installed and used by two ways:
 
 - As an [_npm_ command line tool](#command-line-tool-installation)
 - As an [_npm_ library](#library-installation).
