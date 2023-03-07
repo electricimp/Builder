@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -24,24 +24,24 @@
   },
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
+    "@octokit/rest": "^16.43.2",
     "clone": "^1.0.2",
-    "@octokit/rest": "^16.20.0",
-    "glob": "^7.1.2",
-    "https-proxy-agent": "^2.2.1",
-    "jsep": "^0.3.1",
-    "request": "^2.71.0",
-    "md5": "^2.2.1",
-    "minimatch": "^3.0.4",
+    "decomment": "^0.9.5",
     "fs-extra": "^3.0.1",
-    "xxhashjs": "^0.2.1",
-    "decomment": "^0.9.0",
-    "upath": "^1.1.2"
+    "glob": "^7.2.3",
+    "https-proxy-agent": "^2.2.1",
+    "jsep": "^0.3.5",
+    "md5": "^2.3.0",
+    "minimatch": "^3.1.2",
+    "request": "^2.71.0",
+    "upath": "^1.1.2",
+    "xxhashjs": "^0.2.1"
   },
   "devDependencies": {
-    "jasmine": "^3.5.0",
-    "jasmine-expect": "^2.0.2",
-    "log": "^1.4.0",
     "eol": "^0.9.1",
-    "fixture-stdout": "^0.2.1"
+    "fixture-stdout": "^0.2.1",
+    "jasmine": "^3.99.0",
+    "jasmine-expect": "^2.0.2",
+    "log": "^1.4.0"
   }
 }
