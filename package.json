@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
-    "@octokit/rest": "^16.43.2",
+    "@octokit/rest": "^19.0.7",
     "clone": "^1.0.2",
     "decomment": "^0.9.5",
     "fs-extra": "^3.0.1",

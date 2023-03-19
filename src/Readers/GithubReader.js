@@ -143,10 +143,10 @@ class GithubReader extends AbstractReader {
         agent: agent,
         timeout: 5000
       },
-      log: {
-        // NOTE: This is only for deprecation messages suppression
-        warn: () => {}
-      }
+      // log: {
+      //   // NOTE: This is only for deprecation messages suppression
+      //   warn: () => {}
+      // }
     };
 
     // authorization
@@ -156,6 +156,8 @@ class GithubReader extends AbstractReader {
         username,
         password
       };
+
+      octokitConfig.auth = password;
     }
 
     const octokit = new Octokit(octokitConfig);
@@ -176,11 +178,11 @@ class GithubReader extends AbstractReader {
       };
 
       // @see https://octokit.github.io/rest.js/#api-Git-getBlob
-      return octokit.gitdata.getBlob(args).then(extractData);
+      return octokit.rest.git.getBlob(args).then(extractData);
     }
 
     // @see https://developer.github.com/v3/repos/contents/#get-contents
-    return octokit.repos.getContents(parsedUrl).then(extractData);
+    return octokit.rest.repos.getContent(parsedUrl).then(extractData);
   }
 
   /**
