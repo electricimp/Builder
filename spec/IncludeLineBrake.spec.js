@@ -18,8 +18,7 @@ describe('Builder', () => {
   beforeEach(() => {
     builder = new Builder();
     builder.machine.suppressDupWarning = true;
-    builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
-    builder.machine.readers.github.password = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+    builder.machine.readers.github.token = process.env.SPEC_GITHUB_TOKEN;
 
     // @see https://www.npmjs.com/package/log#log-levels
     builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
