@@ -17,8 +17,7 @@ describe('Builder', () => {
 
   beforeEach(() => {
     builder = new Builder();
-    builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
-    builder.machine.readers.github.password = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+    builder.machine.readers.github.token = process.env.SPEC_GITHUB_TOKEN;
   });
 
   it('should build something', () => {
