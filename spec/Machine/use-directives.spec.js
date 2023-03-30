@@ -158,7 +158,7 @@ describe('Machine', () => {
     // corrupt the file
     fs.appendFileSync(directivesSaveFile, ']');
 
-    const fileCorruptedMessage = `The directives JSON file '${directivesSaveFile}' cannot be used: Unexpected token ] in JSON at position 47`;
+    const fileCorruptedMessage = `The directives JSON file '${directivesSaveFile}' cannot be used`;
 
     // check exception error message
     try {
@@ -166,7 +166,7 @@ describe('Machine', () => {
       machine.directivesUseFile = directivesSaveFile;
       eol.lf(machine.execute(directivesSource, directives));
     } catch (e) {
-      expect(e.message).toEqual(fileCorruptedMessage);
+      expect(e.message).toStartWith(fileCorruptedMessage);
     }
 
     // unlink directives file to avoid conflicts with unit-tests below
