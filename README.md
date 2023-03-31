@@ -1,6 +1,6 @@
 <img src=docs/logo.png?2 width=180 alt=Builder><br />
 
-### Current version: 4.1.0 ###
+### Current version: 4.2.0 ###
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:Builder_BuildAndTest)/statusIcon)
 
@@ -91,7 +91,7 @@ Now use Builder’s `pleasebuild` command to configure the newly installed utili
 
 ```sh
 pleasebuild [-l] [-D<variable> <value>]
-    [--github-user <username> --github-token <token>] [--azure-user <username> --azure-token <token>]
+    [--github-token <token>] [--azure-user <username> --azure-token <token>]
     [--bitbucket-server-addr <address>] [--bitbucket-server-user <username> --bitbucket-server-token <token>]
     [--lib <path_to_file>] [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
     [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
@@ -106,8 +106,7 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | --- | --- | --- | --- | --- |
 | -l |  | No | No | Generates line control statements. For a more detailed explanation, please read [this GCC page](https://gcc.gnu.org/onlinedocs/gcc-4.5.4/cpp/Line-Control.html) |
 | -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
-| --github-user | | No | Yes | A GitHub username. |
-| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
+| --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens). Password is not supported. |
 | --azure-user | | No | Yes | An Azure Repos username. |
 | --azure-token | | No | Yes | An Azure Repos personal access token. Should be specified if the `--azure-user` option is specified |
 | --bitbucket-server-addr | | No | Yes | A Bitbucket Server address. E.g., `https://bitbucket-srv.itd.example.com`. **Note**: this option is mandatory to include files from [Bitbucket Server](#bitbucket-server-repository) |
@@ -144,9 +143,8 @@ builder.machine.generateLineControlStatements = <true|false>;
 // Cache all files included from remote sources. See the "--cache" CLI option.
 builder.machine.useCache = <true|false>;
 
-// Set GitHub credentials. See the "--github-user" and "--github-token" CLI options.
-builder.machine.readers.github.username = "<USERNAME>";
-builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
+// Set GitHub credentials. See the "--github-token" CLI option.
+builder.machine.readers.github.token = "<PERSONAL_ACCESS_TOKEN>";
 
 // Set Azure Repos credentials. See the "--azure-user" and "--azure-token" CLI options.
 builder.machine.readers.azureRepos.username = "<USERNAME>";
@@ -1250,8 +1248,7 @@ When running tests locally, please test on both Windows and macOS. All environme
 ```sh
 npm install
 SPEC_LOGLEVEL=<debug|info|warning|error>
-SPEC_GITHUB_USERNAME=<GitHub username>
-SPEC_GITHUB_TOKEN=<GitHub password/access token>
+SPEC_GITHUB_TOKEN=<GitHub personal access token>
 npm test
 ```
 

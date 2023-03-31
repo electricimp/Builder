@@ -1,6 +1,6 @@
 {
   "name": "Builder",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Builder Language Implementation",
   "main": "src/index.js",
   "bin": {
@@ -24,15 +24,16 @@
   },
   "homepage": "https://github.com/electricimp/Builder#readme",
   "dependencies": {
-    "@octokit/rest": "^16.43.2",
+    "@octokit/rest": "^19.0.7",
     "clone": "^1.0.2",
     "decomment": "^0.9.5",
     "fs-extra": "^3.0.1",
     "glob": "^7.2.3",
-    "https-proxy-agent": "^2.2.1",
+    "https-proxy-agent": "^5.0.1",
     "jsep": "^0.3.5",
     "md5": "^2.3.0",
     "minimatch": "^3.1.2",
+    "node-fetch": "^2.6.9",
     "request": "^2.71.0",
     "upath": "^1.1.2",
     "xxhashjs": "^0.2.1"

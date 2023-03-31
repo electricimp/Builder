@@ -27,6 +27,7 @@
 const HttpsProxyAgent = require('https-proxy-agent');
 const upath = require('upath');
 const { Octokit } = require('@octokit/rest');
+const nodeFetch = require('node-fetch');
 const packageJson = require('../../package.json');
 const AbstractReader = require('./AbstractReader');
 const WorkerThreads = require('worker_threads');
@@ -69,7 +70,7 @@ class GithubReader extends AbstractReader {
       // We need 4 bytes to store a 32-bit integer
       const shared = new SharedArrayBuffer(4);
       const int32 = new Int32Array(shared);
-      const args = [source, this.username, this.token, gitBlobID];
+      const args = [source, this.token, gitBlobID];
 
       const { port1: localPort, port2: workerPort } = new WorkerThreads.MessageChannel();
       worker.postMessage({ port: workerPort, shared, args }, [workerPort]);
@@ -123,12 +124,11 @@ class GithubReader extends AbstractReader {
   /**
    * Fethces the source ref
    * @param {string} source - Path/reference to the source to be fetched
-   * @param {string} username - Username
-   * @param {string} password - Password/token
+   * @param {string} token - Token
    * @param {string} [gitBlobID] - Git blob ID
    * @return {Promise}
    */
-  static async fetch(source, username, password, gitBlobID) {
+  static async fetch(source, token, gitBlobID) {
     var agent = null;
     if (process.env.HTTPS_PROXY) {
       agent = HttpsProxyAgent(process.env.HTTPS_PROXY);
@@ -141,21 +141,14 @@ class GithubReader extends AbstractReader {
       baseUrl: 'https://api.github.com',
       request: {
         agent: agent,
+        fetch: nodeFetch,
         timeout: 5000
-      },
-      log: {
-        // NOTE: This is only for deprecation messages suppression
-        warn: () => {}
       }
     };
 
     // authorization
-    if (username != '' && password !== '') {
-      octokitConfig.auth = {
-        type: 'basic',
-        username,
-        password
-      };
+    if (token !== '') {
+      octokitConfig.auth = token;
     }
 
     const octokit = new Octokit(octokitConfig);
@@ -176,11 +169,11 @@ class GithubReader extends AbstractReader {
       };
 
       // @see https://octokit.github.io/rest.js/#api-Git-getBlob
-      return octokit.gitdata.getBlob(args).then(extractData);
+      return octokit.rest.git.getBlob(args).then(extractData);
     }
 
     // @see https://developer.github.com/v3/repos/contents/#get-contents
-    return octokit.repos.getContents(parsedUrl).then(extractData);
+    return octokit.rest.repos.getContent(parsedUrl).then(extractData);
   }
 
   /**
@@ -221,27 +214,11 @@ class GithubReader extends AbstractReader {
     this._timeout = value;
   }
 
-  get username() {
-    return this._username || '';
-  }
-
-  set username(value) {
-    this._username = value;
-  }
-
   get token() {
     return this._token || '';
   }
 
   set token(value) {
-    this._token = value;
-  }
-
-  get password() {
-    return this._token || '';
-  }
-
-  set password(value) {
     this._token = value;
   }
 }

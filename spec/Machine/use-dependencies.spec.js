@@ -136,14 +136,14 @@ describe('Machine', () => {
     // corrupt the file
     fs.appendFileSync(dependenciesSaveFile, ']');
 
-    const fileCorruptedMessage = `The dependencies JSON file '${dependenciesSaveFile}' cannot be used: Unexpected token ] in JSON at position 129`;
+    const fileCorruptedMessage = `The dependencies JSON file '${dependenciesSaveFile}' cannot be used`;
 
     // check exception error message
     try {
       machine.dependenciesUseFile = dependenciesSaveFile;
       expect(eol.lf(machine.execute(`@include "${url}"`))).toBe(rev1Content);
     } catch (e) {
-      expect(e.message).toEqual(fileCorruptedMessage);
+      expect(e.message).toStartWith(fileCorruptedMessage);
     }
 
     // unlink directives file to avoid conflicts with unit-tests below

@@ -61,7 +61,7 @@ function usageInfo() {
 \u001b[36m${packageJson.name} v${packageJson.version} CLI\u001b[39m
 
 usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D<variable> <value>]
-\t\t[--github-user <username> --github-token <token>] [--azure-user <username> --azure-token <token>]
+\t\t[--github-token <token>] [--azure-user <username> --azure-token <token>]
 \t\t[--bitbucket-server-addr <address>] [--bitbucket-server-user <username> --bitbucket-server-token <token>]
 \t\t[--lib <path_to_file>] [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
 \t\t[--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
@@ -71,8 +71,7 @@ usage:\n\t\u001b[34m${Object.getOwnPropertyNames((packageJson.bin))[0]} [-l] [-D
 where:
 \t\u001b[34m-l\u001b[39m - generates line control statements
 \t\u001b[34m-D<varname> <value>\u001b[39m - defines a variable
-\t\u001b[34m--github-user <username>\u001b[39m - a GitHub username
-\t\u001b[34m--github-token <token>\u001b[39m - a GitHub personal access token or password
+\t\u001b[34m--github-token <token>\u001b[39m - a GitHub personal access token
 \t\u001b[34m--azure-user <username>\u001b[39m - an Azure Repos username
 \t\u001b[34m--azure-token <token>\u001b[39m - an Azure Repos personal access token
 \t\u001b[34m--bitbucket-server-addr <address>\u001b[39m - a Bitbucket Server address
@@ -81,7 +80,7 @@ where:
 \t\u001b[34m--lib <path_to_file>\u001b[39m - include the specified JavaScript file(s) as a library
 \t\u001b[34m--use-remote-relative-includes\u001b[39m - interpret every local include as relative to the location of the source file where it is mentioned
 \t\u001b[34m--suppress-duplicate-includes-warning\u001b[39m - do not show a warning if a source file with the same content was included multiple times
-\t\u001b[34m--cache>\u001b[39m - turn on caching for all files included from remote resources
+\t\u001b[34m--cache\u001b[39m - turn on caching for all files included from remote resources
 \t\u001b[34m--clear-cache\u001b[39m - clear the cache before Builder starts running
 \t\u001b[34m--cache-exclude-list <path_to_file>\u001b[39m - set the path to the file that lists resources which should not be cached
 \t\u001b[34m--save-dependencies [path_to_file]\u001b[39m - save references to the required GitHub files in the specified file
@@ -111,7 +110,7 @@ function getOption(args, defaultValue) {
 
 /**
  * Read args
- * @return {{defines: {}, lineControl: boolean, input: string, gh: {user, token}, cache: boolean, clean: boolean, excludeFile: string}
+ * @return {{defines: {}, lineControl: boolean, input: string, ghToken: string, cache: boolean, clean: boolean, excludeFile: string}
  */
 function readArgs() {
   let m;
@@ -120,7 +119,7 @@ function readArgs() {
     cache: false,
     lineControl: false,
     input: null,
-    gh: {user: null, token: null},
+    ghToken: '',
     ar: {user: null, token: null},
     bbSrv: {addr: null, user: null, token: null},
     clean : false,
@@ -142,11 +141,6 @@ function readArgs() {
       res.clean = true;
     } else if (m = argument.match(/^-D(.+)$/)) {
       res.defines[m[1]] = args.length ? args.shift() : null;
-    } else if (argument === '--github-user') {
-      if (!args.length) {
-        throw Error('Expected argument value after ' + argument);
-      }
-      res.gh.user = args.shift();
     } else if (argument === '--azure-user') {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
@@ -161,7 +155,7 @@ function readArgs() {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
       }
-      res.gh.token = args.shift();
+      res.ghToken = args.shift();
     } else if (argument === '--azure-token') {
       if (!args.length) {
         throw Error('Expected argument value after ' + argument);
@@ -241,8 +235,7 @@ try {
   builder.machine.readers.file.inputFileDir = path.dirname(path.resolve(args.input));
 
   // set GH credentials
-  builder.machine.readers.github.username = args.gh.user;
-  builder.machine.readers.github.token = args.gh.token;
+  builder.machine.readers.github.token = args.ghToken;
   // set Azure Repos credentials
   builder.machine.readers.azureRepos.username = args.ar.user;
   builder.machine.readers.azureRepos.token = args.ar.token;
