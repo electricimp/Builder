@@ -23,8 +23,7 @@ module.exports = (sampleFile) => {
       const builder = new Builder({ libs });
       builder.logger = new Log(process.env.SPEC_LOGLEVEL || 'error');
       builder.machine.suppressDupWarning = true;
-      builder.machine.readers.github.username = process.env.SPEC_GITHUB_USERNAME;
-      builder.machine.readers.github.token = process.env.SPEC_GITHUB_PASSWORD || process.env.SPEC_GITHUB_TOKEN;
+      builder.machine.readers.github.token = process.env.SPEC_GITHUB_TOKEN;
       builder.machine.readers.file.runDir = path.dirname(sampleFile);
       return builder.machine;
     },
